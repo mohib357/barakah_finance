@@ -11,7 +11,7 @@ let submittedFormData = null;
 
 // NID files
 let applicantNIDFiles = [];
-let nomineeNIDFiles  = [];
+let nomineeNIDFiles = [];
 
 // ─── ON LOAD ───
 document.addEventListener('DOMContentLoaded', () => {
@@ -44,17 +44,17 @@ function toggleTheme() {
 function changeLang(lang) {
   currentLang = lang;
   const t = TRANSLATIONS[lang];
-  document.getElementById('hdr-title').textContent   = t.hdrTitle;
-  document.getElementById('hdr-slogan').textContent  = t.hdrSlogan;
+  document.getElementById('hdr-title').textContent = t.hdrTitle;
+  document.getElementById('hdr-slogan').textContent = t.hdrSlogan;
   document.getElementById('hdr-address').textContent = t.hdrAddress;
-  document.getElementById('form-title').textContent  = t.formTitle;
+  document.getElementById('form-title').textContent = t.formTitle;
   document.getElementById('form-subtitle').textContent = t.formSubtitle;
-  document.getElementById('sec1-title').textContent  = t.sec1Title;
-  document.getElementById('sec2-title').textContent  = t.sec2Title;
-  document.getElementById('sec3-title').textContent  = t.sec3Title;
-  document.getElementById('sec4-title').textContent  = t.sec4Title;
-  document.getElementById('lbl-submit').textContent  = t.lblSubmit;
-  document.getElementById('admin-link').textContent  = t.adminLink;
+  document.getElementById('sec1-title').textContent = t.sec1Title;
+  document.getElementById('sec2-title').textContent = t.sec2Title;
+  document.getElementById('sec3-title').textContent = t.sec3Title;
+  document.getElementById('sec4-title').textContent = t.sec4Title;
+  document.getElementById('lbl-submit').textContent = t.lblSubmit;
+  document.getElementById('admin-link').textContent = t.adminLink;
 
   // RTL for Arabic
   document.body.classList.toggle('lang-ar', lang === 'ar');
@@ -128,8 +128,8 @@ function populateDistricts() {
   const sel = document.getElementById('addrDistrict');
   sel.innerHTML = '<option value="">-- জেলা --</option>';
   document.getElementById('addrThana').innerHTML = '<option value="">-- থানা/উপজেলা --</option>';
-  document.getElementById('addrPost').innerHTML  = '<option value="">-- পোস্ট অফিস --</option>';
-  document.getElementById('addrPostCode').value  = '';
+  document.getElementById('addrPost').innerHTML = '<option value="">-- পোস্ট অফিস --</option>';
+  document.getElementById('addrPostCode').value = '';
   if (!BD_DATA[div]) return;
   Object.keys(BD_DATA[div]).forEach(dist => {
     const o = document.createElement('option');
@@ -140,12 +140,12 @@ function populateDistricts() {
   if (div === 'রংপুর') { sel.value = 'লালমনিরহাট'; populateThanas(); }
 }
 function populateThanas() {
-  const div  = document.getElementById('addrDivision').value;
+  const div = document.getElementById('addrDivision').value;
   const dist = document.getElementById('addrDistrict').value;
-  const sel  = document.getElementById('addrThana');
+  const sel = document.getElementById('addrThana');
   sel.innerHTML = '<option value="">-- থানা/উপজেলা --</option>';
-  document.getElementById('addrPost').innerHTML  = '<option value="">-- পোস্ট অফিস --</option>';
-  document.getElementById('addrPostCode').value  = '';
+  document.getElementById('addrPost').innerHTML = '<option value="">-- পোস্ট অফিস --</option>';
+  document.getElementById('addrPostCode').value = '';
   if (!BD_DATA[div] || !BD_DATA[div][dist]) return;
   Object.keys(BD_DATA[div][dist]).forEach(thana => {
     const o = document.createElement('option');
@@ -156,10 +156,10 @@ function populateThanas() {
   if (dist === 'লালমনিরহাট') { sel.value = 'আদিতমারী'; populatePostOffices(); }
 }
 function populatePostOffices() {
-  const div   = document.getElementById('addrDivision').value;
-  const dist  = document.getElementById('addrDistrict').value;
+  const div = document.getElementById('addrDivision').value;
+  const dist = document.getElementById('addrDistrict').value;
   const thana = document.getElementById('addrThana').value;
-  const sel   = document.getElementById('addrPost');
+  const sel = document.getElementById('addrPost');
   sel.innerHTML = '<option value="">-- পোস্ট অফিস --</option>';
   document.getElementById('addrPostCode').value = '';
   const posts = BD_DATA[div]?.[dist]?.[thana];
@@ -179,12 +179,12 @@ function fillPostCode() {
 function copyCurrAddr() {
   const same = document.getElementById('sameAddrCheck').checked;
   if (same) {
-    const div   = document.getElementById('addrDivision').value;
-    const dist  = document.getElementById('addrDistrict').value;
+    const div = document.getElementById('addrDivision').value;
+    const dist = document.getElementById('addrDistrict').value;
     const thana = document.getElementById('addrThana').value;
-    const post  = document.getElementById('addrPost').options[document.getElementById('addrPost').selectedIndex]?.textContent || '';
-    const code  = document.getElementById('addrPostCode').value;
-    const vill  = document.getElementById('addrVillage').value;
+    const post = document.getElementById('addrPost').options[document.getElementById('addrPost').selectedIndex]?.textContent || '';
+    const code = document.getElementById('addrPostCode').value;
+    const vill = document.getElementById('addrVillage').value;
     document.getElementById('permanentAddress').value = `${vill}, ${post} - ${code}, ${thana}, ${dist}, ${div}`;
   }
 }
@@ -408,7 +408,7 @@ function submitForm() {
   const phones = [];
   document.querySelectorAll('#phoneContainer .phone-row').forEach(row => {
     const code = row.querySelector('.country-code-sel')?.value || '';
-    const num  = row.querySelector('input[type="tel"]')?.value || '';
+    const num = row.querySelector('input[type="tel"]')?.value || '';
     if (num) phones.push(code + num);
   });
 
@@ -457,19 +457,19 @@ function submitForm() {
 }
 
 function buildAddress() {
-  const div   = document.getElementById('addrDivision').value;
-  const dist  = document.getElementById('addrDistrict').value;
+  const div = document.getElementById('addrDivision').value;
+  const dist = document.getElementById('addrDistrict').value;
   const thana = document.getElementById('addrThana').value;
   const postSel = document.getElementById('addrPost');
-  const post  = postSel.options[postSel.selectedIndex]?.textContent || '';
-  const code  = document.getElementById('addrPostCode').value;
-  const vill  = document.getElementById('addrVillage').value;
+  const post = postSel.options[postSel.selectedIndex]?.textContent || '';
+  const code = document.getElementById('addrPostCode').value;
+  const vill = document.getElementById('addrVillage').value;
   return [vill, post, code, thana, dist, div].filter(Boolean).join(', ');
 }
 
 function generateID() {
   const ts = Date.now().toString(36).toUpperCase();
-  const rnd = Math.random().toString(36).slice(2,6).toUpperCase();
+  const rnd = Math.random().toString(36).slice(2, 6).toUpperCase();
   return 'BF-' + ts + '-' + rnd;
 }
 
@@ -533,7 +533,7 @@ function buildPrintHTML(d) {
       <div>
         <h2 style="font-size:16px;color:#064E3B;margin:0 0 6px;">সদস্য পদের জন্য আবেদন ফরম</h2>
         <p style="font-size:11px;color:#555;margin:0;">রেফারেন্স: <strong>${d.id}</strong></p>
-        <p style="font-size:11px;color:#555;margin:2px 0 0;">জমার তারিখ: ${new Date(d.submittedAt).toLocaleDateString('bn-BD',{year:'numeric',month:'long',day:'numeric'})}</p>
+        <p style="font-size:11px;color:#555;margin:2px 0 0;">জমার তারিখ: ${new Date(d.submittedAt).toLocaleDateString('bn-BD', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
         ${d.memberID ? `<p style="font-size:12px;color:#064E3B;font-weight:bold;margin:4px 0 0;">সদস্য আইডি: ${d.memberID}</p>` : ''}
       </div>
       ${d.photoData ? `<img src="${d.photoData}" style="width:80px;height:96px;object-fit:cover;border:2px solid #C9A227;border-radius:4px;" />` : '<div style="width:80px;height:96px;border:2px dashed #aaa;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#aaa;">ছবি নেই</div>'}
@@ -549,7 +549,7 @@ function buildPrintHTML(d) {
         <tr><td style="padding:4px 8px;color:#065F46;font-weight:600;">পেশা</td><td style="padding:4px 8px;">${fmt(d.occupation)}</td><td style="padding:4px 8px;color:#065F46;font-weight:600;">আয়ের উৎস</td><td style="padding:4px 8px;">${fmt(d.incomeSource)}</td></tr>
         <tr style="background:#fff;"><td style="padding:4px 8px;color:#065F46;font-weight:600;">বর্তমান ঠিকানা</td><td colspan="3" style="padding:4px 8px;">${fmt(d.currentAddress)}</td></tr>
         <tr><td style="padding:4px 8px;color:#065F46;font-weight:600;">স্থায়ী ঠিকানা</td><td colspan="3" style="padding:4px 8px;">${fmt(d.permanentAddress)}</td></tr>
-        <tr style="background:#fff;"><td style="padding:4px 8px;color:#065F46;font-weight:600;">মোবাইল নম্বর</td><td colspan="3" style="padding:4px 8px;">${(d.phones||[]).join(' / ')}</td></tr>
+        <tr style="background:#fff;"><td style="padding:4px 8px;color:#065F46;font-weight:600;">মোবাইল নম্বর</td><td colspan="3" style="padding:4px 8px;">${(d.phones || []).join(' / ')}</td></tr>
       </table>
     </div>
 
@@ -575,7 +575,7 @@ function buildPrintHTML(d) {
       <div>
         <p style="font-size:11px;color:#555;margin:0 0 4px;">আবেদনকারীর স্বাক্ষর:</p>
         ${d.sigData ? `<img src="${d.sigData}" style="height:40px;width:150px;object-fit:contain;border-bottom:1px solid #333;" />` : '<div style="width:150px;border-bottom:1px solid #333;height:40px;"></div>'}
-        <p style="font-size:10px;color:#777;margin:2px 0 0;">${new Date(d.submittedAt).toLocaleDateString('bn-BD',{year:'numeric',month:'long',day:'numeric'})}</p>
+        <p style="font-size:10px;color:#777;margin:2px 0 0;">${new Date(d.submittedAt).toLocaleDateString('bn-BD', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
       </div>
       <div style="text-align:center;">
         <p style="font-size:10px;color:#555;margin:0 0 4px;">অফিস ব্যবহারের জন্য</p>
