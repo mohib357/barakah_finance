@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>বারাকাহ ফাইন্যান্স - সুদমুক্ত লেনদেনে সমৃদ্ধি সবার</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2E7D32;
+            --secondary: #FFC107;
+            --dark: #1B5E20;
+            --light: #F5F5F5;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SolaimanLipi', 'Kalpurush', 'Nikosh', 'Segoe UI', sans-serif;
+            background: var(--light);
+        }
+
+        /* ইসলামিক জ্যামিতিক প্যাটার্ন */
+        .islamic-pattern {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--dark) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .islamic-pattern::before {
+            content: "";
+            font-family: "Font Awesome 6 Free";
+            position: absolute;
+            font-size: 150px;
+            opacity: 0.1;
+            bottom: -30px;
+            right: -30px;
+            transform: rotate(15deg);
+        }
+
+        /* নেভিগেশন */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand img {
+            height: 60px;
+        }
+
+        .btn-islamic {
+            background: linear-gradient(45deg, var(--primary), var(--dark));
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            transition: transform 0.3s;
+        }
+
+        .btn-islamic:hover {
+            transform: translateY(-2px);
+            color: white;
+            box-shadow: 0 10px 20px rgba(46, 125, 50, 0.3);
+        }
+
+        /* হিরো সেকশন */
+        .hero {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--dark) 100%);
+            color: white;
+            padding: 150px 0 100px;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+        }
+
+        /* কার্ড ডিজাইন */
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .feature-icon {
+            font-size: 50px;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        /* পণ্যের গ্রিড */
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .product-img {
+            height: 200px;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+        }
+
+        .product-price {
+            color: var(--primary);
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .emi-badge {
+            background: var(--secondary);
+            color: #333;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        /* ফুটার */
+        .footer {
+            background: #1a1a1a;
+            color: white;
+            padding: 50px 0 20px;
+        }
+
+        /* লগইন মোডাল */
+        .modal-content {
+            border-radius: 20px;
+        }
+
+        /* রেসপনসিভ */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 28px;
+            }
+
+            .hero {
+                padding: 100px 0 80px;
+            }
+        }
+
+        /* অ্যানিমেশন */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* কিস্তি ক্যালকুলেটর */
+        .calculator-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+        }
+
+        .result-box {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- নেভিগেশন বার -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">
+                <i class="fas fa-hand-holding-heart text-success me-2"></i>
+                বারাকাহ ফাইন্যান্স
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#home">হোম</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#about">আমাদের সম্পর্কে</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#products">পণ্য সমূহ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#calculator">ক্যালকুলেটর</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#contact">যোগাযোগ</a></li>
+                </ul>
+                <button class="btn btn-outline-success ms-3" data-bs-toggle="modal" data-bs-target="#loginModal">
+                    <i class="fas fa-sign-in-alt"></i> লগইন
+                </button>
+                <button class="btn btn-islamic ms-2" data-bs-toggle="modal" data-bs-target="#signupModal">
+                    <i class="fas fa-user-plus"></i> সদস্য হোন
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- হিরো সেকশন -->
+    <section id="home" class="hero" style="margin-top: 76px;">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-7 animate">
+                    <h1 class="display-4 fw-bold mb-4">সুদমুক্ত লেনদেনে <br>সমৃদ্ধি সবার</h1>
+                    <p class="lead mb-4">শরিয়াহসম্মত আর্থিক লেনদেনের মাধ্যমে গড়ি একটি ইনসাফভিত্তিক সমাজ। ১০% লাভে কিস্তি
+                        সুবিধা, আপদকালীন করজে হাসানা এবং হালাল বিনিয়োগের সুযোগ।</p>
+                    <button class="btn btn-light btn-lg me-2" data-bs-toggle="modal"
+                        data-bs-target="#productRequestModal">
+                        <i class="fas fa-shopping-cart"></i> পণ্য কিনুন
+                    </button>
+                    <button class="btn btn-outline-light btn-lg" data-bs-toggle="modal" data-bs-target="#signupModal">
+                        <i class="fas fa-handshake"></i> সদস্য হোন
+                    </button>
+                </div>
+                <div class="col-lg-5 animate">
+                    <div class="calculator-box">
+                        <h4><i class="fas fa-calculator"></i> কিস্তি ক্যালকুলেটর</h4>
+                        <div class="mt-3">
+                            <label class="form-label">পণ্যের মূল্য (টাকা)</label>
+                            <input type="number" id="productPrice" class="form-control" placeholder="যেমন: 50000">
+
+                            <label class="form-label mt-3">ডাউন পেমেন্ট (%)</label>
+                            <input type="number" id="downPayment" class="form-control" value="10" readonly>
+
+                            <div class="result-box mt-3">
+                                <p><strong><i class="fas fa-money-bill"></i> ডাউন পেমেন্ট:</strong> <span
+                                        id="downAmount">০</span> টাকা</p>
+                                <p><strong><i class="fas fa-chart-line"></i> ১০% লাভসহ মূল্য:</strong> <span
+                                        id="totalWithProfit">০</span> টাকা</p>
+                                <p><strong><i class="fas fa-calendar"></i> বাকি ৫ কিস্তি:</strong> <span
+                                        id="emiAmount">০</span> টাকা/মাস</p>
+                                <hr class="bg-white">
+                                <p><strong><i class="fas fa-star"></i> কিস্তির সুবিধা:</strong> ১ম কিস্তি ডাউন পেমেন্ট +
+                                    ৫ মাসে ৫ কিস্তি</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- আমাদের সম্পর্কে -->
+    <section id="about" class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold text-success">আমাদের সম্পর্কে</h2>
+                <div class="border-bottom border-success w-25 mx-auto mt-3"></div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-hand-holding-usd"></i>
+                        </div>
+                        <h4>সুদমুক্ত অর্থনীতি</h4>
+                        <p>সমাজ থেকে সুদের অভিশাপ দূর করে সম্পূর্ণ শরিয়াহসম্মত ও হালাল উপায়ে আর্থিক লেনদেনের ক্ষেত্র
+                            তৈরি করা।</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h4>করজে হাসানা</h4>
+                        <p>সদস্যদের আপদকালীন প্রয়োজনে বিনা সুদে ১৫,০০০ টাকা পর্যন্ত করজে হাসানা। ৩ মাসে ৩ কিস্তিতে
+                            পরিশোধের সুবিধা।</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h4>সঞ্চয় ও বিনিয়োগ</h4>
+                        <p>প্রতি মাসে ২০০০ টাকা সঞ্চয়, যা একত্রিত করে হালাল ব্যবসায় বিনিয়োগ করা হয়। সদস্যরা লভ্যাংশ পেয়ে
+                            থাকেন।</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-truck"></i>
+                        </div>
+                        <h4>সহজ কিস্তি সুবিধা</h4>
+                        <p>শুধুমাত্র ১০% লাভে ৬ কিস্তিতে পণ্য ক্রয়ের সুযোগ। ডাউন পেমেন্ট দিয়ে বাকি ৫ মাসে কিস্তি পরিশোধ
+                            করুন।</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ভিশন মিশন -->
+            <div class="row mt-5">
+                <div class="col-md-12">
+                    <div class="alert alert-success">
+                        <h4><i class="fas fa-eye"></i> আমাদের ভিশন</h4>
+                        <p>২০ জন সদস্য নিয়ে যাত্রা শুরু করে দেশব্যাপী একটি স্বচ্ছ ও আধুনিক সুদমুক্ত আর্থিক প্রতিষ্ঠানের
+                            সফল উদাহরণ তৈরি করা।</p>
+                        <hr>
+                        <h5><i class="fas fa-bullseye"></i> আমাদের লক্ষ্য</h5>
+                        <p>আত্মনির্ভরশীল ও ইনসাফভিত্তিক সমাজ বিনির্মাণ, যেখানে সচ্ছতা ও ন্যায়বিচারই হবে মূল ভিত্তি।</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- পণ্যের ক্যাটালগ -->
+    <section id="products" class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold text-success">কিস্তিতে পণ্য সমূহ</h2>
+                <div class="border-bottom border-success w-25 mx-auto mt-3"></div>
+                <p class="mt-3">১০% লাভে ৬ কিস্তিতে সবার জন্য সমান সুবিধা</p>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3 mb-4">
+                    <div class="product-card">
+                        <div class="product-img">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <div class="p-3">
+                            <h5>স্মার্টফোন</h5>
+                            <p class="text-muted">অত্যাধুনিক স্মার্টফোন</p>
+                            <div class="product-price">৳ ২৫,০০০</div>
+                            <span class="emi-badge">ডাউন: ২,৫০০</span>
+                            <span class="emi-badge ms-2">৫ কিস্তি: ৪,৯৫০</span>
+                            <button class="btn btn-sm btn-success w-100 mt-3"
+                                onclick="requestProduct('স্মার্টফোন', 25000)">
+                                <i class="fas fa-shopping-cart"></i> অর্ডার করুন
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-4">
+                    <div class="product-card">
+                        <div class="product-img">
+                            <i class="fas fa-tshirt"></i>
+                        </div>
+                        <div class="p-3">
+                            <h5>ল্যাপটপ</h5>
+                            <p class="text-muted">পেশাদার ল্যাপটপ</p>
+                            <div class="product-price">৳ ৬০,০০০</div>
+                            <span class="emi-badge">ডাউন: ৬,০০০</span>
+                            <span class="emi-badge ms-2">৫ কিস্তি: ১১,৮৮০</span>
+                            <button class="btn btn-sm btn-success w-100 mt-3"
+                                onclick="requestProduct('ল্যাপটপ', 60000)">
+                                <i class="fas fa-shopping-cart"></i> অর্ডার করুন
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-4">
+                    <div class="product-card">
+                        <div class="product-img">
+                            <i class="fas fa-motorcycle"></i>
+                        </div>
+                        <div class="p-3">
+                            <h5>মোটরসাইকেল</h5>
+                            <p class="text-muted">ইকোনমি বাইক</p>
+                            <div class="product-price">৳ ১,৫০,০০০</div>
+                            <span class="emi-badge">ডাউন: ১৫,০০০</span>
+                            <span class="emi-badge ms-2">৫ কিস্তি: ২৯,৭০০</span>
+                            <button class="btn btn-sm btn-success w-100 mt-3"
+                                onclick="requestProduct('মোটরসাইকেল', 150000)">
+                                <i class="fas fa-shopping-cart"></i> অর্ডার করুন
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-4">
+                    <div class="product-card">
+                        <div class="product-img">
+                            <i class="fas fa-tv"></i>
+                        </div>
+                        <div class="p-3">
+                            <h5>ফ্রিজ/টিভি</h5>
+                            <p class="text-muted">পরিবারের প্রয়োজনীয় পণ্য</p>
+                            <div class="product-price">৳ ৪০,০০০</div>
+                            <span class="emi-badge">ডাউন: ৪,০০০</span>
+                            <span class="emi-badge ms-2">৫ কিস্তি: ৭,৯২০</span>
+                            <button class="btn btn-sm btn-success w-100 mt-3"
+                                onclick="requestProduct('ফ্রিজ/টিভি', 40000)">
+                                <i class="fas fa-shopping-cart"></i> অর্ডার করুন
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <button class="btn btn-islamic btn-lg" data-bs-toggle="modal" data-bs-target="#productRequestModal">
+                    <i class="fas fa-plus"></i> কাস্টম পণ্য রিকোয়েস্ট করুন
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- সদস্য সাফল্যের গল্প -->
+    <section class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold text-success">সাফল্যের গল্প</h2>
+                <div class="border-bottom border-success w-25 mx-auto mt-3"></div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow">
+                        <div class="card-body text-center">
+                            <i class="fas fa-quote-left text-success fs-1"></i>
+                            <p class="mt-3">করজে হাসানা পেয়ে আমার ছেলের ভর্তির টাকা জোগাড় করতে পেরেছি। আলহামদুলিল্লাহ,
+                                বারাকাহ ফাইন্যান্স সত্যিই সুদমুক্ত সমাজ গঠনে কাজ করছে।</p>
+                            <h6 class="text-success">- আব্দুর রহিম</h6>
+                            <small>সদস্য</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card border-0 shadow">
+                        <div class="card-body text-center">
+                            <i class="fas fa-quote-left text-success fs-1"></i>
+                            <p class="mt-3">১০% লাভে ল্যাপটপ কিনেছি। ৬ মাসের কিস্তি খুবই সাশ্রয়ী। এভাবে সবাইকে সুদমুক্ত
+                                সেবা দেওয়া দরকার।</p>
+                            <h6 class="text-success">- সাদিয়া ইসলাম</h6>
+                            <small>গ্রাহক</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card border-0 shadow">
+                        <div class="card-body text-center">
+                            <i class="fas fa-quote-left text-success fs-1"></i>
+                            <p class="mt-3">মাসিক সঞ্চয় ও লভ্যাংশের হিসাব খুব স্বচ্ছ। আমাদের নিজস্ব ২০ সদস্যের কমিটি সব
+                                কিছু মনিটর করে।</p>
+                            <h6 class="text-success">- হাফেজ সাইফুল</h6>
+                            <small>অপারেশন ম্যানেজার</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- যোগাযোগ -->
+    <section id="contact" class="py-5 bg-light">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h3 class="text-success mb-4">যোগাযোগ করুন</h3>
+                    <div class="mb-3">
+                        <i class="fas fa-phone-alt text-success"></i> সাইফুল্লাহ (সভাপতি): ০১৭৩৭১৩১০৯৫
+                    </div>
+                    <div class="mb-3">
+                        <i class="fas fa-envelope text-success"></i> info@barakahfinance.com
+                    </div>
+                    <div class="mb-3">
+                        <i class="fas fa-map-marker-alt text-success"></i> ঢাকা, বাংলাদেশ
+                    </div>
+                    <div class="mt-4">
+                        <h5>অফিস সময়:</h5>
+                        <p>শনিবার-বৃহস্পতিবার: ১০AM - ৬PM<br>জুম্মাবার: ২:৩০PM - ৬PM</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <h5>দ্রুত যোগাযোগ ফর্ম</h5>
+                            <form id="contactForm">
+                                <input type="text" class="form-control mb-2" placeholder="আপনার নাম" required>
+                                <input type="email" class="form-control mb-2" placeholder="ইমেইল" required>
+                                <input type="text" class="form-control mb-2" placeholder="মোবাইল নম্বর">
+                                <textarea class="form-control mb-2" rows="4" placeholder="আপনার বার্তা"></textarea>
+                                <button type="submit" class="btn btn-success w-100">পাঠান</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ফুটার -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5><i class="fas fa-hand-holding-heart"></i> বারাকাহ ফাইন্যান্স</h5>
+                    <p>সুদমুক্ত লেনদেনে সমৃদ্ধি সবার - এই স্লোগানে আমরা বিশ্বাস করি একটি শোষণমুক্ত, ইনসাফভিত্তিক সমাজ
+                        গঠনে।</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>দরকারী লিংক</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-white text-decoration-none">সদস্য হওয়ার নিয়ম</a></li>
+                        <li><a href="#" class="text-white text-decoration-none">করজে হাসানার শর্তাবলী</a></li>
+                        <li><a href="#" class="text-white text-decoration-none">শরিয়াহ নীতিমালা</a></li>
+                        <li><a href="#" class="text-white text-decoration-none">প্রায়শই জিজ্ঞাসিত প্রশ্ন</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>সামাজিক মাধ্যম</h5>
+                    <div>
+                        <a href="#" class="text-white me-3"><i class="fab fa-facebook fa-2x"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-twitter fa-2x"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-youtube fa-2x"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-linkedin fa-2x"></i></a>
+                    </div>
+                    <div class="mt-3">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Islamic_Development_Bank_logo.svg/1200px-Islamic_Development_Bank_logo.svg.png"
+                            alt="Islamic Banking" style="height: 50px;" class="img-fluid">
+                    </div>
+                </div>
+            </div>
+            <hr class="mt-4">
+            <p class="text-center">© ২০২৪ বারাকাহ ফাইন্যান্স | সম্পূর্ণ শরিয়াহসম্মত ও হালাল</p>
+        </div>
+    </footer>
+
+    <!-- মোডালসমূহ -->
+    <!-- লগইন মোডাল -->
+    <div class="modal fade" id="loginModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">সদস্য লগইন</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label>মোবাইল নম্বর</label>
+                            <input type="text" class="form-control" placeholder="০১XXXXXXXXX">
+                        </div>
+                        <div class="mb-3">
+                            <label>পাসওয়ার্ড</label>
+                            <input type="password" class="form-control">
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">লগইন করুন</button>
+                    </form>
+                    <p class="mt-3 text-center">সদস্য নন? <a href="#" data-bs-toggle="modal"
+                            data-bs-target="#signupModal">এখানে ক্লিক করুন</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- সাইনআপ মোডাল -->
+    <div class="modal fade" id="signupModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">নতুন সদস্য নিবন্ধন</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label>পূর্ণ নাম</label>
+                            <input type="text" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label>মোবাইল নম্বর</label>
+                            <input type="text" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label>এনআইডি বা জন্ম নিবন্ধন</label>
+                            <input type="text" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label>ঠিকানা</label>
+                            <textarea class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="alert alert-info">
+                            <small><i class="fas fa-info-circle"></i> সদস্য হতে প্রাথমিক মূলধনের আনুপাতিক হারে টাকা জমা
+                                দিতে হবে। বর্তমান সদস্যদের সর্বসম্মত সিদ্ধান্তে সদস্য নির্বাচিত হবেন।</small>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">আবেদন করুন</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- পণ্য রিকোয়েস্ট মোডাল -->
+    <div class="modal fade" id="productRequestModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">পণ্য ক্রয়ের আবেদন</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="productRequestForm">
+                        <div class="mb-3">
+                            <label>আপনার নাম</label>
+                            <input type="text" class="form-control" id="customerName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label>মোবাইল নম্বর</label>
+                            <input type="text" class="form-control" id="customerMobile" required>
+                        </div>
+                        <div class="mb-3">
+                            <label>পণ্যের নাম</label>
+                            <input type="text" class="form-control" id="productName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label>পণ্যের মূল্য (টাকা)</label>
+                            <input type="number" class="form-control" id="productAmount" required>
+                        </div>
+                        <div class="mb-3">
+                            <label>সাক্ষীর নাম</label>
+                            <input type="text" class="form-control" id="witnessName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label>সাক্ষীর মোবাইল</label>
+                            <input type="text" class="form-control" id="witnessMobile" required>
+                        </div>
+                        <div class="alert alert-warning">
+                            <small><i class="fas fa-gavel"></i> বিঃদ্রঃ কোষাধ্যক্ষের কাছে নথিপত্র জমা দিতে হবে। পণ্যের
+                                সত্যতা যাচাইয়ের জন্য প্রতিনিধির যাতায়াত খরচ ক্রেতা বহন করবেন।</small>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">আবেদন জমা দিন</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // কিস্তি ক্যালকুলেটর
+        const priceInput = document.getElementById('productPrice');
+        const downAmountSpan = document.getElementById('downAmount');
+        const totalWithProfitSpan = document.getElementById('totalWithProfit');
+        const emiAmountSpan = document.getElementById('emiAmount');
+
+        function calculateEMI() {
+            let price = parseFloat(priceInput.value) || 0;
+            let downPaymentPercent = 10; // 10% down payment
+            let downAmount = (price * downPaymentPercent) / 100;
+            let afterDown = price - downAmount;
+            let withProfit = afterDown * 1.10; // 10% profit
+            let emi = withProfit / 5; // 5 installments
+
+            downAmountSpan.textContent = downAmount.toFixed(0);
+            totalWithProfitSpan.textContent = withProfit.toFixed(0);
+            emiAmountSpan.textContent = emi.toFixed(0);
+        }
+
+        priceInput.addEventListener('input', calculateEMI);
+        calculateEMI();
+
+        // পণ্য রিকোয়েস্ট ফাংশন
+        function requestProduct(productName, productPrice) {
+            document.getElementById('productName').value = productName;
+            document.getElementById('productAmount').value = productPrice;
+            new bootstrap.Modal(document.getElementById('productRequestModal')).show();
+        }
+
+        // ফর্ম সাবমিট
+        document.getElementById('productRequestForm')?.addEventListener('submit', function (e) {
+            e.preventDefault();
+            alert('আপনার আবেদন সফলভাবে গৃহীত হয়েছে। সংস্থার প্রতিনিধি শীঘ্রই আপনার সাথে যোগাযোগ করবেন।\n\nবিঃদ্রঃ পণ্য অনুমোদনের জন্য সকল সদস্যের মতামত প্রয়োজন এবং জামানত হিসেবে সংস্থার একজন সদস্য জামিনদার থাকতে হবে।');
+            bootstrap.Modal.getInstance(document.getElementById('productRequestModal')).hide();
+            this.reset();
+        });
+
+        document.getElementById('contactForm')?.addEventListener('submit', function (e) {
+            e.preventDefault();
+            alert('আপনার বার্তা পাঠানো হয়েছে। শীঘ্রই যোগাযোগ করা হবে।');
+            this.reset();
+        });
+
+        // অ্যানিমেশন
+        const animateElements = document.querySelectorAll('.animate');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        });
+
+        animateElements.forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'all 0.6s ease-out';
+            observer.observe(el);
+        });
+    </script>
+</body>
+
+</html>
