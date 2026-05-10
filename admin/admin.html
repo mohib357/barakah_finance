@@ -841,6 +841,14 @@
     // ─── INIT ───
     renderTable();
   </script>
+  <select id="hero-rainbow-speed">
+    <option value="slow">Slow</option>
+    <option value="medium">Medium</option>
+    <option value="fast">Fast</option>
+  </select>
+  <button onclick="adminHeroSettings.updateSetting('rainbowSpeed', value)">
+    Save
+  </button>
 </body>
 
 </html>
