@@ -207,7 +207,7 @@
 
 /* Neumorphism Shadow when enabled */
 .hero-content {
-    box-shadow: 8px 8px 20px rgba(0, 0, 0, 0.2),
+    box-shadow: 8px 8px 20px rgba(0, 0, 0, 0.30),
         -4px -4px 12px rgba(30, 80, 50, 0.25),
         inset 0px 0px 0px rgba(255, 255, 255, 0.05);
 }
