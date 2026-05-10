@@ -31,8 +31,6 @@ class AdminHeroSettings {
 
     applySettings() {
         const body = document.body;
-
-        // Remove existing classes
         body.classList.remove('no-animation', 'no-neumorphism', 'rainbow-enabled');
 
         // Apply animations
@@ -50,7 +48,7 @@ class AdminHeroSettings {
             body.classList.add('rainbow-enabled');
             // Set rainbow speed as CSS variable
             let animationName = 'rainbowSlow';
-            let duration = '3s';
+            let duration = '4s';
 
             switch (this.settings.rainbowSpeed) {
                 case 'fast':
@@ -64,7 +62,7 @@ class AdminHeroSettings {
                 case 'slow':
                 default:
                     animationName = 'rainbowSlow';
-                    duration = '3s';
+                    duration = '4s';
                     break;
             }
 
@@ -74,7 +72,7 @@ class AdminHeroSettings {
         }
     }
 
-    // Admin panel থেকে কল করার জন্য
+    // Admin panel can call this to update settings
     updateSetting(key, value) {
         if (this.settings.hasOwnProperty(key)) {
             this.settings[key] = value;
