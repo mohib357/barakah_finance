@@ -55,7 +55,6 @@ nav {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    /* contain এর চেয়ে cover ভালো দেখায় */
     border-radius: 50%;
     padding: 6px;
     border: 2px solid linear-gradient(135deg, #C9A227, #F5D061);
@@ -66,7 +65,7 @@ nav {
     background: linear-gradient(135deg, #E8F0E8, #DCE8E0);
 }
 
-/* যদি ইমেজ লোড না হয়, তাহলে ব্যাকআপ টেক্সট দেখাবে */
+/* if image is not available */
 .logo-icon {
     position: relative;
 }
@@ -87,7 +86,7 @@ nav {
     display: none;
 }
 
-/* ইমেজ না থাকলে ব্যাকআপ আইকন */
+/* if image is not available */
 .logo-icon:has(img[src=""]),
 .logo-icon:has(img:not([src])) {
     background: linear-gradient(135deg, #C9A227, #A67C00);
@@ -265,69 +264,7 @@ nav {
     transform: translateX(5px);
 }
 
-/* responsive design */
-@media (max-width: 992px) {
-    .nav-links {
-        gap: 20px;
-    }
-
-    .nav-links li a {
-        font-size: 14px;
-    }
-}
-
-@media (max-width: 768px) {
-    nav {
-        padding: 0 6%;
-        height: 70px;
-    }
-
-    .nav-links {
-        display: none;
-    }
-
-    .hamburger {
-        display: flex;
-    }
-
-    .logo-icon {
-        width: 45px;
-        height: 45px;
-    }
-
-    .logo-icon img {
-        width: 35px;
-        height: 35px;
-    }
-
-    .logo-text strong {
-        font-size: 16px;
-    }
-
-    .logo-text span {
-        font-size: 9px;
-    }
-
-    .nav-mobile {
-        top: 70px;
-        height: calc(100vh - 70px);
-    }
-}
-
-@media (max-width: 480px) {
-    .logo-text {
-        display: none;
-    }
-
-    .logo-icon {
-        width: 40px;
-        height: 40px;
-    }
-}
-
-
-
-
+/* logo text */
 .logo-text {
     color: rgb(210, 10, 10);
 }
@@ -386,4 +323,64 @@ nav {
     background: white;
     border-radius: 2px;
     transition: 0.3s;
+}
+
+/* responsive design */
+@media (max-width: 992px) {
+    .nav-links {
+        gap: 20px;
+    }
+
+    .nav-links li a {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 768px) {
+    nav {
+        padding: 0 6%;
+        height: 70px;
+    }
+
+    .nav-links {
+        display: none;
+    }
+
+    .hamburger {
+        display: flex;
+    }
+
+    .logo-icon {
+        width: 45px;
+        height: 45px;
+    }
+
+    .logo-icon img {
+        width: 35px;
+        height: 35px;
+    }
+
+    .logo-text strong {
+        font-size: 16px;
+    }
+
+    .logo-text span {
+        font-size: 9px;
+    }
+
+    .nav-mobile {
+        top: 70px;
+        height: calc(100vh - 70px);
+    }
+}
+
+@media (max-width: 480px) {
+    .logo-text {
+        display: none;
+    }
+
+    .logo-icon {
+        width: 40px;
+        height: 40px;
+    }
 }
