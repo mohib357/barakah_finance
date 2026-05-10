@@ -1,0 +1,389 @@
+/* NAVIGATION BAR */
+nav {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    background: rgba(13, 43, 26, 0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(201, 162, 39, 0.3);
+    padding: 0 5%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 80px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* logo container */
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.logo:hover {
+    transform: translateY(-2px);
+}
+
+/* logo icon - neumorphic style */
+.logo-icon {
+    width: 80px;
+    height: 80px;
+    background: #E8F0E8;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 9px 9px 16px rgba(0, 0, 0, 0.15),
+        -9px -9px 16px rgba(255, 255, 255, 0.2),
+        inset 0px 0px 0px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(201, 162, 39, 0.2);
+}
+
+.logo-icon:hover {
+    box-shadow: inset 6px 6px 12px rgba(0, 0, 0, 0.1),
+        inset -6px -6px 12px rgba(255, 255, 255, 0.15),
+        2px 2px 4px rgba(0, 0, 0, 0.05);
+    transform: scale(0.98);
+}
+
+.logo-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* contain এর চেয়ে cover ভালো দেখায় */
+    border-radius: 50%;
+    padding: 6px;
+    border: 2px solid linear-gradient(135deg, #C9A227, #F5D061);
+    transition: all 0.3s ease;
+}
+
+.logo-icon {
+    background: linear-gradient(135deg, #E8F0E8, #DCE8E0);
+}
+
+/* যদি ইমেজ লোড না হয়, তাহলে ব্যাকআপ টেক্সট দেখাবে */
+.logo-icon {
+    position: relative;
+}
+
+.logo-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.logo-icon img[src=""] {
+    display: none;
+}
+
+.logo-icon img:not([src]),
+.logo-icon img[src=""] {
+    display: none;
+}
+
+/* ইমেজ না থাকলে ব্যাকআপ আইকন */
+.logo-icon:has(img[src=""]),
+.logo-icon:has(img:not([src])) {
+    background: linear-gradient(135deg, #C9A227, #A67C00);
+}
+
+.logo-icon:has(img[src=""])::after,
+.logo-icon:has(img:not([src]))::after {
+    content: "ب";
+    font-family: 'Noto Serif Bengali', serif;
+    font-size: 40px;
+    font-weight: bold;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+/* logo text section */
+.logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.logo-text strong {
+    font-family: 'Noto Serif Bengali', 'SolaimanLipi', serif;
+    font-size: 20px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #F5D061, #C9A227);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: 0.5px;
+}
+
+.logo-text span {
+    font-family: 'Poppins', 'Segoe UI', sans-serif;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 1px;
+}
+
+/* navigation links */
+.nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-links li a {
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    font-family: 'Noto Serif Bengali', 'SolaimanLipi', serif;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    padding: 5px 0;
+}
+
+.nav-links li a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0%;
+    height: 2px;
+    background: linear-gradient(90deg, #C9A227, #F5D061);
+    transition: width 0.3s ease;
+    border-radius: 2px;
+}
+
+.nav-links li a:hover::after {
+    width: 100%;
+}
+
+.nav-links li a:hover {
+    color: #F5D061;
+}
+
+/* login button */
+.nav-cta {
+    background: linear-gradient(135deg, #C9A227, #A67C00);
+    padding: 8px 24px !important;
+    border-radius: 50px;
+    color: white !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 15px rgba(201, 162, 39, 0.3);
+}
+
+.nav-cta::after {
+    display: none !important;
+}
+
+.nav-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(201, 162, 39, 0.4);
+    background: linear-gradient(135deg, #D9B237, #B88D00);
+}
+
+/* hamburger menu */
+.hamburger {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    gap: 6px;
+    z-index: 1001;
+}
+
+.hamburger span {
+    width: 30px;
+    height: 3px;
+    background: #F5D061;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.hamburger.active span:nth-child(1) {
+    transform: rotate(45deg) translate(8px, 8px);
+}
+
+.hamburger.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(8px, -8px);
+}
+
+/* mobile menu */
+.nav-mobile {
+    position: fixed;
+    top: 80px;
+    left: -100%;
+    width: 80%;
+    max-width: 320px;
+    height: calc(100vh - 80px);
+    background: rgba(13, 43, 26, 0.98);
+    backdrop-filter: blur(20px);
+    flex-direction: column;
+    z-index: 999;
+    transition: left 0.4s ease;
+    padding: 30px 20px;
+    gap: 15px;
+    border-right: 1px solid rgba(201, 162, 39, 0.3);
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.3);
+}
+
+.nav-mobile.active {
+    left: 0;
+}
+
+.nav-mobile a {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    font-family: 'Noto Serif Bengali', 'SolaimanLipi', serif;
+    font-size: 18px;
+    padding: 12px 20px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    text-align: center;
+    /* neumorphic small effect */
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(5px);
+}
+
+.nav-mobile a:hover {
+    background: linear-gradient(135deg, rgba(201, 162, 39, 0.2), rgba(165, 124, 0, 0.2));
+    color: #F5D061;
+    transform: translateX(5px);
+}
+
+/* responsive design */
+@media (max-width: 992px) {
+    .nav-links {
+        gap: 20px;
+    }
+
+    .nav-links li a {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 768px) {
+    nav {
+        padding: 0 6%;
+        height: 70px;
+    }
+
+    .nav-links {
+        display: none;
+    }
+
+    .hamburger {
+        display: flex;
+    }
+
+    .logo-icon {
+        width: 45px;
+        height: 45px;
+    }
+
+    .logo-icon img {
+        width: 35px;
+        height: 35px;
+    }
+
+    .logo-text strong {
+        font-size: 16px;
+    }
+
+    .logo-text span {
+        font-size: 9px;
+    }
+
+    .nav-mobile {
+        top: 70px;
+        height: calc(100vh - 70px);
+    }
+}
+
+@media (max-width: 480px) {
+    .logo-text {
+        display: none;
+    }
+
+    .logo-icon {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+
+
+
+.logo-text {
+    color: rgb(210, 10, 10);
+}
+
+.logo-text strong {
+    display: block;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.logo-text span {
+    display: block;
+    font-size: 10px;
+    color: var(--gold-light);
+    font-weight: 300;
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+}
+
+.nav-links a {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 400;
+    transition: color 0.2s;
+    cursor: pointer;
+}
+
+.nav-links a:hover {
+    color: var(--gold-light);
+}
+
+.nav-cta {
+    background: var(--gold);
+    color: var(--dark-green) !important;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-weight: 600 !important;
+}
+
+.hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+}
+
+.hamburger span {
+    width: 24px;
+    height: 2px;
+    background: white;
+    border-radius: 2px;
+    transition: 0.3s;
+}
