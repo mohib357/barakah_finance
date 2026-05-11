@@ -1,3 +1,5 @@
+// C: \Project\Barakah_Finance\js\main.js
+
 const members = [
     { name: 'জনাব সাইফুল্লাহ', phone: '০১৭৩৭১৩১০৯৫', role: 'সভাপতি' },
     { name: 'মাওলানা ইমরান হোসাইন কাসেমী', phone: '০১৩১৭১২১৮২৬', role: 'সহ-সভাপতি' },

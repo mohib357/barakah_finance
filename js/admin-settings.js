@@ -1,3 +1,5 @@
+// C: \Project\Barakah_Finance\js\admin - settings.js
+
 // ============================================
 // Admin Settings - Future Integration
 // ============================================

@@ -1,3 +1,5 @@
+// C: \Project\Barakah_Finance\js\navbar_style.js
+
 // hamburger menu toggle
 function toggleMenu() {
     const mobileMenu = document.getElementById('mobileMenu');

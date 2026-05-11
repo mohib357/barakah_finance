@@ -1,4 +1,5 @@
-// ===== BARAKAH FINANCE - DATA.JS =====
+// C: \Project\Barakah_Finance\js\data.js
+
 // Geographic data, occupations, translations
 
 // ─── DIVISION → DISTRICT → THANA → POST OFFICE DATA ───

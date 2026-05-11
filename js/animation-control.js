@@ -1,3 +1,5 @@
+// C: \Project\Barakah_Finance\js\animation - control.js
+
 // =====================
 // Animation Control
 // =====================
