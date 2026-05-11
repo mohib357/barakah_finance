@@ -1,0 +1,83 @@
+C:\Project\Barakah_Finance\style\badges.css
+
+/* ── BADGES ── */
+.badges-section {
+    background: linear-gradient(135deg, #f0fdf4, #e8f5e9);
+    padding: 24px 4%;
+    border-bottom: 1px solid #a7f3d0;
+}
+
+body.dark-mode .badges-section {
+    background: linear-gradient(135deg, #0d2218, #112318);
+    border-color: #1a3a2a;
+}
+
+#badges-container {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.badge-card {
+    background: #fff;
+    border: 1px solid #a7f3d0;
+    border-radius: 14px;
+    padding: 16px 20px;
+    text-align: center;
+    min-width: 150px;
+    flex: 1;
+    max-width: 210px;
+    transition: all .25s;
+    box-shadow: 0 2px 10px rgba(6, 78, 59, .07);
+}
+
+.badge-card.clickable {
+    cursor: pointer;
+}
+
+.badge-card.clickable:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(6, 78, 59, .15);
+    border-color: #C9A227;
+}
+
+body.dark-mode .badge-card {
+    background: #112318;
+    border-color: #1a3a2a;
+    color: #e8f5e9;
+}
+
+.badge-icon {
+    font-size: 1.8rem;
+    margin-bottom: 5px;
+}
+
+.badge-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #064E3B;
+    font-family: 'Noto Serif Bengali', serif;
+}
+
+body.dark-mode .badge-value {
+    color: #6ee7b7;
+}
+
+.badge-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #065F46;
+    margin: 2px 0;
+}
+
+body.dark-mode .badge-label {
+    color: #a7f3d0;
+}
+
+.badge-sub {
+    font-size: 11px;
+    color: #888;
+}

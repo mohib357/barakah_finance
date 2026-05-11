@@ -1,0 +1,252 @@
+/* C:\Project\Barakah_Finance\style\auth_modal.css */
+
+/* ── AUTH MODAL ── */
+.auth-overlay {
+    /* position: fixed; */
+    inset: 0;
+    background: rgba(0, 0, 0, .78);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.auth-box {
+    background: #fff;
+    border-radius: 18px;
+    width: 100%;
+    max-width: 490px;
+    max-height: 92vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
+}
+
+body.dark-mode .auth-box {
+    background: #112318;
+    color: #e8f5e9;
+}
+
+.auth-head {
+    background: linear-gradient(135deg, #064E3B, #065F46);
+    padding: 18px 22px;
+    border-radius: 18px 18px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.auth-head h2 {
+    color: #fff;
+    font-family: 'Noto Serif Bengali', serif;
+    font-size: 1.05rem;
+    margin: 0;
+}
+
+.auth-x {
+    background: rgba(255, 255, 255, .15);
+    border: none;
+    color: #fff;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.auth-tabs-row {
+    display: flex;
+    border-bottom: 2px solid #d1fae5;
+    padding: 0 20px;
+}
+
+body.dark-mode .auth-tabs-row {
+    border-color: #1a3a2a;
+}
+
+.atab {
+    padding: 11px 18px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: 'Noto Serif Bengali', serif;
+    color: #777;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all .2s;
+}
+
+.atab.on {
+    color: #064E3B;
+    border-color: #C9A227;
+    font-weight: 700;
+}
+
+body.dark-mode .atab.on {
+    color: #6ee7b7;
+}
+
+.auth-body {
+    padding: 20px 22px;
+}
+
+.af {
+    margin-bottom: 12px;
+}
+
+.af label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #065F46;
+    margin-bottom: 3px;
+}
+
+body.dark-mode .af label {
+    color: #6ee7b7;
+}
+
+.ai {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1.5px solid #a7f3d0;
+    border-radius: 7px;
+    font-family: 'Noto Serif Bengali', serif;
+    font-size: 13px;
+    background: #f0fdf4;
+    color: #1a1a1a;
+    outline: none;
+    transition: border .2s;
+}
+
+.ai:focus {
+    border-color: #C9A227;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(201, 162, 39, .1);
+}
+
+body.dark-mode .ai {
+    background: #0d2218;
+    border-color: #1a4a30;
+    color: #e8f5e9;
+}
+
+body.dark-mode .ai:focus {
+    background: #0f2a1c;
+}
+
+.auth-btn {
+    width: 100%;
+    padding: 11px;
+    background: linear-gradient(135deg, #065F46, #047857);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Noto Serif Bengali', serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 4px;
+    transition: all .2s;
+}
+
+.auth-btn:hover {
+    background: linear-gradient(135deg, #047857, #059669);
+    transform: translateY(-1px);
+}
+
+.aalert {
+    padding: 9px 13px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-family: 'Noto Serif Bengali', serif;
+    margin-bottom: 10px;
+}
+
+.aalert-err {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+}
+
+.aalert-ok {
+    background: #d1fae5;
+    color: #065F46;
+    border: 1px solid #a7f3d0;
+}
+
+.a2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+#ref-results {
+    border: 1px solid #a7f3d0;
+    border-radius: 7px;
+    max-height: 120px;
+    overflow-y: auto;
+    background: #fff;
+    display: none;
+}
+
+body.dark-mode #ref-results {
+    background: #0d2218;
+    border-color: #1a4a30;
+}
+
+#ref-results:not(:empty) {
+    display: block;
+}
+
+.ref-item {
+    padding: 7px 12px;
+    cursor: pointer;
+    font-size: 12px;
+    border-bottom: 1px solid #d1fae5;
+}
+
+.ref-item:hover {
+    background: #f0fdf4;
+}
+
+.otp-center {
+    text-align: center;
+    padding: 16px 0;
+}
+
+.otp-phone {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #064E3B;
+}
+
+body.dark-mode .otp-phone {
+    color: #6ee7b7;
+}
+
+.otp-timer {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #C9A227;
+    letter-spacing: 4px;
+    margin: 8px 0;
+}
+
+.otp-resend {
+    color: #065F46;
+    font-size: 12px;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.otp-big {
+    text-align: center;
+    font-size: 1.8rem;
+    letter-spacing: 8px;
+    font-weight: 700;
+}
+
+#uname-hint {
+    font-size: 11px;
+    margin-top: 2px;
+}

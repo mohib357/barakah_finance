@@ -1,0 +1,60 @@
+/* C:\Project\Barakah_Finance\style\notice_bar.css */
+
+/* ── NOTICE BAR ── */
+.notice-bar {
+    background: linear-gradient(90deg, #064E3B, #065F46, #064E3B);
+    border-bottom: 2px solid #C9A227;
+    overflow: hidden;
+    white-space: nowrap;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    position: sticky;
+    top: 80px;
+    z-index: 997;
+}
+
+.notice-label {
+    flex-shrink: 0;
+    background: #C9A227;
+    color: #064E3B;
+    font-weight: 700;
+    font-size: 11px;
+    padding: 0 12px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    letter-spacing: 1px;
+}
+
+.notice-scroll-wrap {
+    overflow: hidden;
+    flex: 1;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+#notice-track {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    padding-left: 40px;
+    font-family: 'Noto Serif Bengali', serif;
+    font-size: 13px;
+    color: #fff;
+}
+
+@keyframes noticeScroll {
+    0% {
+        transform: translateX(0)
+    }
+
+    100% {
+        transform: translateX(-50%)
+    }
+}
+
+#notice-track:hover {
+    animation-play-state: paused
+}
