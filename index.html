@@ -159,22 +159,18 @@
     </div>
   </section>
 
-  <!-- CALCULATOR -->
+  <!-- ══════ CALCULATOR ══════ -->
   <section class="calculator" id="calculator">
     <div class="section-header reveal">
       <span class="section-eyebrow">আর্থিক হিসাব</span>
       <h2 class="section-title">কিস্তি ক্যালকুলেটর</h2>
-      <p class="section-sub">পণ্যের মূল্য দিন, স্বয়ংক্রিয়ভাবে ১০% লাভে ডাউনপেমেন্ট ও ৫টি কিস্তির পরিমাণ জানুন।</p>
+      <p class="section-sub">পণ্যের মূল্য দিন, স্বয়ংক্রিয়ভাবে ১০% লাভে কিস্তির পরিমাণ জানুন।</p>
     </div>
     <div class="calc-container reveal">
-      <div class="calc-row">
-        <label class="calc-label">পণ্যের বাজারমূল্য (টাকা)</label>
-        <input type="number" class="calc-input" id="productPrice" placeholder="যেমন: ৫০০০০" oninput="calculate()">
-      </div>
-      <div class="calc-row">
-        <label class="calc-label">যাতায়াত খরচ (টাকা)</label>
-        <input type="number" class="calc-input" id="travelCost" placeholder="যেমন: ৫০০" value="0" oninput="calculate()">
-      </div>
+      <div class="calc-row"><label class="calc-label">পণ্যের বাজারমূল্য (টাকা)</label><input type="number"
+          class="calc-input" id="productPrice" placeholder="যেমন: ৫০০০০" oninput="calculate()"></div>
+      <div class="calc-row"><label class="calc-label">যাতায়াত খরচ (টাকা)</label><input type="number" class="calc-input"
+          id="travelCost" value="0" oninput="calculate()"></div>
       <button class="calc-btn" onclick="calculate()">হিসাব করুন</button>
       <div class="calc-result" id="calcResult" style="display:none">
         <div class="calc-grid">
@@ -195,97 +191,82 @@
             <div class="lbl">সংস্থার লাভ</div>
           </div>
         </div>
-        <p style="font-size:11px; color:rgba(255,255,255,0.4); text-align:center; margin-top:8px;">
-          * ১ম কিস্তি ডাউনপেমেন্ট + বাকি ৫ মাসে ৫ কিস্তি
-        </p>
       </div>
     </div>
   </section>
 
-  <!-- HOW IT WORKS -->
+  <!-- ══════ HOW IT WORKS ══════ -->
   <section class="how" id="how">
-    <div class="section-header reveal">
-      <span class="section-eyebrow">প্রক্রিয়া</span>
+    <div class="section-header reveal"><span class="section-eyebrow">প্রক্রিয়া</span>
       <h2 class="section-title">কীভাবে কাজ করে?</h2>
     </div>
     <div class="steps">
       <div class="step reveal">
         <div class="step-num">১</div>
         <h3>আবেদন</h3>
-        <p>অনলাইনে ফরম পূরণ করুন ও NID আপলোড করুন</p>
+        <p>অনলাইনে ফরম পূরণ করুন</p>
       </div>
       <div class="step reveal">
         <div class="step-num">২</div>
         <h3>যাচাই</h3>
-        <p>কমিটি আবেদন পর্যালোচনা ও ভোট প্রদান করবেন</p>
+        <p>কমিটি পর্যালোচনা করবেন</p>
       </div>
       <div class="step reveal">
         <div class="step-num">৩</div>
         <h3>অনুমোদন</h3>
-        <p>প্রতিনিধি পণ্যটি বাজার থেকে ক্রয় করে আনবেন</p>
+        <p>পণ্য বাজার থেকে ক্রয়</p>
       </div>
       <div class="step reveal">
         <div class="step-num">৪</div>
         <h3>ডাউনপেমেন্ট</h3>
-        <p>মোট মূল্যের ১/৬ অংশ জমা দিয়ে পণ্য গ্রহণ করুন</p>
+        <p>মোট মূল্যের ১/৬ জমা</p>
       </div>
       <div class="step reveal">
         <div class="step-num">৫</div>
         <h3>কিস্তি পরিশোধ</h3>
-        <p>পরের ৫ মাসে সমান কিস্তিতে বাকি টাকা পরিশোধ</p>
+        <p>৫ মাসে সমান কিস্তিতে</p>
       </div>
     </div>
   </section>
 
-  <!-- PANELS -->
+  <!-- ══════ PANELS ══════ -->
   <section class="panels" id="panels">
-    <div class="section-header reveal">
-      <span class="section-eyebrow">ব্যবহারকারী পোর্টাল</span>
+    <div class="section-header reveal"><span class="section-eyebrow">ব্যবহারকারী পোর্টাল</span>
       <h2 class="section-title">তিনটি প্যানেল, তিনটি সেবা</h2>
-      <p class="section-sub">আপনার ভূমিকা অনুযায়ী নির্দিষ্ট প্যানেলে লগইন করুন।</p>
     </div>
     <div class="panels-grid">
-      <div class="panel-card panel-admin reveal">
-        <span class="panel-badge">Admin</span>
+      <div class="panel-card panel-admin reveal"><span class="panel-badge">Admin</span>
         <div class="panel-icon">🛡️</div>
         <h3>অ্যাডমিন প্যানেল</h3>
         <ul>
           <li>রিয়েল-টাইম ড্যাশবোর্ড</li>
           <li>সদস্য ব্যবস্থাপনা</li>
           <li>পণ্য অনুমোদন ও বাতিল</li>
-          <li>আর্থিক রিপোর্ট জেনারেট</li>
-          <li>KYC ডকুমেন্ট যাচাই</li>
-          <li>অটো-রিমাইন্ডার নিয়ন্ত্রণ</li>
-        </ul>
-        <button class="panel-btn" onclick="openLoginModal('admin')">অ্যাডমিন লগইন</button>
+          <li>আর্থিক রিপোর্ট</li>
+          <li>নোটিশ ও ব্যাজ নিয়ন্ত্রণ</li>
+        </ul><button class="panel-btn" onclick="openAuthModal('login','admin')">অ্যাডমিন লগইন</button>
       </div>
-      <div class="panel-card panel-member reveal">
-        <span class="panel-badge">Member</span>
+      <div class="panel-card panel-member reveal"><span class="panel-badge">Member</span>
         <div class="panel-icon">👥</div>
         <h3>সদস্য প্যানেল</h3>
         <ul>
           <li>ব্যক্তিগত সঞ্চয় প্রোফাইল</li>
-          <li>লভ্যাংশের হিসাব দেখুন</li>
+          <li>লভ্যাংশের হিসাব</li>
           <li>ডিজিটাল ভোট প্রদান</li>
-          <li>নতুন সদস্য সুপারিশ</li>
           <li>করজে হাসানা আবেদন</li>
           <li>মাসিক সঞ্চয় স্ট্যাটাস</li>
-        </ul>
-        <button class="panel-btn" onclick="openLoginModal('member')">সদস্য লগইন</button>
+        </ul><button class="panel-btn" onclick="openAuthModal('login','member')">সদস্য লগইন</button>
       </div>
-      <div class="panel-card panel-customer reveal">
-        <span class="panel-badge">Customer</span>
+      <div class="panel-card panel-customer reveal"><span class="panel-badge">Customer</span>
         <div class="panel-icon">🛒</div>
         <h3>গ্রাহক প্যানেল</h3>
         <ul>
           <li>পণ্য রিকোয়েস্ট পাঠান</li>
-          <li>কিস্তি ট্র্যাকার দেখুন</li>
-          <li>আবেদনের অবস্থা জানুন</li>
-          <li>পেমেন্ট ইতিহাস দেখুন</li>
-          <li>নোটিফিকেশন সেটিংস</li>
+          <li>কিস্তি ট্র্যাকার</li>
+          <li>আবেদনের অবস্থা</li>
+          <li>পেমেন্ট ইতিহাস</li>
           <li>ডকুমেন্ট আপলোড</li>
-        </ul>
-        <button class="panel-btn" onclick="openLoginModal('customer')">গ্রাহক লগইন</button>
+        </ul><button class="panel-btn" onclick="openAuthModal('login','customer')">গ্রাহক লগইন</button>
       </div>
     </div>
   </section>
