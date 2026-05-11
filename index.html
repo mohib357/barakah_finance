@@ -279,169 +279,220 @@
     <div class="members-grid" id="membersGrid"></div>
   </section>
 
-  <!-- APPLY -->
+  <!-- ══════ APPLY ══════ -->
   <section class="apply" id="apply">
-    <div class="section-header reveal">
-      <span class="section-eyebrow">অনলাইন আবেদন</span>
+    <div class="section-header reveal"><span class="section-eyebrow">অনলাইন আবেদন</span>
       <h2 class="section-title">আজই আবেদন করুন</h2>
-      <p class="section-sub">সদস্য হোন বা কিস্তিতে পণ্য নিন — নিচের ফরম পূরণ করে আবেদন জমা দিন।</p>
     </div>
     <div class="apply-container reveal">
       <div class="form-tabs">
-        <button class="form-tab active" onclick="switchTab(this, 'tab-member')">নতুন সদস্য</button>
-        <button class="form-tab" onclick="switchTab(this, 'tab-product')">পণ্য রিকোয়েস্ট</button>
-        <button class="form-tab" onclick="switchTab(this, 'tab-qard')">করজে হাসানা</button>
+        <button class="form-tab active" onclick="switchTab(this,'tab-member')">নতুন সদস্য</button>
+        <button class="form-tab" onclick="switchTab(this,'tab-product')">পণ্য রিকোয়েস্ট</button>
+        <button class="form-tab" onclick="switchTab(this,'tab-qard')">করজে হাসানা</button>
       </div>
-
-      <!-- Member Application -->
       <div class="form-section active" id="tab-member">
         <div id="alert-member" class="alert"></div>
         <div class="form-row">
-          <div class="form-group">
-            <label>পূর্ণ নাম *</label>
-            <input type="text" placeholder="আপনার নাম লিখুন" id="m-name">
+          <div class="form-group"><label>পূর্ণ নাম *</label><input type="text" id="m-name" placeholder="আপনার নাম">
           </div>
-          <div class="form-group">
-            <label>মোবাইল নম্বর *</label>
-            <input type="tel" placeholder="01XXXXXXXXX" id="m-phone">
-          </div>
+          <div class="form-group"><label>মোবাইল *</label><input type="tel" id="m-phone" placeholder="01XXXXXXXXX"></div>
         </div>
         <div class="form-row">
-          <div class="form-group">
-            <label>NID নম্বর *</label>
-            <input type="text" placeholder="জাতীয় পরিচয়পত্র নম্বর" id="m-nid">
+          <div class="form-group"><label>NID *</label><input type="text" id="m-nid" placeholder="NID নম্বর">
           </div>
-          <div class="form-group">
-            <label>পেশা</label>
-            <input type="text" placeholder="আপনার পেশা" id="m-job">
-          </div>
+          <div class="form-group"><label>পেশা</label><input type="text" id="m-job" placeholder="পেশা"></div>
         </div>
-        <div class="form-group">
-          <label>বর্তমান ঠিকানা *</label>
-          <input type="text" placeholder="বিস্তারিত ঠিকানা" id="m-address">
+        <div class="form-group"><label>ঠিকানা *</label><input type="text" id="m-address" placeholder="বিস্তারিত ঠিকানা">
         </div>
-        <div class="form-group">
-          <label>NID কার্ডের ছবি আপলোড করুন</label>
-          <div class="file-upload" onclick="document.getElementById('m-nid-file').click()">
-            <div class="file-upload-icon">📄</div>
-            <p>এখানে ক্লিক করুন বা ফাইল টেনে আনুন</p>
-            <p style="font-size:11px; margin-top:4px">JPG, PNG (সর্বোচ্চ ৫MB)</p>
-            <input type="file" id="m-nid-file" style="display:none" accept="image/*">
-          </div>
-        </div>
-        <div class="form-group">
-          <label>কীভাবে আমাদের সম্পর্কে জানলেন?</label>
-          <select id="m-source">
-            <option value="">বেছে নিন</option>
-            <option>বন্ধু/পরিচিতের মাধ্যমে</option>
-            <option>সোশ্যাল মিডিয়া</option>
-            <option>ওয়েবসাইট</option>
-            <option>অন্যান্য</option>
-          </select>
-        </div>
-        <button class="form-submit" onclick="submitForm('member')">সদস্য হওয়ার আবেদন জমা দিন</button>
+        <button class="form-submit" onclick="quickSubmit('member')">সদস্য আবেদন জমা দিন →</button>
       </div>
-
-      <!-- Product Request -->
       <div class="form-section" id="tab-product">
         <div id="alert-product" class="alert"></div>
         <div class="form-row">
-          <div class="form-group">
-            <label>আপনার নাম *</label>
-            <input type="text" placeholder="পূর্ণ নাম" id="p-name">
+          <div class="form-group"><label>নাম *</label><input type="text" id="p-name" placeholder="পূর্ণ নাম">
           </div>
-          <div class="form-group">
-            <label>মোবাইল নম্বর *</label>
-            <input type="tel" placeholder="01XXXXXXXXX" id="p-phone">
-          </div>
+          <div class="form-group"><label>মোবাইল *</label><input type="tel" id="p-phone" placeholder="01XXXXXXXXX"></div>
         </div>
         <div class="form-row">
-          <div class="form-group">
-            <label>পণ্যের নাম ও মডেল *</label>
-            <input type="text" placeholder="যেমন: Samsung Galaxy A55" id="p-product">
-          </div>
-          <div class="form-group">
-            <label>আনুমানিক বাজারমূল্য (টাকা) *</label>
-            <input type="number" placeholder="৳" id="p-price" oninput="updateProductCalc()">
-          </div>
+          <div class="form-group"><label>পণ্যের নাম *</label><input type="text" id="p-product"
+              placeholder="Samsung Galaxy A55"></div>
+          <div class="form-group"><label>মূল্য (৳) *</label><input type="number" id="p-price" placeholder="৳"
+              oninput="pCalc()"></div>
         </div>
-        <div class="form-group">
-          <label>পণ্যের লিঙ্ক (ঐচ্ছিক)</label>
-          <input type="url" placeholder="Daraz/Shajgoj বা যেকোনো অনলাইন শপ লিঙ্ক" id="p-link">
-        </div>
-        <div id="p-calc-preview"
-          style="display:none; background:var(--teal-50); border:1px solid var(--teal-100); border-radius:10px; padding:1rem; margin-bottom:1rem;">
-          <p style="font-size:13px; font-weight:600; color:var(--teal-600); margin-bottom:8px;">আনুমানিক হিসাব:</p>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-            <div style="font-size:12px; color:var(--text-muted)">বিক্রয়মূল্য: <strong id="pv-total"
-                style="color:var(--dark-green)">-</strong></div>
-            <div style="font-size:12px; color:var(--text-muted)">ডাউনপেমেন্ট: <strong id="pv-down"
-                style="color:var(--dark-green)">-</strong></div>
-            <div style="font-size:12px; color:var(--text-muted)">মাসিক কিস্তি: <strong id="pv-monthly"
-                style="color:var(--dark-green)">-</strong></div>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>কেন এই পণ্যটি প্রয়োজন?</label>
-          <textarea rows="3" placeholder="সংক্ষিপ্ত কারণ লিখুন" id="p-reason" style="resize:vertical"></textarea>
-        </div>
-        <div class="form-group">
-          <label>জামিনদার সদস্যের নাম *</label>
-          <select id="p-guarantor">
-            <option value="">বেছে নিন</option>
-            <option>জনাব সাইফুল্লাহ</option>
-            <option>মাওলানা ইমরান হোসাইন কাসেমী</option>
-            <option>জনাব মুহিব্বুল্লাহ আজাদ</option>
-            <option>জনাব মাসুম বিল্লাহ</option>
-            <option>জনাব আনোয়ার হোসেন সেলিম</option>
-            <option>জনাব আবু সুফিয়ান</option>
-            <option>মাওলানা রাকিবুল ইসলাম</option>
-            <option>হাফেজ সাইফুল ইসলাম</option>
-            <option>জনাব আমিনুল ইসলাম</option>
-            <option>মাওলানা আব্দুল হান্নান</option>
-          </select>
-        </div>
-        <button class="form-submit" onclick="submitForm('product')">পণ্য রিকোয়েস্ট জমা দিন</button>
+        <div id="p-calc-box"
+          style="display:none;background:#f0fdf4;border:1px solid #a7f3d0;border-radius:7px;padding:10px;margin-bottom:10px;font-size:12px;">
+          মোট: <b id="pv-t">-</b> | ডাউন: <b id="pv-d">-</b> | মাসিক: <b id="pv-m">-</b></div>
+        <button class="form-submit" onclick="quickSubmit('product')">পণ্য রিকোয়েস্ট জমা দিন →</button>
       </div>
-
-      <!-- Qard Hasana -->
       <div class="form-section" id="tab-qard">
         <div id="alert-qard" class="alert"></div>
         <div
-          style="background:var(--amber-50); border:1px solid rgba(186,117,23,0.3); border-radius:10px; padding:1rem; margin-bottom:1.5rem;">
-          <p style="font-size:13px; color:var(--amber-800)">
-            ⚠️ করজে হাসানা শুধুমাত্র সদস্যদের জন্য। সর্বোচ্চ ১৫,০০০ টাকা। ৩ মাসে ৩ কিস্তিতে পরিশোধযোগ্য। ফান্ড থাকা
-            সাপেক্ষে অনুমোদন।
-          </p>
+          style="background:#fffbeb;border:1px solid rgba(186,117,23,.3);border-radius:7px;padding:10px;margin-bottom:12px;font-size:12px;">
+          ⚠️ সদস্যদের জন্য। সর্বোচ্চ ১৫,০০০ টাকা। ৩ মাসে পরিশোধযোগ্য।</div>
+        <div class="form-row">
+          <div class="form-group"><label>নাম *</label><input type="text" id="q-name" placeholder="পূর্ণ নাম">
+          </div>
+          <div class="form-group"><label>মোবাইল *</label><input type="tel" id="q-phone" placeholder="01XXXXXXXXX"></div>
         </div>
         <div class="form-row">
-          <div class="form-group">
-            <label>সদস্যের নাম *</label>
-            <input type="text" placeholder="আপনার পূর্ণ নাম" id="q-name">
-          </div>
-          <div class="form-group">
-            <label>মোবাইল নম্বর *</label>
-            <input type="tel" placeholder="01XXXXXXXXX" id="q-phone">
-          </div>
+          <div class="form-group"><label>পরিমাণ * (সর্বোচ্চ ১৫,০০০)</label><input type="number" max="15000"
+              id="q-amount" placeholder="৳"></div>
+          <div class="form-group"><label>পরিশোধের মাস</label><input type="month" id="q-start"></div>
         </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>প্রয়োজনীয় পরিমাণ (সর্বোচ্চ ১৫,০০০ টাকা) *</label>
-            <input type="number" placeholder="টাকার পরিমাণ" max="15000" id="q-amount">
-          </div>
-          <div class="form-group">
-            <label>কখন পরিশোধ শুরু করতে পারবেন?</label>
-            <input type="month" id="q-start">
-          </div>
-        </div>
-        <div class="form-group">
-          <label>অর্থের প্রয়োজনের কারণ *</label>
-          <textarea rows="4" placeholder="আপদকালীন পরিস্থিতি বিস্তারিত বর্ণনা করুন" id="q-reason"
-            style="resize:vertical"></textarea>
-        </div>
-        <button class="form-submit" onclick="submitForm('qard')">করজে হাসানা আবেদন জমা দিন</button>
+        <button class="form-submit" onclick="quickSubmit('qard')">করজে হাসানা আবেদন →</button>
       </div>
     </div>
+  </section>
+
+  <!-- Member Application -->
+  <div class="form-section active" id="tab-member">
+    <div id="alert-member" class="alert"></div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>পূর্ণ নাম *</label>
+        <input type="text" placeholder="আপনার নাম লিখুন" id="m-name">
+      </div>
+      <div class="form-group">
+        <label>মোবাইল নম্বর *</label>
+        <input type="tel" placeholder="01XXXXXXXXX" id="m-phone">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>NID নম্বর *</label>
+        <input type="text" placeholder="জাতীয় পরিচয়পত্র নম্বর" id="m-nid">
+      </div>
+      <div class="form-group">
+        <label>পেশা</label>
+        <input type="text" placeholder="আপনার পেশা" id="m-job">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>বর্তমান ঠিকানা *</label>
+      <input type="text" placeholder="বিস্তারিত ঠিকানা" id="m-address">
+    </div>
+    <div class="form-group">
+      <label>NID কার্ডের ছবি আপলোড করুন</label>
+      <div class="file-upload" onclick="document.getElementById('m-nid-file').click()">
+        <div class="file-upload-icon">📄</div>
+        <p>এখানে ক্লিক করুন বা ফাইল টেনে আনুন</p>
+        <p style="font-size:11px; margin-top:4px">JPG, PNG (সর্বোচ্চ ৫MB)</p>
+        <input type="file" id="m-nid-file" style="display:none" accept="image/*">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>কীভাবে আমাদের সম্পর্কে জানলেন?</label>
+      <select id="m-source">
+        <option value="">বেছে নিন</option>
+        <option>বন্ধু/পরিচিতের মাধ্যমে</option>
+        <option>সোশ্যাল মিডিয়া</option>
+        <option>ওয়েবসাইট</option>
+        <option>অন্যান্য</option>
+      </select>
+    </div>
+    <button class="form-submit" onclick="submitForm('member')">সদস্য হওয়ার আবেদন জমা দিন</button>
+  </div>
+
+  <!-- Product Request -->
+  <div class="form-section" id="tab-product">
+    <div id="alert-product" class="alert"></div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>আপনার নাম *</label>
+        <input type="text" placeholder="পূর্ণ নাম" id="p-name">
+      </div>
+      <div class="form-group">
+        <label>মোবাইল নম্বর *</label>
+        <input type="tel" placeholder="01XXXXXXXXX" id="p-phone">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>পণ্যের নাম ও মডেল *</label>
+        <input type="text" placeholder="যেমন: Samsung Galaxy A55" id="p-product">
+      </div>
+      <div class="form-group">
+        <label>আনুমানিক বাজারমূল্য (টাকা) *</label>
+        <input type="number" placeholder="৳" id="p-price" oninput="updateProductCalc()">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>পণ্যের লিঙ্ক (ঐচ্ছিক)</label>
+      <input type="url" placeholder="Daraz/Shajgoj বা যেকোনো অনলাইন শপ লিঙ্ক" id="p-link">
+    </div>
+    <div id="p-calc-preview"
+      style="display:none; background:var(--teal-50); border:1px solid var(--teal-100); border-radius:10px; padding:1rem; margin-bottom:1rem;">
+      <p style="font-size:13px; font-weight:600; color:var(--teal-600); margin-bottom:8px;">আনুমানিক হিসাব:</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        <div style="font-size:12px; color:var(--text-muted)">বিক্রয়মূল্য: <strong id="pv-total"
+            style="color:var(--dark-green)">-</strong></div>
+        <div style="font-size:12px; color:var(--text-muted)">ডাউনপেমেন্ট: <strong id="pv-down"
+            style="color:var(--dark-green)">-</strong></div>
+        <div style="font-size:12px; color:var(--text-muted)">মাসিক কিস্তি: <strong id="pv-monthly"
+            style="color:var(--dark-green)">-</strong></div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>কেন এই পণ্যটি প্রয়োজন?</label>
+      <textarea rows="3" placeholder="সংক্ষিপ্ত কারণ লিখুন" id="p-reason" style="resize:vertical"></textarea>
+    </div>
+    <div class="form-group">
+      <label>জামিনদার সদস্যের নাম *</label>
+      <select id="p-guarantor">
+        <option value="">বেছে নিন</option>
+        <option>জনাব সাইফুল্লাহ</option>
+        <option>মাওলানা ইমরান হোসাইন কাসেমী</option>
+        <option>জনাব মুহিব্বুল্লাহ আজাদ</option>
+        <option>জনাব মাসুম বিল্লাহ</option>
+        <option>জনাব আনোয়ার হোসেন সেলিম</option>
+        <option>জনাব আবু সুফিয়ান</option>
+        <option>মাওলানা রাকিবুল ইসলাম</option>
+        <option>হাফেজ সাইফুল ইসলাম</option>
+        <option>জনাব আমিনুল ইসলাম</option>
+        <option>মাওলানা আব্দুল হান্নান</option>
+      </select>
+    </div>
+    <button class="form-submit" onclick="submitForm('product')">পণ্য রিকোয়েস্ট জমা দিন</button>
+  </div>
+
+  <!-- Qard Hasana -->
+  <div class="form-section" id="tab-qard">
+    <div id="alert-qard" class="alert"></div>
+    <div
+      style="background:var(--amber-50); border:1px solid rgba(186,117,23,0.3); border-radius:10px; padding:1rem; margin-bottom:1.5rem;">
+      <p style="font-size:13px; color:var(--amber-800)">
+        ⚠️ করজে হাসানা শুধুমাত্র সদস্যদের জন্য। সর্বোচ্চ ১৫,০০০ টাকা। ৩ মাসে ৩ কিস্তিতে পরিশোধযোগ্য। ফান্ড থাকা
+        সাপেক্ষে অনুমোদন।
+      </p>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>সদস্যের নাম *</label>
+        <input type="text" placeholder="আপনার পূর্ণ নাম" id="q-name">
+      </div>
+      <div class="form-group">
+        <label>মোবাইল নম্বর *</label>
+        <input type="tel" placeholder="01XXXXXXXXX" id="q-phone">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>প্রয়োজনীয় পরিমাণ (সর্বোচ্চ ১৫,০০০ টাকা) *</label>
+        <input type="number" placeholder="টাকার পরিমাণ" max="15000" id="q-amount">
+      </div>
+      <div class="form-group">
+        <label>কখন পরিশোধ শুরু করতে পারবেন?</label>
+        <input type="month" id="q-start">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>অর্থের প্রয়োজনের কারণ *</label>
+      <textarea rows="4" placeholder="আপদকালীন পরিস্থিতি বিস্তারিত বর্ণনা করুন" id="q-reason"
+        style="resize:vertical"></textarea>
+    </div>
+    <button class="form-submit" onclick="submitForm('qard')">করজে হাসানা আবেদন জমা দিন</button>
+  </div>
+  </div>
   </section>
 
   <!-- FOOTER -->
