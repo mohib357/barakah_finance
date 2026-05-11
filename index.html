@@ -11,36 +11,56 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700&family=Noto+Sans+Bengali:wght@300;400;500;600&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <link rel="stylesheet" href="style/style.css">
-  <link rel="stylesheet" href="style/navbar_style.css">
-  <link rel="stylesheet" href="style/hero_style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <link rel="stylesheet" href="style/style.css" />
+  <link rel="stylesheet" href="style/navbar_style.css" />
+  <link rel="stylesheet" href="style/hero_style.css" />
 </head>
 
 <body>
 
-  <!-- NAV -->
-  <nav>
-    <a href="#" class="logo">
+  <!-- ══════ NAV ══════ -->
+  <nav id="mainNav">
+    <a href="index.html" class="logo">
       <div class="logo-icon">
-        <img src="image/logo.png" alt="">
+        <img src="image/logo.png" alt="logo"
+          onerror="this.parentElement.innerHTML='<span style=font-size:22px;font-weight:700;color:#C9A227>ব</span>'" />
       </div>
       <div class="logo-text">
         <strong>বারাকাহ ফাইন্যান্স</strong>
         <span>Barakah Finance</span>
       </div>
     </a>
-    <ul class="nav-links">
-      <li><a onclick="scrollTo('about')">আমাদের সম্পর্কে</a></li>
-      <li><a onclick="scrollTo('calculator')">ক্যালকুলেটর</a></li>
-      <li><a onclick="scrollTo('members')">সদস্যবৃন্দ</a></li>
-      <li><a onclick="scrollTo('panels')">প্যানেল</a></li>
-      <li><a href="form.html">আবেদন</a></li>
-      <li><a onclick="openLoginModal()" class="nav-cta">লগইন করুন</a></li>
+
+    <ul class="nav-links" id="navLinks">
+      <li><a onclick="smScroll('about')">আমাদের সম্পর্কে</a></li>
+      <li><a onclick="smScroll('calculator')">ক্যালকুলেটর</a></li>
+      <li><a onclick="smScroll('members')">সদস্যবৃন্দ</a></li>
+      <li><a onclick="smScroll('panels')">প্যানেল</a></li>
+      <li><a href="form.html">আবেদন ফরম</a></li>
+      <!-- Logged in user menu -->
+      <li class="nav-user-wrap" id="nav-user-menu" style="display:none;">
+        <button class="nav-user-btn">👤 <span id="nav-user-name">আমি</span> ▾</button>
+        <div class="nav-dropdown">
+          <a href="pages/profile.html">📋 প্রোফাইল</a>
+          <a href="pages/dashboard.html">📊 ড্যাশবোর্ড</a>
+          <hr />
+          <button onclick="doLogout()">🚪 লগআউট</button>
+        </div>
+      </li>
+      <!-- Login button -->
+      <li id="nav-login-btn">
+        <a onclick="openAuthModal('login')" class="nav-cta">লগইন করুন</a>
+      </li>
+      <!-- Dark toggle -->
+      <li style="display:flex;align-items:center;">
+        <div class="dk-tog" id="dkTog" onclick="toggleDark()" title="ডার্ক/লাইট মোড"></div>
+      </li>
     </ul>
-    <div class="hamburger" onclick="toggleMenu()">
+
+    <button class="hamburger" id="hamburger" onclick="toggleMob()" aria-label="মেনু">
       <span></span><span></span><span></span>
-    </div>
+    </button>
   </nav>
 
   <!-- MOBILE MENU -->
@@ -509,10 +529,10 @@
   <!-- TOAST -->
   <div class="toast" id="toast"></div>
 
-<script src="js/admin-settings.js"></script>
-<script src="js/animation-control.js"></script>
-<script src="js/navbar_style.js"></script>
-<script src="js/main.js"></script>
+  <script src="js/admin-settings.js"></script>
+  <script src="js/animation-control.js"></script>
+  <script src="js/navbar_style.js"></script>
+  <script src="js/main.js"></script>
 </body>
 
 </html>
