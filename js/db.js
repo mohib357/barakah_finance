@@ -178,3 +178,19 @@ const DEFAULT_SETTINGS = {
         });
     }
 })();
+
+// Extra functions for admin panel
+DB.updateUser = function (id, patch) {
+    const users = this.getUsers();
+    const index = users.findIndex(u => u.id === id);
+    if (index !== -1) {
+        users[index] = { ...users[index], ...patch };
+        this.saveUsers(users);
+        return users[index];
+    }
+    return null;
+};
+
+DB.getUser = function (id) {
+    return this.getUsers().find(u => u.id === id);
+};

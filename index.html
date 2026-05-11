@@ -710,12 +710,22 @@
   <!-- TOAST -->
   <div class="toast" id="toast"></div>
 
+  <!-- ══════ BADGE DETAIL MODAL ══════ -->
+  <div class="auth-overlay hidden" id="badgeDetailModal" onclick="if(event.target===this)closeBadgeDetail()">
+    <div class="auth-box" style="max-width:620px;">
+      <div class="auth-head">
+        <h2>বিস্তারিত তথ্য</h2>
+        <button class="auth-x" onclick="closeBadgeDetail()">✕</button>
+      </div>
+      <div class="auth-body" id="badgeDetailContent"></div>
+    </div>
+  </div>
+
   <!-- SCRIPTS -->
   <script src="js/db.js"></script>
   <script src="js/notice.js"></script>
   <script src="js/admin-settings.js"></script>
   <script src="js/animation-control.js"></script>
-  <script src="js/navbar_style.js"></script>
   <script src="js/main.js"></script>
   <script>
     /* ── NAV & DARK ── */

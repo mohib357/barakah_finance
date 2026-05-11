@@ -268,7 +268,7 @@ nav {
 
 /* logo text */
 .logo-text {
-    color: rgb(210, 10, 10);
+    color: rgb(234, 186, 56);
 }
 
 .logo-text strong {
@@ -281,7 +281,7 @@ nav {
 .logo-text span {
     display: block;
     font-size: 10px;
-    color: var(--gold-light);
+    color: #F5D061;
     font-weight: 300;
 }
 

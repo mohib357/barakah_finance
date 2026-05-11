@@ -74,14 +74,6 @@ function updateProductCalc() {
     }
 }
 
-// Form tabs
-function switchTab(btn, tabId) {
-    document.querySelectorAll('.form-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById(tabId).classList.add('active');
-}
-
 // Form submit
 function submitForm(type) {
     const alertIds = { member: 'alert-member', product: 'alert-product', qard: 'alert-qard' };

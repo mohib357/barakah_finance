@@ -957,6 +957,34 @@ body.dark-mode .terms-body {
     margin-bottom: 8px;
 }
 
+/* Toast animation */
+.g-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #065F46;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 10px;
+    z-index: 9999;
+    font-size: 14px;
+    font-family: 'Noto Serif Bengali', serif;
+    animation: slideUpG 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes slideUpG {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 900px) {
     nav {
