@@ -1,0 +1,220 @@
+/* C:\Project\Barakah_Finance\admin\style\admin.css */
+
+body {
+    font-family: 'Noto Serif Bengali', serif;
+    background: #0f1a15;
+    color: #e8f5e9;
+}
+
+.card {
+    background: #112318;
+    border: 1px solid #1a3a2a;
+    border-radius: 10px;
+}
+
+.badge-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.badge-approved {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.badge-rejected {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #065F46, #047857);
+    color: #fff;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #047857, #059669);
+}
+
+.btn-danger {
+    background: #dc2626;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.btn-danger:hover {
+    background: #b91c1c;
+}
+
+.btn-gold {
+    background: linear-gradient(135deg, #C9A227, #b8922a);
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.modal-box {
+    background: #112318;
+    border: 1px solid #1a3a2a;
+    border-radius: 14px;
+    padding: 24px;
+    max-width: 700px;
+    width: 100%;
+    max-height: 92vh;
+    overflow-y: auto;
+}
+
+.form-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1.5px solid #1a4a30;
+    border-radius: 7px;
+    background: #0d2218;
+    color: #e8f5e9;
+    font-family: inherit;
+    font-size: 0.88rem;
+    outline: none;
+}
+
+.form-input:focus {
+    border-color: #C9A227;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+th {
+    background: #064E3B;
+    color: #fff;
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 0.82rem;
+}
+
+td {
+    padding: 9px 12px;
+    border-bottom: 1px solid #1a3a2a;
+    font-size: 0.82rem;
+}
+
+tr:hover td {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.approval-step {
+    border: 1px solid #1a4a30;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 8px;
+}
+
+.approval-step.done {
+    border-color: #059669;
+    background: rgba(5, 150, 105, 0.1);
+}
+
+.step-badge {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.tag-done {
+    background: #059669;
+    color: #fff;
+}
+
+.tag-pending-step {
+    background: #92400e;
+    color: #fef3c7;
+}
+
+::-webkit-scrollbar {
+    width: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #1a4a30;
+    border-radius: 3px;
+}
+
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #065F46;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    z-index: 9999;
+    animation: slideUp 0.3s;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px)
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0)
+    }
+}
+
+.filter-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border: 1px solid #1a4a30;
+    background: transparent;
+    color: #a7f3d0;
+    transition: all 0.2s;
+}
+
+.filter-btn.active {
+    background: #065F46;
+    border-color: #047857;
+    color: #fff;
+}
+
+.stat-card {
+    background: #0d2218;
+    border: 1px solid #1a3a2a;
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+}
