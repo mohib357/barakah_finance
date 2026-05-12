@@ -1,8 +1,6 @@
 // C: \Project\Barakah_Finance\js\data.js
 
-// Geographic data, occupations, translations
-
-// ─── DIVISION → DISTRICT → THANA → POST OFFICE DATA ───
+// ════════ DATA STRUCTURE: BD_DATA ════════
 const BD_DATA = {
   "রংপুর": {
     "লালমনিরহাট": {
@@ -155,7 +153,7 @@ const BD_DATA = {
   },
 };
 
-// ─── TRANSLATION STRINGS ───
+// ════════ TRANSLATION STRINGS ════════
 const TRANSLATIONS = {
   bn: {
     hdrTitle: "বারাকাহ ফাইন্যান্স",
@@ -204,7 +202,7 @@ const TRANSLATIONS = {
   },
 };
 
-// ─── COUNTRY PHONE CODES ───
+// ════════ COUNTRY PHONE CODES ════════
 const COUNTRY_CODES = [
   { code: "+880", flag: "🇧🇩", name: "BD", digits: 11 },
   { code: "+91", flag: "🇮🇳", name: "IN", digits: 10 },
