@@ -1,9 +1,6 @@
-// ============================================================
 // C:\Project\Barakah_Finance\js\notice.js
-// Notice bar (scrolling marquee) + Badge section
-// ============================================================
 
-/* ── NOTICE BAR ── */
+// ════════ Notice Bar & Badge Section ════════
 function initNoticeBar() {
     renderNoticeBar();
 }
@@ -14,8 +11,6 @@ function renderNoticeBar() {
     if (!track || !notices.length) return;
 
     const speed = DB.getSettings().noticeSpeed || 30; // px/s
-
-    // Build text
     const items = notices.map(n => {
         const styles = {
             bold: 'font-weight:700;',
@@ -26,23 +21,18 @@ function renderNoticeBar() {
       ${n.text}
     </span>`;
     }).join('');
-
-    // Duplicate for seamless loop
     track.innerHTML = items + items;
-
-    // Calculate animation duration from width
     const totalWidth = track.scrollWidth / 2;
     const duration = totalWidth / speed;
     track.style.animation = `noticeScroll ${duration}s linear infinite`;
 }
 
-/* ── BADGE SECTION ── */
+// ════════ BADGE SECTION ════════
 function updateBadgeSection() {
     const badges = DB.getBadges().filter(b => b.show);
     const users = DB.getUsers();
     const savings = DB.getSavings();
     const loans = DB.getLoans();
-
     const stats = {
         members: users.filter(u => u.verified && u.role !== 'admin').length,
         savingsTotal: savings.reduce((a, s) => a + (s.amount || 0), 0),
@@ -91,7 +81,7 @@ function updateBadgeSection() {
     }).join('');
 }
 
-/* ── BADGE DETAIL MODAL ── */
+// ════════ BADGE DETAIL MODAL ════════
 function openBadgeDetail(key) {
     const modal = document.getElementById('badgeDetailModal');
     const content = document.getElementById('badgeDetailContent');
@@ -163,7 +153,7 @@ function closeBadgeDetail() {
     document.getElementById('badgeDetailModal')?.classList.add('hidden');
 }
 
-/* ── HELPERS ── */
+// ════════ HELPERS ════════
 function getUserName(id) {
     const u = DB.getUsers().find(x => x.id === id);
     return u ? u.name : '—';
@@ -176,7 +166,7 @@ function toBengaliNum(num) {
     return String(num).replace(/[0-9]/g, d => '০১২৩৪৫৬৭৮৯'[d]);
 }
 
-/* ── GLOBAL TOAST (works on all pages) ── */
+// ════════ TOAST NOTIFICATION ════════
 function showToastGlobal(msg, color = '#065F46') {
     const ex = document.querySelector('.g-toast');
     if (ex) ex.remove();
@@ -188,7 +178,6 @@ function showToastGlobal(msg, color = '#065F46') {
     setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, 3500);
 }
 
-// Init on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
     initNoticeBar();
     updateBadgeSection();
