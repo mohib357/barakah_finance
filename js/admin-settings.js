@@ -1,8 +1,6 @@
 // C: \Project\Barakah_Finance\js\admin - settings.js
 
-// ============================================
-// Admin Settings - Future Integration
-// ============================================
+// ════════ Admin Settings ════════
 class AdminHeroSettings {
     constructor() {
         this.settings = {
@@ -34,18 +32,12 @@ class AdminHeroSettings {
     applySettings() {
         const body = document.body;
         body.classList.remove('no-animation', 'no-neumorphism', 'rainbow-enabled');
-
-        // Apply animations
         if (!this.settings.animations) {
             body.classList.add('no-animation');
         }
-
-        // Apply neumorphism
         if (!this.settings.neumorphism) {
             body.classList.add('no-neumorphism');
         }
-
-        // Apply rainbow
         if (this.settings.rainbow) {
             body.classList.add('rainbow-enabled');
             // Set rainbow speed as CSS variable
@@ -74,14 +66,12 @@ class AdminHeroSettings {
         }
     }
 
-    // Admin panel can call this to update settings
+    //   ════════ Public Methods ════════
     updateSetting(key, value) {
         if (this.settings.hasOwnProperty(key)) {
             this.settings[key] = value;
             this.saveToStorage();
             this.applySettings();
-
-            // Dispatch event for other components
             window.dispatchEvent(new CustomEvent('settingsUpdated', { detail: this.settings }));
         }
     }
@@ -98,7 +88,7 @@ class AdminHeroSettings {
     }
 }
 
-// Initialize when DOM is ready
+// ════════ Initialize Admin Settings ════════
 document.addEventListener('DOMContentLoaded', () => {
     window.adminHeroSettings = new AdminHeroSettings();
     console.log('Admin Hero Settings initialized:', window.adminHeroSettings.getSettings());
