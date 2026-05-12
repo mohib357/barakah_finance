@@ -1,6 +1,6 @@
 /* C:\Project\Barakah_Finance\style\navbar_style.css */
 
-/* NAVIGATION BAR */
+/* ════════ NAVBAR STYLE ════════ */
 nav {
     position: fixed;
     top: 0;
@@ -17,7 +17,7 @@ nav {
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
-/* logo container */
+/* ════════ LOGO STYLE ════════ */
 .logo {
     display: flex;
     align-items: center;
@@ -30,7 +30,7 @@ nav {
     transform: translateY(-2px);
 }
 
-/* logo icon - neumorphic style */
+/* ════════ LOGO ICON STYLE ════════ */
 .logo-icon {
     width: 80px;
     height: 80px;
@@ -67,7 +67,6 @@ nav {
     background: linear-gradient(135deg, #E8F0E8, #DCE8E0);
 }
 
-/* if image is not available */
 .logo-icon {
     position: relative;
 }
@@ -88,7 +87,7 @@ nav {
     display: none;
 }
 
-/* if image is not available */
+/* ════════ if image is not available ════════ */
 .logo-icon:has(img[src=""]),
 .logo-icon:has(img:not([src])) {
     background: linear-gradient(135deg, #C9A227, #A67C00);
@@ -107,7 +106,7 @@ nav {
     height: 100%;
 }
 
-/* logo text section */
+/* ════════ logo text section ════════ */
 .logo-text {
     display: flex;
     flex-direction: column;
@@ -132,7 +131,7 @@ nav {
     letter-spacing: 1px;
 }
 
-/* navigation links */
+/* ════════ navigation links ════════ */
 .nav-links {
     display: flex;
     gap: 32px;
@@ -173,7 +172,7 @@ nav {
     color: #F5D061;
 }
 
-/* login button */
+/* ════════ login button ════════ */
 .nav-cta {
     background: linear-gradient(135deg, #C9A227, #A67C00);
     padding: 8px 24px !important;
@@ -194,7 +193,7 @@ nav {
     background: linear-gradient(135deg, #D9B237, #B88D00);
 }
 
-/* hamburger menu */
+/* ════════ hamburger menu ════════ */
 .hamburger {
     display: none;
     flex-direction: column;
@@ -223,7 +222,7 @@ nav {
     transform: rotate(-45deg) translate(8px, -8px);
 }
 
-/* mobile menu */
+/* ════════ mobile menu ════════ */
 .nav-mobile {
     position: fixed;
     top: 80px;
@@ -387,7 +386,6 @@ nav {
     }
 }
 
-/* ── USER NAV MENU ── */
 .nav-user-wrap {
     position: relative;
 }
