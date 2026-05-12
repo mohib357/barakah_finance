@@ -1,16 +1,13 @@
-// ============================================================
 // C:\Project\Barakah_Finance\js\auth.js
-// Login / Signup / OTP / Profile system
-// ============================================================
 
-/* ── Modal state ── */
+// ════════ Login / Signup / OTP / Profile system ════════
+
+// ════════ Modal Control ════════
 let authMode = 'login'; // 'login' | 'signup' | 'otp' | 'forgot'
 let pendingUser = null;  // user being registered (waiting OTP)
 let otpTarget = null;   // phone/email for OTP
 
-/* ──────────────────────────────────────────
-   OPEN / CLOSE MODAL
-────────────────────────────────────────── */
+// ════════ Modal Open/Close ════════
 function openAuthModal(mode = 'login', role = '') {
     authMode = mode;
     document.getElementById('authModal').classList.remove('hidden');
@@ -23,9 +20,7 @@ function closeAuthModal() {
     clearAuthAlerts();
 }
 
-/* ──────────────────────────────────────────
-   SWITCH MODE
-────────────────────────────────────────── */
+// ════════ SWITCH MODE ════════
 function switchAuthMode(mode) {
     authMode = mode;
     ['login', 'signup', 'otp', 'forgot'].forEach(m => {
@@ -35,9 +30,7 @@ function switchAuthMode(mode) {
     clearAuthAlerts();
 }
 
-/* ──────────────────────────────────────────
-   LOGIN
-────────────────────────────────────────── */
+// ════════ LOGIN ════════
 function doAuthLogin() {
     const raw = document.getElementById('login-identifier').value.trim();
     const pass = document.getElementById('login-password').value;
@@ -55,9 +48,7 @@ function doAuthLogin() {
     onLoginSuccess(user);
 }
 
-/* ──────────────────────────────────────────
-   SIGNUP — Step 1: form fill
-────────────────────────────────────────── */
+// ════════ SIGNUP ════════
 function doAuthSignup() {
     const name = document.getElementById('su-name').value.trim();
     const surname = document.getElementById('su-surname').value.trim();
@@ -70,7 +61,7 @@ function doAuthSignup() {
     const terms = document.getElementById('su-terms').checked;
     const referral = document.getElementById('su-referral-val').value.trim();
 
-    // Validation
+    // ════════ Validation ════════
     if (!name || !dob || !phone || !username || !pass || !pass2)
         return authAlert('তারকা চিহ্নিত সকল তথ্য পূরণ করুন।', 'error');
     if (pass.length < 8) return authAlert('পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে।', 'error');
@@ -100,7 +91,7 @@ function doAuthSignup() {
         avatar: null,
     };
 
-    // Generate & "send" OTP
+    //   ════════ Generate OTP and switch to OTP panel ════════
     const otp = Math.floor(100000 + Math.random() * 900000);
     DB.setOTP(phone, otp);
     otpTarget = phone;
@@ -114,9 +105,7 @@ function doAuthSignup() {
     authAlert(`OTP পাঠানো হয়েছে ${phone} নম্বরে (ডেমো: কনসোলে দেখুন)`, 'success', 'otp');
 }
 
-/* ──────────────────────────────────────────
-   OTP VERIFY
-────────────────────────────────────────── */
+// ════════ OTP VERIFY ════════
 let otpTimerInterval = null;
 function startOTPTimer(secs = 300) {
     clearInterval(otpTimerInterval);
@@ -142,7 +131,7 @@ function doVerifyOTP() {
     if (!DB.verifyOTP(otpTarget, code))
         return authAlert('OTP ভুল অথবা মেয়াদ শেষ। পুনরায় পাঠান।', 'error', 'otp');
 
-    // Register user
+    //   ════════ Register user and finalize login ════════
     pendingUser.verified = true;
     DB.addUser(pendingUser);
     DB.setSession(pendingUser);
@@ -159,9 +148,7 @@ function resendOTP() {
     authAlert('OTP পুনরায় পাঠানো হয়েছে।', 'success', 'otp');
 }
 
-/* ──────────────────────────────────────────
-   FORGOT PASSWORD
-────────────────────────────────────────── */
+// ════════ FORGOT PASSWORD ════════
 function doForgotPassword() {
     const identifier = document.getElementById('forgot-identifier').value.trim();
     if (!identifier) return authAlert('নম্বর বা ইমেইল দিন।', 'error', 'forgot');
@@ -172,15 +159,12 @@ function doForgotPassword() {
     authAlert(`ডেমো: পাসওয়ার্ড হলো "${user.password}" (বাস্তবে OTP যাবে)`, 'success', 'forgot');
 }
 
-/* ──────────────────────────────────────────
-   AFTER LOGIN
-────────────────────────────────────────── */
+// ════════ AFTER LOGIN ════════
 function onLoginSuccess(user) {
     closeAuthModal();
     updateNavForUser(user);
     showToastGlobal(`স্বাগতম ${user.name}! 🎉`, '#065F46');
 
-    // Redirect by role
     if (user.role === 'admin') {
         setTimeout(() => window.location.href = 'admin/admin.html', 800);
     } else {
@@ -195,7 +179,6 @@ function updateNavForUser(user) {
     if (loginBtn) loginBtn.classList.add('hidden');
     if (userMenu) userMenu.classList.remove('hidden');
     if (userName) userName.textContent = user.name;
-    // Also update mobile
     const mLoginBtn = document.getElementById('mnav-login-btn');
     const mUserItem = document.getElementById('mnav-user-item');
     if (mLoginBtn) mLoginBtn.classList.add('hidden');
@@ -208,9 +191,7 @@ function doLogout() {
     location.reload();
 }
 
-/* ──────────────────────────────────────────
-   USERNAME AVAILABILITY CHECK
-────────────────────────────────────────── */
+// ════════ USERNAME CHECK & AUTO-GENERATE ════════
 function checkUsernameAvailability() {
     const u = document.getElementById('su-username').value.trim();
     const hint = document.getElementById('username-hint');
@@ -232,9 +213,7 @@ function autoGenerateUsername() {
     checkUsernameAvailability();
 }
 
-/* ──────────────────────────────────────────
-   REFERRAL SEARCH
-────────────────────────────────────────── */
+// ════════ REFERRAL SEARCH ════════
 function searchReferral() {
     const q = document.getElementById('su-referral').value.trim();
     const resultBox = document.getElementById('referral-results');
@@ -261,9 +240,7 @@ function searchReferral() {
     });
 }
 
-/* ──────────────────────────────────────────
-   ALERT HELPER
-────────────────────────────────────────── */
+// ════════ ALERT UTILS ════════
 function authAlert(msg, type = 'error', panel = '') {
     const id = panel ? 'auth-alert-' + panel : 'auth-alert-login';
     const el = document.getElementById(id) || document.getElementById('auth-alert-login');
@@ -276,9 +253,7 @@ function clearAuthAlerts() {
     document.querySelectorAll('.auth-alert').forEach(el => el.classList.add('hidden'));
 }
 
-/* ──────────────────────────────────────────
-   TERMS MODAL
-────────────────────────────────────────── */
+// ════════ TERMS MODAL ════════
 function openTermsModal() {
     document.getElementById('termsModal')?.classList.remove('hidden');
 }
@@ -286,9 +261,7 @@ function closeTermsModal() {
     document.getElementById('termsModal')?.classList.add('hidden');
 }
 
-/* ──────────────────────────────────────────
-   INIT on page load
-────────────────────────────────────────── */
+// ════════ DOMContentLoaded: Restore Session & Remember Me ════════
 document.addEventListener('DOMContentLoaded', () => {
     // Restore session
     const session = DB.getSession();
@@ -296,7 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateNavForUser(session);
         updateBadgeSection && updateBadgeSection();
     }
-    // Remember me
+
     const remId = localStorage.getItem('bf_remember');
     if (remId && !session) {
         const user = DB.getUsers().find(u => u.id === remId);
@@ -304,13 +277,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-/* ── NAV & DARK ── */
+// ════════ OTHER UTILS (NAV, DARK MODE, SCROLL) ════════
 function smScroll(id) { const el = document.getElementById(id); if (!el) return; const nH = document.querySelector('nav').offsetHeight; window.scrollTo({ top: el.offsetTop - nH - 40, behavior: 'smooth' }); toggleMob(false); }
 function toggleMob(force) { const m = document.getElementById('mobileMenu'); const h = document.getElementById('hamburger'); if (force === false) { m.classList.remove('active'); h.classList.remove('active'); } else { m.classList.toggle('active'); h.classList.toggle('active'); } }
 function toggleDark() { document.body.classList.toggle('dark-mode'); document.getElementById('dkTog').classList.toggle('on'); localStorage.setItem('bf_dark', document.body.classList.contains('dark-mode') ? '1' : '0'); }
 if (localStorage.getItem('bf_dark') === '1') { document.body.classList.add('dark-mode'); document.getElementById('dkTog')?.classList.add('on'); }
 
-/* ── AUTH ── */
+// ════════ AUTH ════════
 let _authMode = 'login', _pendingUser = null, _otpPhone = null, _otpInterval = null;
 
 function openAuthModal(mode, role) {
@@ -394,7 +367,7 @@ function refSearch() { const q = document.getElementById('su-ref').value.trim();
 function openTerms() { document.getElementById('termsModal').classList.remove('hidden'); }
 function closeTerms() { document.getElementById('termsModal').classList.add('hidden'); }
 
-/* ── BADGE DETAIL ── */
+// ════════ ADMIN DASHBOARD: MEMBERS, SAVINGS, LOANS, SERVICES MODAL ════════
 function openBD(key) {
     const modal = document.getElementById('bdModal'); const con = document.getElementById('bd-content');
     const u = DB.getUsers().filter(x => x.verified && x.role !== 'admin'), sv = DB.getSavings(), ln = DB.getLoans().filter(l => l.status === 'active');
@@ -407,7 +380,7 @@ function openBD(key) {
 }
 function closeBD() { document.getElementById('bdModal').classList.add('hidden'); }
 
-/* ── QUICK FORMS ── */
+// ════════ QUICK FORMS ════════
 function quickSubmit(type) {
     const al = document.getElementById('alert-' + type); al.className = 'alert'; al.style.display = 'none';
     let ok = true;
@@ -420,14 +393,14 @@ function quickSubmit(type) {
 }
 function pCalc() { const p = parseFloat(document.getElementById('p-price').value) || 0; if (p > 0) { const t = p * 1.1, m = t / 6; document.getElementById('p-calc-box').style.display = 'block'; document.getElementById('pv-t').textContent = '৳' + Math.round(t).toLocaleString('bn'); document.getElementById('pv-d').textContent = '৳' + Math.round(m).toLocaleString('bn'); document.getElementById('pv-m').textContent = '৳' + Math.round(m).toLocaleString('bn') + ' × ৫'; } else document.getElementById('p-calc-box').style.display = 'none'; }
 
-/* ── GLOBAL TOAST ── */
+// ════════ GLOBAL TOAST ════════
 function showToastG(msg, color = '#065F46') { const t = document.createElement('div'); t.style.cssText = `position:fixed;bottom:24px;right:24px;background:${color};color:#fff;padding:12px 20px;border-radius:10px;font-family:'Noto Serif Bengali',serif;font-size:14px;z-index:99999;box-shadow:0 6px 20px rgba(0,0,0,.25);animation:slideUp .3s ease;max-width:300px;`; t.textContent = msg; document.body.appendChild(t); setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .4s'; setTimeout(() => t.remove(), 400); }, 3500); }
 if (!document.querySelector('style[data-su]')) { const s = document.createElement('style'); s.dataset.su = '1'; s.textContent = '@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}'; document.head.appendChild(s); }
 
-/* ── NOTICE + BADGES INIT (override notice.js openBadgeDetail) ── */
+// ════════ NOTICE + BADGES INIT (override notice.js openBadgeDetail) ════════
 function openBadgeDetail(key) { openBD(key); }
 
-/* ── SESSION RESTORE ── */
+// ════════ SESSION RESTORE ════════
 (function () {
     const ses = DB.getSession();
     if (ses && ses.verified) { updateNavUI(ses); }
