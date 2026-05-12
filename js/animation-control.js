@@ -1,8 +1,6 @@
 // C: \Project\Barakah_Finance\js\animation - control.js
 
-// =====================
-// Animation Control
-// =====================
+// ════════ Animation Control ════════
 (function () {
     'use strict';
     const DEVELOPER_SETTINGS = {
