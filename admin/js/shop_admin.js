@@ -1,4 +1,4 @@
-// C: \Project\Barakah_Finance\admin\js\db.js
+// C: \Project\Barakah_Finance\admin\js\shop_admin.js
 
 // ═══ DB ═══
 const A = {
