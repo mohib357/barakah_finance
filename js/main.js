@@ -30,7 +30,7 @@ function getInitials(name) {
     return parts.filter(p => p).slice(0, 1).map(p => p[0]).join('') || 'ব';
 }
 
-// Render members
+// ════════ Members Grid ════════
 const grid = document.getElementById('membersGrid');
 members.forEach((m, i) => {
     const color = colors[i % colors.length];
@@ -43,7 +43,7 @@ members.forEach((m, i) => {
     </div>`;
 });
 
-// Calculator
+// ════════ Calculator Functions ════════
 function calculate() {
     const price = parseFloat(document.getElementById('productPrice').value) || 0;
     const travel = parseFloat(document.getElementById('travelCost').value) || 0;
@@ -74,7 +74,7 @@ function updateProductCalc() {
     }
 }
 
-// Form submit
+// ════════ Form Submit ════════
 function submitForm(type) {
     const alertIds = { member: 'alert-member', product: 'alert-product', qard: 'alert-qard' };
     const al = document.getElementById(alertIds[type]);
@@ -108,7 +108,7 @@ function submitForm(type) {
     showToast('✓ আবেদন সফলভাবে জমা হয়েছে!');
 }
 
-// Login modal
+// ════════ Login Modal ════════
 let currentRole = '';
 function openLoginModal(role) {
     currentRole = role || '';
@@ -134,29 +134,27 @@ function doLogin() {
     setTimeout(() => closeModal(), 1500);
 }
 
-// Nav scroll
+// ════════ Nav scroll ════════
 function scrollTo(id) {
     document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
 }
 
-// Hamburger
+// ════════ Hamburger ════════
 function toggleMenu() {
     document.getElementById('mobileMenu').classList.toggle('open');
 }
 
-// Toast
+// ════════ Toast Notifications ════════
 function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg; t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// Close modal on overlay click
 document.getElementById('loginModal').addEventListener('click', function (e) {
     if (e.target === this) closeModal();
 });
 
-// Scroll reveal
 const observer = new IntersectionObserver(entries => {
     entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
 }, { threshold: 0.1 });
