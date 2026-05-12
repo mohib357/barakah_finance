@@ -1,19 +1,19 @@
 /* C:\Project\Barakah_Finance\style\hero_style.css */
 
-/* ===== HERO SECTION WITH NEUMORPHISM ===== */
+/* ════════ HERO SECTION ═════════ */
 :root {
-    /* ===== ANIMATION CONTROLS ===== */
+/* ════════ Animation Control ════════ */
     --animations-enabled: 0;
     --neumorphism-enabled: 1;
     --rainbow-enabled: 1;
     --rainbow-speed: slow;
 
-    /* ===== NEUMORPHISM INTENSITY ===== */
+    /* ════════ NEUMORPHISM INTENSITY ════════ */
     --neumorphism-blur: 10px;
     --neumorphism-opacity: 0.3;
     --neumorphism-border-opacity: 0.2;
 
-    /* ===== COLORS ===== */
+    /* ════════ COLORS ════════ */
     --gold: #C9A227;
     --gold-light: #F5D061;
     --dark-green: #0A2A1A;
@@ -22,8 +22,7 @@
     --gradient-end: #31945c;
 }
 
-/* ===== ANIMATION SYSTEM ===== */
-/* Animation Enable/Disable Logic */
+/* ════════ ANIMATION SYSTEM ════════ */
 .no-animation *,
 .no-animation .reveal,
 .no-animation .hero-content,
@@ -32,7 +31,6 @@
     transition: none !important;
 }
 
-/* Neumorphism Enable/Disable Logic */
 .no-neumorphism .hero-content,
 .no-neumorphism .stat-card,
 .no-neumorphism .btn-primary,
@@ -42,12 +40,11 @@
     backdrop-filter: none !important;
 }
 
-/* Rainbow Effect Logic */
 .rainbow-enabled .hero-content:hover {
     animation: var(--rainbow-animation, rainbowSlow 3s ease-in-out infinite) !important;
 }
 
-/* ===== RAINBOW ANIMATIONS ===== */
+/* ════════ RAINBOW ANIMATIONS ════════ */
 @keyframes rainbowSlow {
     0% {
         box-shadow: 4px 4px 25px rgba(255, 0, 0, 0.6), -4px -4px 20px rgba(255, 0, 0, 0.3);
@@ -165,7 +162,7 @@
     }
 }
 
-/* ===== MAIN HERO STYLES ===== */
+/* ════════ MAIN HERO STYLES ════════ */
 .hero {
     min-height: 100vh;
     background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
@@ -179,7 +176,7 @@
     isolation: isolate;
 }
 
-/* background pattern */
+/* ════════ HERO PATTERN ════════ */
 .hero::before {
     content: '';
     position: absolute;
@@ -196,7 +193,7 @@
     background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C9A227'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
 
-/* hero content neumorphism card */
+/* ════════ HERO CONTENT ════════ */
 .hero-content {
     position: relative;
     z-index: 2;
@@ -214,7 +211,6 @@
     right: 25px;
 }
 
-/* Neumorphism Shadow when enabled */
 .hero-content {
     box-shadow: 8px 8px 20px rgba(0, 0, 0, 0.30),
         -4px -4px 12px rgba(30, 80, 50, 0.25),
@@ -240,39 +236,30 @@
     pointer-events: none;
 }
 
-/* cursor moves from top-right to bottom-left */
+/* ════════ Curser Hover Effect ════════ */
 .hero-content:hover::before {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
 }
 
-/* Default hover (without rainbow) */
+/* ════════ Default Hover Shadow ════════ */
 .hero-content:hover {
     box-shadow: 4px 4px 15px rgba(2, 255, 137, 0.521),
         -4px -4px 15px rgba(255, 255, 255, 0.807),
         inset 1px 1px 2px rgba(255, 255, 255, 0.08);
 }
 
-/* --- Right Side: Badges Container Wrapper --- */
+/* ════════ Right Side: Badges Container Wrapper ════════ */
 .badges-section {
-    /* বাকি ৬০% জায়গা নিবে (flex: 1) */
     flex: 1;
-
-    /* উচ্চতা Hero content এর সাথে মিল রেখে পুরো জায়গাটা কভার করবে */
     height: 80%;
-    /* আপনি চাইলে min-height: 600px; ও দিতে পারেন */
-
-    /* ইনার কন্টেন্ট সেন্টার করার জন্য */
     display: flex;
     justify-content: center;
     align-items: center;
-
-    /* প্যাডিং যাতে ব্যাজ বর্ডারে না লাগে */
     padding: 0 20px;
 }
 
-/* badge */
 .hero-badge {
     display: inline-flex;
     align-items: center;
@@ -299,7 +286,6 @@
     font-size: 12px;
 }
 
-/* title style */
 .hero h1 {
     font-family: 'Noto Serif Bengali', 'SolaimanLipi', serif;
     font-size: clamp(2.2rem, 5vw, 3.5rem);
@@ -330,7 +316,6 @@
     background: linear-gradient(90deg, #C9A227, transparent);
 }
 
-/* slogan */
 .hero .slogan {
     font-size: 1rem;
     color: rgba(255, 255, 255, 0.7);
@@ -339,7 +324,6 @@
     font-weight: 300;
 }
 
-/* button style */
 .hero-actions {
     display: flex;
     gap: 1.2rem;
@@ -401,7 +385,7 @@
     box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.2);
 }
 
-/* status card */
+/* ════════ Status Cards ════════ */
 .hero-stats {
     position: absolute;
     right: 5rem;
@@ -454,7 +438,7 @@
     letter-spacing: 0.5px;
 }
 
-/* animation */
+/* ════════ Animation ════════ */
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -487,7 +471,7 @@
     animation-delay: 0.5s;
 }
 
-/* responsive design */
+/* ════════ Responsive Design ════════ */
 @media (max-width: 1200px) {
     .hero-stats {
         right: 2rem;
@@ -530,7 +514,6 @@
     .badges-section {
         width: 100%;
         height: auto;
-        /* মোবাইলে হাইট অটোমেটিক */
         margin-top: 1rem;
     }
 
