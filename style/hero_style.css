@@ -170,10 +170,12 @@
     min-height: 100vh;
     background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
     display: flex;
+    flex-direction: row;
     align-items: center;
+    justify-content: space-between;
     position: relative;
     overflow: hidden;
-    padding: 100px 4rem 4rem;
+    padding: 100px 4% 4rem;
     isolation: isolate;
 }
 
@@ -198,14 +200,18 @@
 .hero-content {
     position: relative;
     z-index: 2;
-    max-width: 680px;
+    width: 45%;
+    max-width: 600px;
+    min-width: 320px;
     background: rgba(27, 91, 55, var(--neumorphism-opacity));
     backdrop-filter: blur(var(--neumorphism-blur));
     border-radius: 48px;
     padding: 48px;
     border: 1px solid rgba(255, 255, 255, var(--neumorphism-border-opacity));
+    box-shadow: 8px 8px 20px rgba(0, 0, 0, 0.30), -4px -4px 12px rgba(30, 80, 50, 0.25);
     overflow: hidden;
     transition: all 0.4s ease;
+    right: 25px;
 }
 
 /* Neumorphism Shadow when enabled */
@@ -246,6 +252,24 @@
     box-shadow: 4px 4px 15px rgba(2, 255, 137, 0.521),
         -4px -4px 15px rgba(255, 255, 255, 0.807),
         inset 1px 1px 2px rgba(255, 255, 255, 0.08);
+}
+
+/* --- Right Side: Badges Container Wrapper --- */
+.badges-section {
+    /* বাকি ৬০% জায়গা নিবে (flex: 1) */
+    flex: 1;
+
+    /* উচ্চতা Hero content এর সাথে মিল রেখে পুরো জায়গাটা কভার করবে */
+    height: 80%;
+    /* আপনি চাইলে min-height: 600px; ও দিতে পারেন */
+
+    /* ইনার কন্টেন্ট সেন্টার করার জন্য */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    /* প্যাডিং যাতে ব্যাজ বর্ডারে না লাগে */
+    padding: 0 20px;
 }
 
 /* badge */
@@ -486,8 +510,9 @@
     }
 
     .hero-content {
+        width: 100%;
         max-width: 100%;
-        margin-bottom: 3rem;
+        margin-bottom: 2rem;
         padding: 32px;
     }
 
@@ -500,6 +525,13 @@
         justify-content: center;
         gap: 1rem;
         margin-top: 2rem;
+    }
+
+    .badges-section {
+        width: 100%;
+        height: auto;
+        /* মোবাইলে হাইট অটোমেটিক */
+        margin-top: 1rem;
     }
 
     .stat-card:hover {

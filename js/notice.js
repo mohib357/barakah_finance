@@ -42,16 +42,12 @@ function updateBadgeSection() {
     const users = DB.getUsers();
     const savings = DB.getSavings();
     const loans = DB.getLoans();
-    const session = DB.getSession();
 
     const stats = {
         members: users.filter(u => u.verified && u.role !== 'admin').length,
-        savingsCount: savings.length,
         savingsTotal: savings.reduce((a, s) => a + (s.amount || 0), 0),
-        loansCount: loans.filter(l => l.status === 'active').length,
         loansTotal: loans.filter(l => l.status === 'active').reduce((a, l) => a + (l.amount || 0), 0),
-        installments: 0,
-        installTotal: 0,
+        loansCount: loans.filter(l => l.status === 'active').length,
     };
 
     const container = document.getElementById('badges-container');
@@ -62,27 +58,36 @@ function updateBadgeSection() {
         let sub = '';
         switch (b.key) {
             case 'members':
-                value = toBengaliNum(stats.members); sub = 'জন সদস্য'; break;
+                value = toBengaliNum(stats.members);
+                sub = 'সক্রিয় সদস্য';
+                break;
             case 'savings':
                 value = '৳' + toBengaliNum(stats.savingsTotal.toLocaleString());
-                sub = toBengaliNum(stats.savingsCount) + ' জনের সঞ্চয়'; break;
+                sub = 'মোট সঞ্চয়';
+                break;
             case 'loans':
                 value = '৳' + toBengaliNum(stats.loansTotal.toLocaleString());
-                sub = 'চলমান ' + toBengaliNum(stats.loansCount) + ' টি'; break;
+                sub = toBengaliNum(stats.loansCount) + ' টি চলমান করজ';
+                break;
             case 'services':
-                value = '৪'; sub = 'ধরনের সেবা'; break;
+                value = '৪';
+                sub = 'ধরনের হালাল সেবা';
+                break;
             default:
-                value = '—'; sub = b.label;
+                value = '—';
+                sub = b.label;
         }
 
         return `
-      <div class="badge-card ${b.clickable ? 'clickable' : ''}"
-           onclick="${b.clickable ? `openBadgeDetail('${b.key}')` : ''}">
-        <div class="badge-icon">${b.icon}</div>
-        <div class="badge-value">${value}</div>
-        <div class="badge-label">${b.label}</div>
-        <div class="badge-sub">${sub}</div>
-      </div>`;
+            <div class="badge-card ${b.clickable ? 'clickable' : ''}"
+                 onclick="${b.clickable ? `openBadgeDetail('${b.key}')` : ''}">
+                <div class="badge-icon">${b.icon}</div>
+                <div class="badge-info">
+                    <div class="badge-value">${value}</div>
+                    <div class="badge-label">${b.label}</div>
+                    <div class="badge-sub">${sub}</div>
+                </div>
+            </div>`;
     }).join('');
 }
 
