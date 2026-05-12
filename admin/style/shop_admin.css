@@ -1,0 +1,203 @@
+/* C:\Project\Barakah_Finance\admin\style\shop_admin.css */
+
+body {
+    font-family: 'Noto Serif Bengali', serif;
+    background: #0f1a15;
+    color: #e8f5e9;
+}
+
+.card {
+    background: #112318;
+    border: 1px solid #1a3a2a;
+    border-radius: 10px;
+}
+
+.fi {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1.5px solid #1a4a30;
+    border-radius: 7px;
+    background: #0d2218;
+    color: #e8f5e9;
+    font-family: inherit;
+    font-size: 0.85rem;
+    outline: none;
+}
+
+.fi:focus {
+    border-color: #C9A227;
+}
+
+.btn-g {
+    background: linear-gradient(135deg, #065F46, #047857);
+    color: #fff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    transition: all 0.2s;
+}
+
+.btn-g:hover {
+    background: linear-gradient(135deg, #047857, #059669);
+}
+
+.btn-r {
+    background: #dc2626;
+    color: #fff;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.btn-r:hover {
+    background: #b91c1c;
+}
+
+.btn-y {
+    background: linear-gradient(135deg, #C9A227, #b8922a);
+    color: #fff;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.tab-btn {
+    padding: 8px 18px;
+    border-radius: 7px 7px 0 0;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border: 1px solid #1a3a2a;
+    border-bottom: none;
+    background: #0d2218;
+    color: #a7f3d0;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+
+.tab-btn.active {
+    background: #112318;
+    color: #F5D061;
+    border-color: #C9A227;
+    font-weight: 700;
+}
+
+.tab-panel {
+    display: none;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
+th {
+    background: #064E3B;
+    color: #fff;
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 0.8rem;
+}
+
+td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #1a3a2a;
+    font-size: 0.8rem;
+}
+
+tr:hover td {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.modal-box {
+    background: #112318;
+    border: 1px solid #1a3a2a;
+    border-radius: 14px;
+    padding: 24px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 92vh;
+    overflow-y: auto;
+}
+
+.tag {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.tag-ok {
+    background: #d1fae5;
+    color: #065F46;
+}
+
+.tag-no {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.tag-pend {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.tag-feat {
+    background: #F5D061;
+    color: #0A2A1A;
+}
+
+::-webkit-scrollbar {
+    width: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #1a4a30;
+    border-radius: 3px;
+}
+
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #065F46;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    z-index: 9999;
+    animation: slideUp 0.3s;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px)
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0)
+    }
+}
