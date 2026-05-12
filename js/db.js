@@ -1,10 +1,7 @@
-// ============================================================
 // C:\Project\Barakah_Finance\js\db.js
-// Central Data Store — localStorage-based (no backend needed)
-// ============================================================
 
+// ════════ DB MODULE ════════
 const DB = {
-    // ── Keys ──
     KEYS: {
         USERS: 'bf_users',
         SESSION: 'bf_session',
@@ -19,7 +16,6 @@ const DB = {
         OTP: 'bf_otp_temp',
     },
 
-    // ── Read ──
     get(key) {
         try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; }
     },
@@ -43,7 +39,7 @@ const DB = {
         this.set(key, arr);
     },
 
-    // ── Users ──
+    // ════════ USERS ════════
     getUsers() { return this.get(this.KEYS.USERS) || []; },
     saveUsers(u) { this.set(this.KEYS.USERS, u); },
     findUser(query) {
@@ -62,41 +58,41 @@ const DB = {
         return user;
     },
 
-    // ── Session ──
+    // ════════ Session ════════
     getSession() { return this.get(this.KEYS.SESSION); },
     setSession(u) { this.set(this.KEYS.SESSION, u); },
     clearSession() { localStorage.removeItem(this.KEYS.SESSION); },
     isLoggedIn() { return !!this.getSession(); },
 
-    // ── Notices ──
+    // ════════ Notices ════════
     getNotices() { return this.get(this.KEYS.NOTICES) || DEFAULT_NOTICES; },
     saveNotices(n) { this.set(this.KEYS.NOTICES, n); },
 
-    // ── Products ──
+    // ════════ Products ════════
     getProducts() { return this.get(this.KEYS.PRODUCTS) || DEFAULT_PRODUCTS; },
     saveProducts(p) { this.set(this.KEYS.PRODUCTS, p); },
 
-    // ── Orders ──
+    // ════════ Orders ════════
     getOrders() { return this.get(this.KEYS.ORDERS) || []; },
     addOrder(o) { return this.push(this.KEYS.ORDERS, o); },
 
-    // ── Badges ──
+    // ════════ Badges ════════
     getBadges() { return this.get(this.KEYS.BADGES) || DEFAULT_BADGES; },
     saveBadges(b) { this.set(this.KEYS.BADGES, b); },
 
-    // ── Settings ──
+    // ════════ Settings ════════
     getSettings() { return this.get(this.KEYS.SETTINGS) || DEFAULT_SETTINGS; },
     saveSetting(k, v) { const s = this.getSettings(); s[k] = v; this.set(this.KEYS.SETTINGS, s); },
 
-    // ── Savings ledger ──
+    // ════════ Savings ledger ════════
     getSavings() { return this.get(this.KEYS.SAVINGS) || []; },
     addSaving(s) { return this.push(this.KEYS.SAVINGS, s); },
 
-    // ── Loans ──
+    // ════════ Loans ════════
     getLoans() { return this.get(this.KEYS.LOANS) || []; },
     addLoan(l) { return this.push(this.KEYS.LOANS, l); },
 
-    // ── OTP (demo — in real app use server) ──
+    // ════════ OTP (demo — in real app use server) ════════
     setOTP(phone, code) {
         this.set(this.KEYS.OTP, { phone, code, exp: Date.now() + 5 * 60 * 1000 });
     },
@@ -108,7 +104,7 @@ const DB = {
         return String(o.code) === String(code);
     },
 
-    // ── Helpers ──
+    // ════════ Helpers ════════
     genID(prefix = 'BF') {
         return prefix + '-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
     },
@@ -124,13 +120,14 @@ const DB = {
     },
 };
 
-// ── Default Data ──
+// ════════ Default Data ════════
 const DEFAULT_NOTICES = [
     { id: 'n1', text: '🌙 বারাকাহ ফাইন্যান্সে আপনাকে স্বাগতম! সুদমুক্ত লেনদেনে সমৃদ্ধি সবার।', style: 'bold', color: '#F5D061', active: true },
     { id: 'n2', text: '📢 নতুন সদস্যদের জন্য বিশেষ সুবিধা: আবেদন ফি মাত্র ১০০ টাকা! আজই আবেদন করুন।', style: 'normal', color: '#fff', active: true },
     { id: 'n3', text: '💰 করজে হাসানা: আপদকালীন প্রয়োজনে বিনা সুদে সর্বোচ্চ ১৫,০০০ টাকা পর্যন্ত সহায়তা।', style: 'italic', color: '#a7f3d0', active: true },
 ];
 
+// ════════ DATA & TRANSLATIONS ════════
 const DEFAULT_PRODUCTS = [
     { id: 'p1', name: 'Samsung Galaxy A15', category: 'মোবাইল', price: 18000, images: [], description: '৬.৫ ইঞ্চি ডিসপ্লে, ৫০০০ mAh ব্যাটারি, ১২৮GB স্টোরেজ সহ স্যামসাং গ্যালাক্সি A15।', inStock: true, featured: true },
     { id: 'p2', name: 'Walton রেফ্রিজারেটর ২৫০L', category: 'ইলেকট্রনিক্স', price: 35000, images: [], description: 'ওয়ালটন ২৫০ লিটার ডাবল ডোর রেফ্রিজারেটর। বিদ্যুৎ সাশ্রয়ী।', inStock: true, featured: true },
@@ -159,7 +156,7 @@ const DEFAULT_SETTINGS = {
     maxLoan: 15000,
 };
 
-// ── Seed demo admin if none exists ──
+// ════════ Seed demo admin if none exists ════════
 (function seedAdmin() {
     const users = DB.getUsers();
     if (!users.find(u => u.role === 'admin')) {
@@ -179,7 +176,7 @@ const DEFAULT_SETTINGS = {
     }
 })();
 
-// Extra functions for admin panel
+// ════════ USER UPDATE & GET (used in admin panel) ════════
 DB.updateUser = function (id, patch) {
     const users = this.getUsers();
     const index = users.findIndex(u => u.id === id);
