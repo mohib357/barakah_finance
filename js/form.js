@@ -1,20 +1,16 @@
 // C: \Project\Barakah_Finance\js\form.js
 
-// All form logic: theme, lang, address, upload, cropper, submit, PDF
-
-// ─── STATE ───
+// ════════ STATE ════════
 let currentLang = 'bn';
 let currentCropTarget = null; // 'photo' | 'sig'
 let cropperInstance = null;
 let cropW = 300, cropH = 280, cropMaxKB = 300;
 let formData = {}; // collected on submit
 let submittedFormData = null;
-
-// NID files
 let applicantNIDFiles = [];
 let nomineeNIDFiles = [];
 
-// ─── ON LOAD ───
+// ════════ ON LOAD ════════
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
   setDate();
@@ -25,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     .forEach(el => el.addEventListener('change', updateProgress));
 });
 
-// ─── THEME ───
+// ════════ THEME ════════
 function initTheme() {
   const saved = localStorage.getItem('bf_theme') || 'light';
   if (saved === 'dark') {
@@ -41,7 +37,7 @@ function toggleTheme() {
   localStorage.setItem('bf_theme', isDark ? 'dark' : 'light');
 }
 
-// ─── LANGUAGE ───
+// ════════ LANGUAGE ════════
 function changeLang(lang) {
   currentLang = lang;
   const t = TRANSLATIONS[lang];
@@ -57,13 +53,13 @@ function changeLang(lang) {
   document.getElementById('lbl-submit').textContent = t.lblSubmit;
   document.getElementById('admin-link').textContent = t.adminLink;
 
-  // RTL for Arabic
+  // ════════ RTL/LTR & lang attribute ════════
   document.body.classList.toggle('lang-ar', lang === 'ar');
   document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
   document.documentElement.lang = lang;
 }
 
-// ─── DATE ───
+// ════════ DATE ════════
 function setDate() {
   const now = new Date();
   const options = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -73,7 +69,7 @@ function setDate() {
   }
 }
 
-// ─── STEP PROGRESS ───
+// ════════ STEP PROGRESS ════════
 function updateProgress() {
   const filled = [
     document.getElementById('applicantNameBn')?.value,
@@ -98,7 +94,7 @@ function updateStepBar(active) {
   }
 }
 
-// ─── OCCUPATION / INCOME CUSTOM ───
+// ════════ DEVELOPER SETTINGS & ANIMATION CONTROL ════════
 function handleOccChange(sel, customInputId) {
   const custom = document.getElementById(customInputId);
   if (sel.value === 'অন্যান্য' || sel.value === 'অন্যান্য') {
@@ -111,7 +107,7 @@ function handleOccChange(sel, customInputId) {
   }
 }
 
-// ─── ADDRESS CASCADE ───
+// ════════ ADDRESS CASCADE ════════
 function populateDivisions() {
   const sel = document.getElementById('addrDivision');
   sel.innerHTML = '<option value="">-- বিভাগ --</option>';
@@ -120,7 +116,7 @@ function populateDivisions() {
     o.value = div; o.textContent = div;
     sel.appendChild(o);
   });
-  // default to Rangpur
+  // ════════ default to Rangpur division ════════
   sel.value = 'রংপুর';
   populateDistricts();
 }
@@ -137,7 +133,7 @@ function populateDistricts() {
     o.value = dist; o.textContent = dist;
     sel.appendChild(o);
   });
-  // default Lalmonirhat
+  //  ════════ default to Lalmonirhat district if Rangpur division is chosen ════════
   if (div === 'রংপুর') { sel.value = 'লালমনিরহাট'; populateThanas(); }
 }
 function populateThanas() {
@@ -153,7 +149,7 @@ function populateThanas() {
     o.value = thana; o.textContent = thana;
     sel.appendChild(o);
   });
-  // default Aditamari
+  //  ════════ default to Aditmari thana if Lalmonirhat district is chosen ════════
   if (dist === 'লালমনিরহাট') { sel.value = 'আদিতমারী'; populatePostOffices(); }
 }
 function populatePostOffices() {
@@ -190,7 +186,7 @@ function copyCurrAddr() {
   }
 }
 
-// ─── PHONE ───
+// ════════ PHONE ════════
 let phoneCount = 1;
 function addPhone() {
   if (phoneCount >= 3) { showToast('সর্বোচ্চ ৩টি নম্বর দেওয়া যাবে', '#C9A227'); return; }
@@ -216,7 +212,6 @@ function addPhone() {
   container.appendChild(row);
 }
 function validatePhone(input) {
-  // Only English digits
   input.value = input.value.replace(/[^\d]/g, '');
   const sel = input.previousElementSibling;
   if (sel && sel.classList.contains('country-code-sel')) {
@@ -225,7 +220,7 @@ function validatePhone(input) {
   }
 }
 
-// ─── DRAG & DROP HELPERS ───
+// ════════ DRAG & DROP HELPERS ════════
 function handleDrag(event, zoneId) {
   event.preventDefault();
   document.getElementById(zoneId)?.classList.add('dragover');
@@ -247,7 +242,7 @@ function handleDrop(event, inputId, zoneId) {
   }
 }
 
-// ─── NID UPLOAD ───
+// ════════ NID UPLOAD & PREVIEW ════════
 function handleNIDUpload(input, who) {
   const files = Array.from(input.files);
   const previewBox = document.getElementById(who === 'applicant' ? 'nidPreviewBox' : 'nomNIDPreviewBox');
@@ -279,14 +274,13 @@ function handleNIDUpload(input, who) {
   });
 }
 
-// ─── IMAGE CROPPER ───
+// ════════ IMAGE CROPPER ════════
 function openCropper(input, target, w, h, maxKB) {
   const file = input.files[0];
   if (!file) return;
   currentCropTarget = target;
   cropW = w; cropH = h; cropMaxKB = maxKB;
 
-  // Show face guide only for photo
   const fg = document.getElementById('faceGuide');
   if (fg) fg.classList.toggle('hidden', target !== 'photo');
   document.getElementById('cropperTitle').textContent = target === 'photo' ? 'পাসপোর্ট ছবি ক্রপ করুন' : 'স্বাক্ষর ক্রপ করুন';
@@ -296,7 +290,6 @@ function openCropper(input, target, w, h, maxKB) {
     const img = document.getElementById('cropperImg');
     img.src = e.target.result;
     document.getElementById('cropperModal').classList.remove('hidden');
-    // Destroy previous
     if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
     setTimeout(() => {
       cropperInstance = new Cropper(img, {
@@ -322,7 +315,7 @@ function cropAndSave() {
   if (!cropperInstance) return;
   const canvas = cropperInstance.getCroppedCanvas({ width: cropW, height: cropH });
 
-  // Compress if needed
+  // ════════ Compress if needed and save cropped image ════════
   compressCanvas(canvas, cropMaxKB, (dataURL, wasCompressed) => {
     if (wasCompressed) showToast('Your image was too large, we optimized it for you!', '#C9A227');
 
@@ -343,7 +336,7 @@ function cropAndSave() {
   });
 }
 
-// ─── IMAGE COMPRESSION ───
+// ════════ Image Compression Helper (adjusts quality to meet maxKB) ════════
 function compressCanvas(canvas, maxKB, callback) {
   const maxBytes = maxKB * 1024;
   let quality = 0.92;
@@ -360,9 +353,8 @@ function compressCanvas(canvas, maxKB, callback) {
   tryCompress();
 }
 
-// ─── FORM SUBMIT ───
+// ════════ FORM SUBMISSION ════════
 function submitForm() {
-  // Validate required fields
   const required = [
     { id: 'applicantNameBn', label: 'আবেদনকারীর নাম (বাংলা)' },
     { id: 'applicantNameEn', label: 'Applicant Name (English)' },
@@ -394,13 +386,12 @@ function submitForm() {
     showToast('পাসপোর্ট ছবি আপলোড করুন', '#e53e3e'); return;
   }
 
-  // Collect NID number - only digits
+  // ════════ Collect NID number - only digits, validate length (at least 10 digits) ════════
   const nidVal = document.getElementById('nidNumber').value.replace(/[^\d]/g, '');
   if (nidVal.length < 10) {
     showToast('এনআইডি নম্বর সঠিক নয়', '#e53e3e'); return;
   }
 
-  // Build data object
   const occ = document.getElementById('occupationSel').value;
   const occCustom = document.getElementById('occupationCustom').value;
   const inc = document.getElementById('incomeSel').value;
@@ -447,12 +438,12 @@ function submitForm() {
     nomineeAddress: document.getElementById('nomineeAddress').value,
   };
 
-  // Save to localStorage
+  // ════════ Save to localStorage ════════
   const existing = JSON.parse(localStorage.getItem('bf_applications') || '[]');
   existing.push(submittedFormData);
   localStorage.setItem('bf_applications', JSON.stringify(existing));
 
-  // Show success
+  // ════════ Show success modal with reference ID ════════
   document.getElementById('success-ref').textContent = 'রেফারেন্স ID: ' + submittedFormData.id;
   document.getElementById('successModal').classList.remove('hidden');
 }
@@ -474,16 +465,13 @@ function generateID() {
   return 'BF-' + ts + '-' + rnd;
 }
 
-// ─── PDF DOWNLOAD (Member Copy) ───
+// ════════ PDF DOWNLOAD (Member Copy) ════════
 async function downloadMemberPDF() {
   if (!submittedFormData) { showToast('কোনো ডেটা নেই', '#e53e3e'); return; }
   showToast('পিডিএফ তৈরি হচ্ছে...', '#065F46');
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-
-  // Load Bangla font note: jsPDF standard fonts don't support Bangla
-  // We'll use html2canvas to render an HTML page as PDF
   const printDiv = buildPrintHTML(submittedFormData);
   document.body.appendChild(printDiv);
 
@@ -511,10 +499,10 @@ async function downloadMemberPDF() {
     }
 
     doc.save('barakah-finance-application-' + submittedFormData.id + '.pdf');
-    showToast('পিডিএফ ডাউনলোড হয়েছে ✅', '#065F46');
+    showToast('PDF Downloaded successfully✅', '#065F46');
   } catch (err) {
     if (document.body.contains(printDiv)) document.body.removeChild(printDiv);
-    showToast('পিডিএফ তৈরিতে সমস্যা হয়েছে', '#e53e3e');
+    showToast('PDF generation failed❌', '#e53e3e');
     console.error(err);
   }
 }
@@ -597,7 +585,7 @@ function buildPrintHTML(d) {
   return div;
 }
 
-// ─── TOAST ───
+// ════════ TOAST NOTIFICATIONS ════════
 function showToast(msg, color = '#065F46') {
   const existing = document.querySelector('.toast');
   if (existing) existing.remove();
