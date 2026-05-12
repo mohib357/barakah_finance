@@ -1,0 +1,460 @@
+// C: \Project\Barakah_Finance\admin\js\admin.js
+
+// ─── STATE ───
+let currentAdmin = null;
+let currentFilter = 'all';
+let selectedAppID = null;
+
+// ─── ROLE LABELS ───
+const ROLE_LABELS = {
+    committee1: 'আহ্বায়ক কমিটি (০১)',
+    committee2: 'আহ্বায়ক কমিটি (০২)',
+    committee3: 'আহ্বায়ক কমিটি (০৩)',
+    committee4: 'আহ্বায়ক কমিটি (০৪)',
+    secretary: 'সাধারণ সম্পাদক',
+    vicePresident: 'সহ-সভাপতি',
+    president: 'সভাপতি',
+};
+
+// Approval order
+const APPROVAL_ORDER = ['committee1', 'committee2', 'committee3', 'committee4', 'secretary', 'vicePresident', 'president'];
+
+// ─── LOGIN ───
+function showLoginModal() {
+    document.getElementById('loginModal').classList.remove('hidden');
+}
+function doLogin() {
+    const role = document.getElementById('loginRole').value;
+    const pass = document.getElementById('loginPass').value;
+    if (!role) { showToast('ভূমিকা নির্বাচন করুন', '#e53e3e'); return; }
+    if (pass !== 'admin123') { showToast('ভুল পাসওয়ার্ড!', '#e53e3e'); return; }
+    currentAdmin = role;
+    document.getElementById('adminBadge').classList.remove('hidden');
+    document.getElementById('adminRoleLabel').textContent = ROLE_LABELS[role];
+    document.getElementById('loginBtn').classList.add('hidden');
+    document.getElementById('logoutBtn').classList.remove('hidden');
+    document.getElementById('loginModal').classList.add('hidden');
+    document.getElementById('loginPass').value = '';
+    showToast('স্বাগতম! ' + ROLE_LABELS[role], '#065F46');
+    renderTable();
+}
+function adminLogout() {
+    currentAdmin = null;
+    document.getElementById('adminBadge').classList.add('hidden');
+    document.getElementById('loginBtn').classList.remove('hidden');
+    document.getElementById('logoutBtn').classList.add('hidden');
+    renderTable();
+}
+
+// ─── DATA ───
+function getApps() {
+    return JSON.parse(localStorage.getItem('bf_applications') || '[]');
+}
+function saveApps(apps) {
+    localStorage.setItem('bf_applications', JSON.stringify(apps));
+}
+
+// ─── FILTER ───
+function setFilter(f, btn) {
+    currentFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderTable();
+}
+
+// ─── STATS ───
+function updateStats() {
+    const apps = getApps();
+    document.getElementById('statTotal').textContent = apps.length;
+    document.getElementById('statPending').textContent = apps.filter(a => a.status === 'pending').length;
+    document.getElementById('statApproved').textContent = apps.filter(a => a.status === 'approved').length;
+    document.getElementById('statRejected').textContent = apps.filter(a => a.status === 'rejected').length;
+}
+
+// ─── RENDER TABLE ───
+function renderTable() {
+    updateStats();
+    let apps = getApps();
+    const search = document.getElementById('searchBox').value.toLowerCase();
+    if (search) {
+        apps = apps.filter(a =>
+            (a.applicantNameBn || '').toLowerCase().includes(search) ||
+            (a.applicantNameEn || '').toLowerCase().includes(search) ||
+            (a.nidNumber || '').includes(search) ||
+            (a.id || '').toLowerCase().includes(search) ||
+            (a.memberID || '').toLowerCase().includes(search)
+        );
+    }
+    if (currentFilter !== 'all') apps = apps.filter(a => a.status === currentFilter);
+
+    const tbody = document.getElementById('appTableBody');
+    if (!apps.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-500 py-8">কোনো আবেদন পাওয়া যায়নি</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = apps.map(a => {
+        const statusBadge = {
+            pending: '<span class="badge-pending px-2 py-0.5 rounded text-xs font-bold">পেন্ডিং</span>',
+            approved: '<span class="badge-approved px-2 py-0.5 rounded text-xs font-bold">অনুমোদিত</span>',
+            rejected: '<span class="badge-rejected px-2 py-0.5 rounded text-xs font-bold">প্রত্যাখ্যাত</span>',
+        }[a.status] || '';
+
+        const approvals = a.approvals || {};
+        const committeeCount = (approvals.committee || []).length;
+        const approvalSummary = `<span class="text-xs text-gray-400">কমিটি: ${committeeCount}/4 |
+        ${approvals.secretary ? '✅' : '⬜'} সম্পাদক |
+        ${approvals.vicePresident ? '✅' : '⬜'} সহসভাপতি |
+        ${approvals.president ? '✅' : '⬜'} সভাপতি</span>`;
+
+        const date = a.submittedAt ? new Date(a.submittedAt).toLocaleDateString('bn-BD') : '—';
+        return `
+    <tr>
+        <td class="font-mono text-xs">${a.memberID || a.id.slice(0, 12)}</td>
+        <td class="font-semibold">${a.applicantNameBn || '—'}</td>
+        <td class="font-mono text-xs">${a.nidNumber || '—'}</td>
+        <td class="text-xs">${(a.phones || [])[0] || '—'}</td>
+        <td class="text-xs">${date}</td>
+        <td>${statusBadge}</td>
+        <td>${approvalSummary}</td>
+        <td>
+            <div class="flex gap-1 flex-wrap">
+                <button onclick="openDetail('${a.id}')" class="btn-primary text-xs py-1 px-2">বিস্তারিত</button>
+                ${a.status === 'pending' && currentAdmin === 'president' ? `<button onclick="openMemberIDModal('${a.id}')" class="btn-gold text-xs py-1 px-2">ID দিন</button>` : ''}
+            </div>
+        </td>
+    </tr>
+    `;
+    }).join('');
+}
+
+// ─── DETAIL MODAL ───
+function openDetail(id) {
+    selectedAppID = id;
+    const apps = getApps();
+    const a = apps.find(x => x.id === id);
+    if (!a) return;
+
+    const approvals = a.approvals || {};
+    const committee = approvals.committee || [];
+
+    // Determine what the current admin can approve
+    let canApprove = false;
+    if (currentAdmin) {
+        if (currentAdmin.startsWith('committee') && !committee.includes(currentAdmin)) canApprove = true;
+        if (currentAdmin === 'secretary' && committee.length >= 1 && !approvals.secretary) canApprove = true;
+        if (currentAdmin === 'vicePresident' && approvals.secretary && !approvals.vicePresident) canApprove = true;
+        if (currentAdmin === 'president' && approvals.vicePresident && !approvals.president) canApprove = true;
+    }
+
+    document.getElementById('approveStepBtn').style.display = canApprove ? '' : 'none';
+
+    const fmt = v => v || '—';
+    const dateStr = a.submittedAt ? new Date(a.submittedAt).toLocaleDateString('bn-BD', { year: 'numeric', month: 'long', day: 'numeric' }) : '—';
+
+    document.getElementById('detailContent').innerHTML = `
+    <!-- Header info -->
+    <div class="flex flex-wrap gap-4 mb-4 pb-4 border-b border-emerald-900">
+        ${a.photoData ? `<img src="${a.photoData}" style="width:70px;height:84px;object-fit:cover;border:2px solid #C9A227;border-radius:4px;" />` : ''}
+        <div class="flex-1">
+            <p class="font-bold text-emerald-300 text-lg">${fmt(a.applicantNameBn)}</p>
+            <p class="text-sm text-gray-300">${fmt(a.applicantNameEn)}</p>
+            <p class="text-xs text-gray-400 mt-1">NID: ${fmt(a.nidNumber)} | DOB: ${fmt(a.dob)}</p>
+            <p class="text-xs text-gray-400">জমার তারিখ: ${dateStr}</p>
+            ${a.memberID ? `<p class="text-emerald-400 font-bold text-sm mt-1">সদস্য ID: ${a.memberID}</p>` : ''}
+        </div>
+    </div>
+
+    <!-- Personal -->
+    <div class="grid grid-cols-2 gap-2 text-xs mb-4">
+        <div><span class="text-emerald-500">পিতা (বাং):</span> ${fmt(a.fatherNameBn)}</div>
+        <div><span class="text-emerald-500">Father (Eng):</span> ${fmt(a.fatherNameEn)}</div>
+        <div><span class="text-emerald-500">মাতা (বাং):</span> ${fmt(a.motherNameBn)}</div>
+        <div><span class="text-emerald-500">Mother (Eng):</span> ${fmt(a.motherNameEn)}</div>
+        <div><span class="text-emerald-500">পেশা:</span> ${fmt(a.occupation)}</div>
+        <div><span class="text-emerald-500">আয়ের উৎস:</span> ${fmt(a.incomeSource)}</div>
+        <div class="col-span-2"><span class="text-emerald-500">বর্তমান ঠিকানা:</span> ${fmt(a.currentAddress)}</div>
+        <div class="col-span-2"><span class="text-emerald-500">স্থায়ী ঠিকানা:</span> ${fmt(a.permanentAddress)}</div>
+        <div class="col-span-2"><span class="text-emerald-500">মোবাইল:</span> ${(a.phones || []).join(' | ')}</div>
+    </div>
+
+    <!-- Nominee -->
+    <div class="bg-black/20 rounded-lg p-3 text-xs mb-4">
+        <p class="text-emerald-400 font-bold mb-2">নমিনির তথ্য</p>
+        <div class="grid grid-cols-2 gap-2">
+            <div><span class="text-emerald-500">নাম (বাং):</span> ${fmt(a.nomineeName_bn)}</div>
+            <div><span class="text-emerald-500">Name (Eng):</span> ${fmt(a.nomineeName_en)}</div>
+            <div><span class="text-emerald-500">সম্পর্ক:</span> ${fmt(a.nomineeRelation)}</div>
+            <div><span class="text-emerald-500">মোবাইল:</span> ${fmt(a.nomineePhone)}</div>
+            <div><span class="text-emerald-500">NID:</span> ${fmt(a.nomineeNID)}</div>
+            <div><span class="text-emerald-500">ঠিকানা:</span> ${fmt(a.nomineeAddress)}</div>
+        </div>
+    </div>
+
+    <!-- Signature -->
+    ${a.sigData ? `<div class="mb-4"><p class="text-xs text-emerald-500 mb-1">স্বাক্ষর:</p><img src="${a.sigData}" style="height:36px;object-fit:contain;background:#fff;padding:4px;border-radius:4px;" /></div>` : ''}
+
+    <!-- Approval timeline -->
+    <div>
+        <p class="text-emerald-400 font-bold text-sm mb-2">অনুমোদনের ধাপসমূহ</p>
+        ${['committee1', 'committee2', 'committee3', 'committee4'].map(c => {
+        const done = committee.includes(c);
+        return `<div class="approval-step ${done ? 'done' : ''}">
+          <span class="text-xs font-semibold">${ROLE_LABELS[c]}</span>
+          <span class="step-badge ${done ? 'tag-done' : 'tag-pending-step'} ml-2">${done ? '✅ অনুমোদিত' : '⏳ অপেক্ষমাণ'}</span>
+        </div>`;
+    }).join('')}
+        ${['secretary', 'vicePresident', 'president'].map(r => {
+        const done = !!approvals[r];
+        return `<div class="approval-step ${done ? 'done' : ''}">
+          <span class="text-xs font-semibold">${ROLE_LABELS[r]}</span>
+          <span class="step-badge ${done ? 'tag-done' : 'tag-pending-step'} ml-2">${done ? '✅ অনুমোদিত' : '⏳ অপেক্ষমাণ'}</span>
+        </div>`;
+    }).join('')}
+    </div>
+    `;
+
+    document.getElementById('detailModal').classList.remove('hidden');
+}
+
+// ─── APPROVE STEP ───
+function doApproveStep() {
+    if (!currentAdmin) { showToast('প্রথমে লগইন করুন', '#e53e3e'); return; }
+    if (!selectedAppID) return;
+    const apps = getApps();
+    const idx = apps.findIndex(a => a.id === selectedAppID);
+    if (idx < 0) return;
+    const a = apps[idx];
+
+    if (!a.approvals) a.approvals = { committee: [], secretary: false, vicePresident: false, president: false };
+
+    if (currentAdmin.startsWith('committee')) {
+        if (a.approvals.committee.includes(currentAdmin)) { showToast('আপনি ইতিমধ্যে অনুমোদন দিয়েছেন', '#C9A227'); return; }
+        a.approvals.committee.push(currentAdmin);
+        showToast(ROLE_LABELS[currentAdmin] + ' অনুমোদন দিয়েছেন', '#065F46');
+    } else if (currentAdmin === 'secretary') {
+        if (a.approvals.committee.length < 1) { showToast('আহ্বায়ক কমিটির অনুমোদন প্রয়োজন', '#C9A227'); return; }
+        a.approvals.secretary = true;
+        showToast('সাধারণ সম্পাদক অনুমোদন দিয়েছেন', '#065F46');
+    } else if (currentAdmin === 'vicePresident') {
+        if (!a.approvals.secretary) { showToast('সাধারণ সম্পাদকের অনুমোদন প্রয়োজন', '#C9A227'); return; }
+        a.approvals.vicePresident = true;
+        showToast('সহ-সভাপতি অনুমোদন দিয়েছেন', '#065F46');
+    } else if (currentAdmin === 'president') {
+        if (!a.approvals.vicePresident) { showToast('সহ-সভাপতির অনুমোদন প্রয়োজন', '#C9A227'); return; }
+        a.approvals.president = true;
+        a.status = 'approved';
+        showToast('✅ সভাপতি অনুমোদন দিয়েছেন — সদস্যপদ চূড়ান্ত!', '#065F46');
+        // Prompt for member ID
+        document.getElementById('detailModal').classList.add('hidden');
+        openMemberIDModal(selectedAppID);
+    }
+
+    apps[idx] = a;
+    saveApps(apps);
+    renderTable();
+    openDetail(selectedAppID);
+}
+
+// ─── REJECT ───
+function doReject() {
+    if (!currentAdmin) { showToast('প্রথমে লগইন করুন', '#e53e3e'); return; }
+    if (!confirm('এই আবেদনটি প্রত্যাখ্যান করবেন?')) return;
+    const apps = getApps();
+    const idx = apps.findIndex(a => a.id === selectedAppID);
+    if (idx < 0) return;
+    apps[idx].status = 'rejected';
+    saveApps(apps);
+    document.getElementById('detailModal').classList.add('hidden');
+    renderTable();
+    showToast('আবেদন প্রত্যাখ্যান করা হয়েছে', '#e53e3e');
+}
+
+// ─── MEMBER ID ───
+function openMemberIDModal(id) {
+    selectedAppID = id;
+    document.getElementById('memberIDInput').value = '';
+    document.getElementById('memberIDModal').classList.remove('hidden');
+}
+function saveMemberID() {
+    const mid = document.getElementById('memberIDInput').value.trim();
+    if (!mid) { showToast('সদস্য আইডি লিখুন', '#e53e3e'); return; }
+    const apps = getApps();
+    const idx = apps.findIndex(a => a.id === selectedAppID);
+    if (idx < 0) return;
+    apps[idx].memberID = mid;
+    saveApps(apps);
+    document.getElementById('memberIDModal').classList.add('hidden');
+    renderTable();
+    showToast('সদস্য আইডি সংরক্ষিত: ' + mid, '#065F46');
+}
+
+// ─── PDF ───
+async function downloadAdminPDF() {
+    const apps = getApps();
+    const a = apps.find(x => x.id === selectedAppID);
+    if (!a) return;
+
+    showToast('A4 PDF তৈরি হচ্ছে...', '#065F46');
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    const div = buildAdminPrintDiv(a);
+    document.body.appendChild(div);
+
+    try {
+        const canvas = await html2canvas(div, { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: 794 });
+        document.body.removeChild(div);
+
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const pdfW = 210, pdfH = (canvas.height * 210) / canvas.width;
+        const pageH = 297;
+        let yPos = 0, first = true;
+        while (yPos < pdfH) {
+            if (!first) doc.addPage();
+            doc.addImage(imgData, 'JPEG', 0, -yPos, pdfW, pdfH);
+            yPos += pageH;
+            first = false;
+        }
+        doc.save('BF-member-' + (a.memberID || a.id) + '.pdf');
+        showToast('পিডিএফ ডাউনলোড হয়েছে ✅', '#065F46');
+    } catch (err) {
+        if (document.body.contains(div)) document.body.removeChild(div);
+        showToast('পিডিএফ তৈরিতে সমস্যা', '#e53e3e');
+    }
+}
+
+function buildAdminPrintDiv(d) {
+    const div = document.createElement('div');
+    div.style.cssText = 'position:fixed;top:-9999px;left:0;width:794px;background:#fff;font-family:"Noto Serif Bengali",serif;color:#111;padding:36px;box-sizing:border-box;';
+    const fmt = v => v || '—';
+    const approvals = d.approvals || {};
+    const committee = approvals.committee || [];
+    const dateStr = d.submittedAt ? new Date(d.submittedAt).toLocaleDateString('bn-BD', { year: 'numeric', month: 'long', day: 'numeric' }) : '—';
+
+    div.innerHTML = `
+    <div style="text-align:center;border-bottom:3px solid #C9A227;padding-bottom:14px;margin-bottom:18px;">
+        <h1 style="font-size:20px;color:#064E3B;margin:0 0 4px;">বারাকাহ ফাইন্যান্স – Barakah Finance</h1>
+        <p style="color:#C9A227;margin:0 0 2px;font-size:13px;">সুদমুক্ত লেনদেনে সমৃদ্ধি সবার</p>
+        <p style="font-size:10px;color:#666;margin:0;">আদিতমারী, লালমনিরহাট | +8801581093611</p>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+        <div>
+            <h2 style="font-size:15px;color:#064E3B;margin:0 0 5px;border-left:4px solid #C9A227;padding-left:8px;">সদস্য পদের জন্য আবেদন</h2>
+            <div style="font-size:11px;color:#555;line-height:1.8;">
+                <p style="margin:0;">সদস্য আইডি: <strong style="color:#064E3B;font-size:13px;">${d.memberID || '_____________'}</strong></p>
+                <p style="margin:0;">রেফারেন্স: ${d.id}</p>
+                <p style="margin:0;">জমার তারিখ: ${dateStr}</p>
+                <p style="margin:0;">অবস্থা: <strong style="color:${d.status === 'approved' ? '#065F46' : d.status === 'rejected' ? '#dc2626' : '#92400e'}">${d.status === 'approved' ? '✅ অনুমোদিত' : d.status === 'rejected' ? '❌ প্রত্যাখ্যাত' : '⏳ পেন্ডিং'}</strong></p>
+            </div>
+        </div>
+        ${d.photoData ? `<div style="text-align:center;"><img src="${d.photoData}" style="width:72px;height:88px;object-fit:cover;border:2px solid #C9A227;" /><p style="font-size:9px;color:#888;margin:3px 0 0;">পাসপোর্ট ছবি</p></div>` : ''}
+    </div>
+
+    <table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:12px;border:1px solid #d1fae5;">
+        <tr style="background:#064E3B;color:#fff;"><th colspan="4" style="padding:6px 10px;text-align:left;">১। আবেদনকারীর ব্যক্তিগত তথ্য</th></tr>
+        <tr><td style="padding:5px 10px;color:#065F46;font-weight:600;width:25%;">নাম (বাংলা)</td><td style="padding:5px 10px;width:25%;">${fmt(d.applicantNameBn)}</td><td style="padding:5px 10px;color:#065F46;font-weight:600;width:25%;">Name (English)</td><td style="padding:5px 10px;">${fmt(d.applicantNameEn)}</td></tr>
+        <tr style="background:#f0fdf4;"><td style="padding:5px 10px;color:#065F46;font-weight:600;">পিতার নাম (বাং)</td><td style="padding:5px 10px;">${fmt(d.fatherNameBn)}</td><td style="padding:5px 10px;color:#065F46;font-weight:600;">Father (Eng)</td><td style="padding:5px 10px;">${fmt(d.fatherNameEn)}</td></tr>
+        <tr><td style="padding:5px 10px;color:#065F46;font-weight:600;">মাতার নাম (বাং)</td><td style="padding:5px 10px;">${fmt(d.motherNameBn)}</td><td style="padding:5px 10px;color:#065F46;font-weight:600;">Mother (Eng)</td><td style="padding:5px 10px;">${fmt(d.motherNameEn)}</td></tr>
+        <tr style="background:#f0fdf4;"><td style="padding:5px 10px;color:#065F46;font-weight:600;">এনআইডি</td><td style="padding:5px 10px;">${fmt(d.nidNumber)}</td><td style="padding:5px 10px;color:#065F46;font-weight:600;">জন্ম তারিখ</td><td style="padding:5px 10px;">${fmt(d.dob)}</td></tr>
+        <tr><td style="padding:5px 10px;color:#065F46;font-weight:600;">পেশা</td><td style="padding:5px 10px;">${fmt(d.occupation)}</td><td style="padding:5px 10px;color:#065F46;font-weight:600;">আয়ের উৎস</td><td style="padding:5px 10px;">${fmt(d.incomeSource)}</td></tr>
+        <tr style="background:#f0fdf4;"><td style="padding:5px 10px;color:#065F46;font-weight:600;">বর্তমান ঠিকানা</td><td colspan="3" style="padding:5px 10px;">${fmt(d.currentAddress)}</td></tr>
+        <tr><td style="padding:5px 10px;color:#065F46;font-weight:600;">স্থায়ী ঠিকানা</td><td colspan="3" style="padding:5px 10px;">${fmt(d.permanentAddress)}</td></tr>
+        <tr style="background:#f0fdf4;"><td style="padding:5px 10px;color:#065F46;font-weight:600;">মোবাইল</td><td colspan="3" style="padding:5px 10px;">${(d.phones || []).join(' | ')}</td></tr>
+    </table>
+
+    <table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:12px;border:1px solid #d1fae5;">
+        <tr style="background:#064E3B;color:#fff;"><th colspan="4" style="padding:6px 10px;text-align:left;">২। নমিনির তথ্য</th></tr>
+        <tr><td style="padding:5px 10px;color:#065F46;font-weight:600;width:25%;">নাম (বাংলা)</td><td style="padding:5px 10px;">${fmt(d.nomineeName_bn)}</td><td style="padding:5px 10px;color:#065F46;font-weight:600;width:25%;">Name (Eng)</td><td style="padding:5px 10px;">${fmt(d.nomineeName_en)}</td></tr>
+        <tr style="background:#f0fdf4;"><td style="padding:5px 10px;color:#065F46;font-weight:600;">সম্পর্ক</td><td style="padding:5px 10px;">${fmt(d.nomineeRelation)}</td><td style="padding:5px 10px;color:#065F46;font-weight:600;">মোবাইল</td><td style="padding:5px 10px;">${fmt(d.nomineePhone)}</td></tr>
+        <tr><td style="padding:5px 10px;color:#065F46;font-weight:600;">এনআইডি</td><td style="padding:5px 10px;">${fmt(d.nomineeNID)}</td><td style="padding:5px 10px;color:#065F46;font-weight:600;">ঠিকানা</td><td style="padding:5px 10px;">${fmt(d.nomineeAddress)}</td></tr>
+    </table>
+
+    <!-- Terms -->
+    <div style="background:#fffbeb;border:1px solid #C9A227;border-radius:6px;padding:10px;font-size:10px;margin-bottom:14px;line-height:1.7;">
+        <p style="font-weight:bold;margin:0 0 4px;color:#064E3B;">আর্থিক অঙ্গীকার ও শর্তাবলী:</p>
+        <p style="margin:1px 0;">ক) প্রতি মাসের ১৫ তারিখের মধ্যে ২০০০ টাকা সঞ্চয় জমা দিতে বাধ্য থাকব।</p>
+        <p style="margin:1px 0;">খ) নির্ধারিত সময়ে জমা না দিলে ১০০ টাকা বিলম্ব ফি প্রযোজ্য।</p>
+        <p style="margin:1px 0;">গ) প্রাথমিক ৩ বছর সক্রিয় সদস্য থাকার প্রতিশ্রুতি।</p>
+        <p style="margin:1px 0;">ঘ) সংস্থার শৃঙ্খলা লঙ্ঘনে সদস্যপদ বাতিলযোগ্য।</p>
+    </div>
+
+    <!-- Signature + Approval -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;border-top:1px solid #e5e7eb;padding-top:14px;margin-bottom:18px;">
+        <div>
+            <p style="font-size:10px;color:#555;margin:0 0 4px;">আবেদনকারীর স্বাক্ষর:</p>
+            ${d.sigData ? `<img src="${d.sigData}" style="height:34px;width:140px;object-fit:contain;border-bottom:1px solid #333;" />` : '<div style="width:140px;border-bottom:1px solid #333;height:34px;"></div>'}
+            <p style="font-size:10px;color:#777;margin:2px 0 0;">${dateStr}</p>
+        </div>
+        <div style="text-align:right;font-size:10px;color:#555;">
+            <p style="margin:0;">রেফারেন্স: <strong>${d.id}</strong></p>
+            ${d.memberID ? `<p style="margin:2px 0 0;font-size:12px;color:#064E3B;font-weight:bold;">সদস্য আইডি: ${d.memberID}</p>` : ''}
+        </div>
+    </div>
+
+    <!-- 4-column approval row -->
+    <div style="border:1px solid #C9A227;border-radius:6px;padding:10px;margin-bottom:12px;">
+        <p style="font-size:10px;color:#064E3B;font-weight:bold;margin:0 0 8px;text-align:center;">আহ্বায়ক কমিটির অনুমোদন</p>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center;font-size:10px;">
+            ${['committee1', 'committee2', 'committee3', 'committee4'].map((c, i) => `
+          <div style="border:1px solid #d1fae5;border-radius:4px;padding:8px;">
+            <p style="margin:0;font-weight:600;color:${committee.includes(c) ? '#065F46' : '#aaa'};">${committee.includes(c) ? '✅' : '___________'}</p>
+            <p style="margin:4px 0 0;color:#555;">কমিটি (0${i + 1})</p>
+          </div>`).join('')}
+        </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center;font-size:10px;">
+        <div style="border-top:1px solid #333;padding-top:6px;">
+            <p style="margin:0;font-weight:600;">${approvals.secretary ? '✅ ' + (new Date().toLocaleDateString('bn-BD')) : '_______________'}</p>
+            <p style="margin:4px 0 0;color:#555;">সাধারণ সম্পাদক (সুপারিশকারী)</p>
+        </div>
+        <div style="border-top:1px solid #333;padding-top:6px;">
+            <p style="margin:0;font-weight:600;">${approvals.vicePresident ? '✅ ' + (new Date().toLocaleDateString('bn-BD')) : '_______________'}</p>
+            <p style="margin:4px 0 0;color:#555;">সহ-সভাপতি (অনুমোদনকারী)</p>
+        </div>
+        <div style="border-top:1px solid #333;padding-top:6px;">
+            <p style="margin:0;font-weight:600;">${approvals.president ? '✅ ' + (new Date().toLocaleDateString('bn-BD')) : '_______________'}</p>
+            <p style="margin:4px 0 0;color:#555;">সভাপতি (চূড়ান্ত অনুমোদন)</p>
+        </div>
+    </div>
+    `;
+    return div;
+}
+
+// ─── CSV EXPORT ───
+function exportCSV() {
+    const apps = getApps();
+    if (!apps.length) { showToast('কোনো ডেটা নেই', '#C9A227'); return; }
+    const headers = ['ID', 'সদস্য_ID', 'নাম_বাংলা', 'নাম_ইংরেজি', 'NID', 'জন্ম_তারিখ', 'পেশা', 'মোবাইল', 'অবস্থা', 'জমার_তারিখ'];
+    const rows = apps.map(a => [
+        a.id, a.memberID || '',
+        a.applicantNameBn || '', a.applicantNameEn || '',
+        a.nidNumber || '', a.dob || '', a.occupation || '',
+        (a.phones || [])[0] || '', a.status || '',
+        a.submittedAt ? new Date(a.submittedAt).toLocaleDateString() : ''
+    ]);
+    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'barakah-members-' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.click();
+    showToast('CSV ডাউনলোড হয়েছে', '#065F46');
+}
+
+// ─── TOAST ───
+function showToast(msg, color = '#065F46') {
+    const e = document.querySelector('.toast');
+    if (e) e.remove();
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.style.background = color;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, 3500);
+}
+
+// ─── INIT ───
+renderTable();
