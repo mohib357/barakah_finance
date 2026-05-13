@@ -1,0 +1,1624 @@
+<!-- C:\Project\Barakah_Finance\pages\dashboard.html -->
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>বারাকাহ ফাইন্যান্স — ড্যাশবোর্ড</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700&family=Noto+Sans+Bengali:wght@300;400;500;600&display=swap"
+        rel="stylesheet" />
+    <style>
+        :root {
+            --gold: #C9A227;
+            --gold-light: #F5D061;
+            --dark-green: #064E3B;
+            --mid-green: #065F46;
+            --light-green: #D1FAE5;
+            --cream: #FDFAF3;
+            --text-dark: #1A2A1A;
+            --text-muted: #4A5A4A;
+            --sidebar-w: 260px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans Bengali', sans-serif;
+            background: #f0f4f1;
+            color: var(--text-dark);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: linear-gradient(180deg, #064E3B, #022c22);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 200;
+            transition: left 0.3s;
+        }
+
+        .sb-logo {
+            padding: 20px;
+            border-bottom: 1px solid rgba(201, 162, 39, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sb-logo .circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #C9A227, #A67C00);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            font-family: 'Noto Serif Bengali', serif;
+            flex-shrink: 0;
+        }
+
+        .sb-logo span {
+            color: #F5D061;
+            font-family: 'Noto Serif Bengali', serif;
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .sb-user {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .sb-avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1D9E75, #065F46);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #fff;
+            font-weight: 700;
+            font-family: 'Noto Serif Bengali', serif;
+            margin-bottom: 10px;
+            border: 2px solid rgba(201, 162, 39, 0.4);
+        }
+
+        .sb-name {
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .sb-role {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        .role-admin {
+            background: #C9A227;
+            color: #0A2A1A;
+        }
+
+        .role-member {
+            background: #1D9E75;
+            color: #fff;
+        }
+
+        .role-customer {
+            background: #185FA5;
+            color: #fff;
+        }
+
+        .sb-complete {
+            margin-top: 8px;
+        }
+
+        .sb-complete-bar {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin-top: 4px;
+        }
+
+        .sb-complete-fill {
+            height: 100%;
+            border-radius: 2px;
+            background: linear-gradient(90deg, #C9A227, #F5D061);
+            transition: width 0.5s;
+        }
+
+        .sb-complete-txt {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 2px;
+        }
+
+        .sb-nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 0;
+        }
+
+        .sb-section {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 12px 20px 4px;
+        }
+
+        .sb-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            font-size: 13px;
+            border-left: 3px solid transparent;
+        }
+
+        .sb-item:hover,
+        .sb-item.active {
+            background: rgba(255, 255, 255, 0.05);
+            color: #F5D061;
+            border-color: #C9A227;
+        }
+
+        .sb-item .icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .sb-badge {
+            margin-left: auto;
+            background: rgba(201, 162, 39, 0.2);
+            color: #F5D061;
+            padding: 2px 7px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .sb-footer {
+            padding: 16px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .sb-logout {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            font-size: 13px;
+            background: none;
+            border: none;
+            width: 100%;
+            transition: color 0.2s;
+        }
+
+        .sb-logout:hover {
+            color: #fca5a5;
+        }
+
+        /* ── MAIN ── */
+        .main {
+            margin-left: var(--sidebar-w);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .topbar-title {
+            font-family: 'Noto Serif Bengali', serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--dark-green);
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .notif-btn {
+            position: relative;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            color: var(--text-muted);
+        }
+
+        .notif-dot {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #e53e3e;
+        }
+
+        .hamburger-btn {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 22px;
+            color: var(--text-muted);
+        }
+
+        .content {
+            padding: 24px;
+            flex: 1;
+        }
+
+        /* ── PANELS ── */
+        .panel {
+            display: none;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        /* ── STAT CARDS ── */
+        .stat-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 18px;
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s;
+        }
+
+        .stat-card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+            transform: translateY(-2px);
+        }
+
+        .stat-card .sc-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+
+        .sc-green {
+            background: #d1fae5;
+        }
+
+        .sc-gold {
+            background: #fef3c7;
+        }
+
+        .sc-blue {
+            background: #dbeafe;
+        }
+
+        .sc-red {
+            background: #fee2e2;
+        }
+
+        .stat-card .sc-val {
+            font-family: 'Noto Serif Bengali', serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--dark-green);
+        }
+
+        .stat-card .sc-lbl {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .stat-card .sc-change {
+            font-size: 11px;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .sc-up {
+            color: #059669;
+        }
+
+        .sc-down {
+            color: #dc2626;
+        }
+
+        /* ── CARD ── */
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-family: 'Noto Serif Bengali', serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--dark-green);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .card-title .badge {
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        /* ── TABLE ── */
+        .tbl-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead th {
+            background: #f0fdf4;
+            color: var(--dark-green);
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            border-bottom: 1px solid #d1fae5;
+        }
+
+        tbody td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f0f4f1;
+        }
+
+        tbody tr:hover td {
+            background: #fafff9;
+        }
+
+        .tag {
+            padding: 3px 9px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .tag-ok {
+            background: #d1fae5;
+            color: #065F46;
+        }
+
+        .tag-pend {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .tag-no {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .tag-blue {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        /* ── PROGRESS ── */
+        .prog-bar {
+            height: 8px;
+            background: #f0f4f1;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .prog-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--dark-green), #1D9E75);
+            transition: width 0.5s;
+        }
+
+        /* ── PROFILE FORM ── */
+        .pf-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .pf-group {
+            margin-bottom: 14px;
+        }
+
+        .pf-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--mid-green);
+            margin-bottom: 4px;
+        }
+
+        .pf-input {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1.5px solid #d1fae5;
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: 'Noto Sans Bengali', sans-serif;
+            outline: none;
+            background: #f0fdf4;
+            transition: border 0.2s;
+        }
+
+        .pf-input:focus {
+            border-color: var(--gold);
+            background: #fff;
+        }
+
+        .pf-input:disabled {
+            background: #f9fafb;
+            color: #888;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, var(--dark-green), var(--mid-green));
+            color: #fff;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Noto Sans Bengali', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .btn-save:hover {
+            background: linear-gradient(135deg, #047857, #059669);
+        }
+
+        /* ── COMPLETE RING ── */
+        .profile-complete-ring {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 12px;
+        }
+
+        .profile-complete-ring svg {
+            transform: rotate(-90deg);
+        }
+
+        .profile-complete-ring .ring-num {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--dark-green);
+            font-family: 'Noto Serif Bengali', serif;
+        }
+
+        /* ── SAVINGS CHART ── */
+        .savings-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            height: 120px;
+            padding: 8px 0;
+        }
+
+        .savings-bar-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .savings-bar {
+            width: 100%;
+            border-radius: 4px 4px 0 0;
+            background: linear-gradient(180deg, #1D9E75, #065F46);
+            transition: height 0.5s;
+            min-height: 4px;
+        }
+
+        .savings-bar-lbl {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        /* ── TOAST ── */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #065F46;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 13px;
+            z-index: 9999;
+            font-family: 'Noto Serif Bengali', serif;
+            animation: slideUp 0.3s ease;
+            display: none;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        /* ── MOBILE ── */
+        .overlay-bg {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 199;
+        }
+
+        @media(max-width:768px) {
+            .sidebar {
+                left: -var(--sidebar-w);
+                left: -280px;
+            }
+
+            .sidebar.open {
+                left: 0;
+            }
+
+            .main {
+                margin-left: 0;
+            }
+
+            .hamburger-btn {
+                display: block;
+            }
+
+            .overlay-bg.show {
+                display: block;
+            }
+
+            .pf-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-row {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media(max-width:480px) {
+            .stat-row {
+                grid-template-columns: 1fr;
+            }
+
+            .content {
+                padding: 16px;
+            }
+        }
+
+        /* Admin specific */
+        .admin-quick-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .admin-quick-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .admin-quick-card:hover {
+            border-color: var(--gold);
+            box-shadow: 0 4px 12px rgba(201, 162, 39, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .admin-quick-card .aqc-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .admin-quick-card .aqc-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--dark-green);
+        }
+
+        .admin-quick-card .aqc-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- OVERLAY (mobile) -->
+    <div class="overlay-bg" id="overlayBg" onclick="closeSidebar()"></div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+        <div class="sb-logo">
+            <div class="circle">ব</div>
+            <span>বারাকাহ<br />ফাইন্যান্স</span>
+        </div>
+        <div class="sb-user">
+            <div class="sb-avatar" id="sb-avatar">ব</div>
+            <div class="sb-name" id="sb-name">লোড হচ্ছে...</div>
+            <span class="sb-role" id="sb-role-badge">ব্যবহারকারী</span>
+            <div class="sb-complete">
+                <div style="display:flex;justify-content:space-between;">
+                    <span style="font-size:10px;color:rgba(255,255,255,0.4);">প্রোফাইল সম্পন্নতা</span>
+                    <span style="font-size:10px;color:#F5D061;" id="sb-complete-pct">—</span>
+                </div>
+                <div class="sb-complete-bar">
+                    <div class="sb-complete-fill" id="sb-complete-fill" style="width:0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="sb-nav" id="sb-nav">
+            <!-- Filled by JS based on role -->
+        </nav>
+
+        <div class="sb-footer">
+            <button class="sb-logout" onclick="doLogout()">🚪 লগআউট করুন</button>
+        </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+        <div class="topbar">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <button class="hamburger-btn" onclick="toggleSidebar()">☰</button>
+                <div class="topbar-title" id="topbar-title">ড্যাশবোর্ড</div>
+            </div>
+            <div class="topbar-right">
+                <a href="../index.html" style="font-size:12px;color:var(--text-muted);text-decoration:none;">🏠 হোম</a>
+                <button class="notif-btn" title="নোটিফিকেশন">🔔<span class="notif-dot"></span></button>
+            </div>
+        </div>
+
+        <div class="content">
+
+            <!-- ═══ MEMBER DASHBOARD ═══ -->
+            <div class="panel" id="panel-overview">
+                <div class="stat-row" id="overview-stats"></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                    <div class="card">
+                        <div class="card-title">📊 মাসিক সঞ্চয় (শেষ ৬ মাস)</div>
+                        <div class="savings-chart" id="savings-chart"></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">📋 সাম্প্রতিক কার্যক্রম</div>
+                        <div id="recent-activity" style="font-size:13px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ SAVINGS PANEL ═══ -->
+            <div class="panel" id="panel-savings">
+                <div class="card">
+                    <div class="card-title">💰 আমার সঞ্চয় বিবরণ <span class="badge tag-ok"
+                            id="savings-total-badge">মোট: ৳০</span></div>
+                    <div class="tbl-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>মাস</th>
+                                    <th>পরিমাণ</th>
+                                    <th>তারিখ</th>
+                                    <th>অবস্থা</th>
+                                </tr>
+                            </thead>
+                            <tbody id="savings-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ LOANS PANEL ═══ -->
+            <div class="panel" id="panel-loans">
+                <div class="card">
+                    <div class="card-title">🤝 করজে হাসানা আবেদন</div>
+                    <div
+                        style="background:#fffbeb;border:1px solid rgba(201,162,39,0.3);border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;color:#92400e;">
+                        ⚠️ সর্বোচ্চ ১৫,০০০ টাকা। ৩ মাসে পরিশোধযোগ্য। শুধুমাত্র সক্রিয় সদস্যদের জন্য।
+                    </div>
+                    <div id="loan-form-area">
+                        <div class="pf-grid">
+                            <div class="pf-group"><label class="pf-label">পরিমাণ (সর্বোচ্চ ১৫,০০০) *</label><input
+                                    class="pf-input" id="loan-amount" type="number" max="15000"
+                                    placeholder="৳ পরিমাণ" /></div>
+                            <div class="pf-group"><label class="pf-label">কারণ *</label><input class="pf-input"
+                                    id="loan-reason" placeholder="প্রয়োজনের কারণ" /></div>
+                            <div class="pf-group"><label class="pf-label">পরিশোধ শুরুর মাস *</label><input
+                                    class="pf-input" id="loan-start" type="month" /></div>
+                            <div class="pf-group"><label class="pf-label">জামিনদার (সদস্যের নাম)</label><input
+                                    class="pf-input" id="loan-guarantor" placeholder="জামিনদারের নাম" /></div>
+                        </div>
+                        <button class="btn-save" onclick="submitLoan()">📩 আবেদন জমা দিন</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">📋 আমার করজ ইতিহাস</div>
+                    <div class="tbl-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>আইডি</th>
+                                    <th>পরিমাণ</th>
+                                    <th>বাকি</th>
+                                    <th>কারণ</th>
+                                    <th>অবস্থা</th>
+                                    <th>তারিখ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="loans-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ ORDERS PANEL ═══ -->
+            <div class="panel" id="panel-orders">
+                <div class="card">
+                    <div class="card-title">🛒 আমার পণ্য অর্ডার</div>
+                    <div class="tbl-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>আইডি</th>
+                                    <th>পণ্য</th>
+                                    <th>মূল্য</th>
+                                    <th>কিস্তি</th>
+                                    <th>ধাপ</th>
+                                    <th>অবস্থা</th>
+                                    <th>তারিখ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orders-table"></tbody>
+                        </table>
+                    </div>
+                    <div style="margin-top:14px;">
+                        <a href="shop.html"
+                            style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#064E3B,#065F46);color:#fff;padding:9px 20px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700;">🛒
+                            নতুন পণ্য দেখুন</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ PROFILE PANEL ═══ -->
+            <div class="panel" id="panel-profile">
+                <div style="display:grid;grid-template-columns:280px 1fr;gap:20px;">
+                    <div>
+                        <div class="card" style="text-align:center;">
+                            <div class="profile-complete-ring">
+                                <svg width="100" height="100" viewBox="0 0 100 100">
+                                    <circle cx="50" cy="50" r="40" fill="none" stroke="#e5e7eb" stroke-width="8" />
+                                    <circle cx="50" cy="50" r="40" fill="none" stroke="#064E3B" stroke-width="8"
+                                        stroke-linecap="round" stroke-dasharray="251.2" id="ring-progress"
+                                        stroke-dashoffset="251.2" />
+                                </svg>
+                                <div class="ring-num" id="ring-num">0%</div>
+                            </div>
+                            <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">প্রোফাইল সম্পন্নতা
+                            </div>
+                            <div style="font-size:14px;font-weight:700;color:var(--dark-green);"
+                                id="profile-name-display">—</div>
+                            <div style="font-size:12px;color:var(--text-muted);margin-top:4px;"
+                                id="profile-role-display">—</div>
+                            <div style="font-size:12px;color:var(--text-muted);margin-top:4px;" id="profile-id-display">
+                                —</div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title" style="font-size:13px;">✅ সম্পন্ন করতে হবে</div>
+                            <div id="completion-checklist" style="font-size:12px;"></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">✏️ প্রোফাইল সম্পাদনা</div>
+                        <div class="pf-grid">
+                            <div class="pf-group"><label class="pf-label">নাম *</label><input class="pf-input"
+                                    id="pf-name" /></div>
+                            <div class="pf-group"><label class="pf-label">ইউজারনেম</label><input class="pf-input"
+                                    id="pf-uname" disabled /></div>
+                            <div class="pf-group"><label class="pf-label">মোবাইল</label><input class="pf-input"
+                                    id="pf-phone" disabled /></div>
+                            <div class="pf-group"><label class="pf-label">ইমেইল</label><input class="pf-input"
+                                    id="pf-email" type="email" /></div>
+                            <div class="pf-group"><label class="pf-label">জন্ম তারিখ</label><input class="pf-input"
+                                    id="pf-dob" type="date" /></div>
+                            <div class="pf-group"><label class="pf-label">পেশা</label><input class="pf-input"
+                                    id="pf-job" placeholder="পেশা" /></div>
+                            <div class="pf-group col-span-2"><label class="pf-label">ঠিকানা</label><input
+                                    class="pf-input" id="pf-address" placeholder="বিস্তারিত ঠিকানা" /></div>
+                            <div class="pf-group"><label class="pf-label">এনআইডি নম্বর</label><input class="pf-input"
+                                    id="pf-nid" placeholder="NID" /></div>
+                            <div class="pf-group"><label class="pf-label">রেফার করেছেন</label><input class="pf-input"
+                                    id="pf-referral" disabled /></div>
+                        </div>
+                        <div class="pf-group"><label class="pf-label">নতুন পাসওয়ার্ড (পরিবর্তন করতে
+                                চাইলে)</label><input class="pf-input" id="pf-pass" type="password"
+                                placeholder="নতুন পাসওয়ার্ড (ঐচ্ছিক)" /></div>
+                        <button class="btn-save" onclick="saveProfile()">✅ সংরক্ষণ করুন</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ ADMIN PANEL ═══ -->
+            <div class="panel" id="panel-admin">
+                <div class="admin-quick-grid">
+                    <a href="admin.html" class="admin-quick-card" style="display:block;">
+                        <div class="aqc-icon">👥</div>
+                        <div class="aqc-title">সদস্য আবেদন</div>
+                        <div class="aqc-sub" id="aq-apps">লোড হচ্ছে...</div>
+                    </a>
+                    <a href="shop_admin.html" class="admin-quick-card" style="display:block;">
+                        <div class="aqc-icon">📦</div>
+                        <div class="aqc-title">পণ্য ম্যানেজমেন্ট</div>
+                        <div class="aqc-sub" id="aq-products">লোড হচ্ছে...</div>
+                    </a>
+                    <a href="shop_admin.html#orders" class="admin-quick-card" style="display:block;">
+                        <div class="aqc-icon">🛒</div>
+                        <div class="aqc-title">অর্ডার ব্যবস্থাপনা</div>
+                        <div class="aqc-sub" id="aq-orders">লোড হচ্ছে...</div>
+                    </a>
+                    <a href="shop_admin.html#badges" class="admin-quick-card" style="display:block;">
+                        <div class="aqc-icon">🏅</div>
+                        <div class="aqc-title">ব্যাজ কন্ট্রোল</div>
+                        <div class="aqc-sub">হোমপেজ ব্যাজ</div>
+                    </a>
+                    <a href="shop_admin.html#notices" class="admin-quick-card" style="display:block;">
+                        <div class="aqc-icon">📢</div>
+                        <div class="aqc-title">নোটিশ ম্যানেজমেন্ট</div>
+                        <div class="aqc-sub">নোটিশবার কন্ট্রোল</div>
+                    </a>
+                    <div class="admin-quick-card" onclick="showPanel('panel-all-users')">
+                        <div class="aqc-icon">🔑</div>
+                        <div class="aqc-title">সকল ব্যবহারকারী</div>
+                        <div class="aqc-sub" id="aq-users">লোড হচ্ছে...</div>
+                    </div>
+                    <div class="admin-quick-card" onclick="showPanel('panel-all-savings')">
+                        <div class="aqc-icon">💰</div>
+                        <div class="aqc-title">সঞ্চয় হিসাব</div>
+                        <div class="aqc-sub" id="aq-savings">লোড হচ্ছে...</div>
+                    </div>
+                    <div class="admin-quick-card" onclick="showPanel('panel-all-loans')">
+                        <div class="aqc-icon">🤝</div>
+                        <div class="aqc-title">করজে হাসানা</div>
+                        <div class="aqc-sub" id="aq-loans">লোড হচ্ছে...</div>
+                    </div>
+                </div>
+
+                <!-- Admin Summary Stats -->
+                <div class="stat-row" id="admin-stats"></div>
+
+                <!-- Recent Activities -->
+                <div class="card">
+                    <div class="card-title">📋 সাম্প্রতিক আবেদন</div>
+                    <div class="tbl-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>নাম</th>
+                                    <th>NID</th>
+                                    <th>মোবাইল</th>
+                                    <th>অবস্থা</th>
+                                    <th>তারিখ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-recent-apps"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ ALL USERS (Admin) ═══ -->
+            <div class="panel" id="panel-all-users">
+                <div class="card">
+                    <div class="card-title">
+                        👥 সকল ব্যবহারকারী
+                        <input type="text" id="user-search" class="pf-input" style="max-width:200px;font-size:12px;"
+                            placeholder="🔍 খুঁজুন..." oninput="renderAllUsers()" />
+                    </div>
+                    <div class="tbl-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>নাম</th>
+                                    <th>ইউজারনেম</th>
+                                    <th>মোবাইল</th>
+                                    <th>ইমেইল</th>
+                                    <th>ভূমিকা</th>
+                                    <th>প্রোফাইল</th>
+                                    <th>কার্যক্রম</th>
+                                </tr>
+                            </thead>
+                            <tbody id="all-users-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ ALL SAVINGS (Admin) ═══ -->
+            <div class="panel" id="panel-all-savings">
+                <div class="card">
+                    <div class="card-title">💰 সকল সঞ্চয় এন্ট্রি — মাসিক সঞ্চয় যোগ করুন</div>
+                    <div class="pf-grid">
+                        <div class="pf-group">
+                            <label class="pf-label">সদস্য নির্বাচন করুন *</label>
+                            <select class="pf-input" id="sv-user">
+                                <option value="">-- সদস্য নির্বাচন --</option>
+                            </select>
+                        </div>
+                        <div class="pf-group"><label class="pf-label">মাস *</label><input class="pf-input" id="sv-month"
+                                type="month" /></div>
+                        <div class="pf-group"><label class="pf-label">পরিমাণ *</label><input class="pf-input"
+                                id="sv-amount" type="number" value="2000" /></div>
+                        <div class="pf-group"><label class="pf-label">মন্তব্য</label><input class="pf-input"
+                                id="sv-note" placeholder="ঐচ্ছিক" /></div>
+                    </div>
+                    <button class="btn-save" onclick="addSavingEntry()">+ সঞ্চয় এন্ট্রি যোগ করুন</button>
+                </div>
+                <div class="card">
+                    <div class="card-title">📊 সঞ্চয় তালিকা <span class="badge tag-ok" id="total-savings-badge">মোট:
+                            ৳০</span></div>
+                    <div class="tbl-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>সদস্য</th>
+                                    <th>মাস</th>
+                                    <th>পরিমাণ</th>
+                                    <th>মন্তব্য</th>
+                                    <th>তারিখ</th>
+                                    <th>কার্যক্রম</th>
+                                </tr>
+                            </thead>
+                            <tbody id="all-savings-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ ALL LOANS (Admin) ═══ -->
+            <div class="panel" id="panel-all-loans">
+                <div class="card">
+                    <div class="card-title">🤝 করজে হাসানা ব্যবস্থাপনা</div>
+                    <div class="tbl-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>আইডি</th>
+                                    <th>সদস্য</th>
+                                    <th>পরিমাণ</th>
+                                    <th>বাকি</th>
+                                    <th>কারণ</th>
+                                    <th>অবস্থা</th>
+                                    <th>কার্যক্রম</th>
+                                </tr>
+                            </thead>
+                            <tbody id="all-loans-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /content -->
+    </div><!-- /main -->
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ═══ DB ═══
+        const DB = {
+            get: k => { try { return JSON.parse(localStorage.getItem(k) || 'null') } catch { return null } },
+            set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
+            getUsers: () => JSON.parse(localStorage.getItem('bf_users') || '[]'),
+            saveUsers: u => localStorage.setItem('bf_users', JSON.stringify(u)),
+            getSession: () => { try { return JSON.parse(localStorage.getItem('bf_session')) } catch { return null } },
+            clearSession: () => localStorage.removeItem('bf_session'),
+            getSavings: () => JSON.parse(localStorage.getItem('bf_savings') || '[]'),
+            saveSavings: s => localStorage.setItem('bf_savings', JSON.stringify(s)),
+            getLoans: () => JSON.parse(localStorage.getItem('bf_loans') || '[]'),
+            saveLoans: l => localStorage.setItem('bf_loans', JSON.stringify(l)),
+            getOrders: () => JSON.parse(localStorage.getItem('bf_orders') || '[]'),
+            getApps: () => JSON.parse(localStorage.getItem('bf_applications') || '[]'),
+            getProducts: () => JSON.parse(localStorage.getItem('bf_products') || '[]'),
+            genID: p => (p || 'X') + '-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 5).toUpperCase(),
+        };
+
+        // ═══ STATE ═══
+        let currentUser = null;
+        let activePanel = '';
+
+        // ═══ INIT ═══
+        document.addEventListener('DOMContentLoaded', () => {
+            currentUser = DB.getSession();
+            if (!currentUser || !currentUser.verified) {
+                // Not logged in
+                alert('দয়া করে প্রথমে লগইন করুন।');
+                window.location.href = '../index.html';
+                return;
+            }
+            initDashboard();
+        });
+
+        function initDashboard() {
+            // Set sidebar user info
+            document.getElementById('sb-avatar').textContent = (currentUser.name || 'ব')[0];
+            document.getElementById('sb-name').textContent = currentUser.name || 'ব্যবহারকারী';
+            const pct = calcProfileComplete();
+            document.getElementById('sb-complete-pct').textContent = pct + '%';
+            document.getElementById('sb-complete-fill').style.width = pct + '%';
+
+            const roleBadge = document.getElementById('sb-role-badge');
+            if (currentUser.role === 'admin') { roleBadge.textContent = 'অ্যাডমিন'; roleBadge.className = 'sb-role role-admin'; }
+            else if (currentUser.role === 'member') { roleBadge.textContent = 'সদস্য'; roleBadge.className = 'sb-role role-member'; }
+            else { roleBadge.textContent = 'গ্রাহক'; roleBadge.className = 'sb-role role-customer'; }
+
+            buildNav();
+            showPanel('panel-overview');
+        }
+
+        // ═══ NAVIGATION ═══
+        const NAV_ITEMS = {
+            common: [
+                { id: 'panel-overview', icon: '📊', label: 'ওভারভিউ' },
+                { id: 'panel-profile', icon: '👤', label: 'আমার প্রোফাইল' },
+                { id: 'panel-orders', icon: '🛒', label: 'আমার অর্ডার' },
+            ],
+            member: [
+                { id: 'panel-savings', icon: '💰', label: 'সঞ্চয় বিবরণ' },
+                { id: 'panel-loans', icon: '🤝', label: 'করজে হাসানা' },
+            ],
+            admin: [
+                { id: 'panel-admin', icon: '🛡️', label: 'অ্যাডমিন প্যানেল' },
+                { id: 'panel-all-users', icon: '👥', label: 'সকল ব্যবহারকারী' },
+                { id: 'panel-all-savings', icon: '💰', label: 'সঞ্চয় হিসাব' },
+                { id: 'panel-all-loans', icon: '🤝', label: 'করজে হাসানা' },
+            ],
+        };
+
+        function buildNav() {
+            const nav = document.getElementById('sb-nav');
+            let html = '<div class="sb-section">মূল মেনু</div>';
+            NAV_ITEMS.common.forEach(item => {
+                html += `<a class="sb-item" data-panel="${item.id}" onclick="showPanel('${item.id}')"><span class="icon">${item.icon}</span>${item.label}</a>`;
+            });
+
+            if (currentUser.role === 'member' || currentUser.role === 'admin') {
+                html += '<div class="sb-section">সদস্য সেবা</div>';
+                NAV_ITEMS.member.forEach(item => {
+                    html += `<a class="sb-item" data-panel="${item.id}" onclick="showPanel('${item.id}')"><span class="icon">${item.icon}</span>${item.label}</a>`;
+                });
+            }
+
+            if (currentUser.role === 'admin') {
+                html += '<div class="sb-section">অ্যাডমিন</div>';
+                NAV_ITEMS.admin.forEach(item => {
+                    html += `<a class="sb-item" data-panel="${item.id}" onclick="showPanel('${item.id}')"><span class="icon">${item.icon}</span>${item.label}</a>`;
+                });
+                html += `<a class="sb-item" href="admin.html"><span class="icon">📋</span>সদস্য আবেদন</a>`;
+                html += `<a class="sb-item" href="shop_admin.html"><span class="icon">🏬</span>শপ অ্যাডমিন</a>`;
+            }
+
+            nav.innerHTML = html;
+        }
+
+        function showPanel(id) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.sb-item').forEach(b => b.classList.remove('active'));
+            const panel = document.getElementById(id);
+            if (panel) panel.classList.add('active');
+            const navItem = document.querySelector(`.sb-item[data-panel="${id}"]`);
+            if (navItem) navItem.classList.add('active');
+            activePanel = id;
+
+            // Load data for the panel
+            const titles = {
+                'panel-overview': 'ওভারভিউ', 'panel-savings': 'সঞ্চয় বিবরণ', 'panel-loans': 'করজে হাসানা',
+                'panel-orders': 'আমার অর্ডার', 'panel-profile': 'প্রোফাইল', 'panel-admin': 'অ্যাডমিন প্যানেল',
+                'panel-all-users': 'সকল ব্যবহারকারী', 'panel-all-savings': 'সঞ্চয় হিসাব', 'panel-all-loans': 'করজে হাসানা',
+            };
+            document.getElementById('topbar-title').textContent = titles[id] || 'ড্যাশবোর্ড';
+            closeSidebar();
+
+            // Load panel data
+            if (id === 'panel-overview') loadOverview();
+            if (id === 'panel-savings') loadSavings();
+            if (id === 'panel-loans') loadLoans();
+            if (id === 'panel-orders') loadOrders();
+            if (id === 'panel-profile') loadProfile();
+            if (id === 'panel-admin') loadAdminPanel();
+            if (id === 'panel-all-users') renderAllUsers();
+            if (id === 'panel-all-savings') loadAllSavings();
+            if (id === 'panel-all-loans') loadAllLoans();
+        }
+
+        // ═══ OVERVIEW ═══
+        function loadOverview() {
+            const savings = DB.getSavings().filter(s => s.userId === currentUser.id);
+            const loans = DB.getLoans().filter(l => l.userId === currentUser.id);
+            const orders = DB.getOrders().filter(o => o.customerPhone === currentUser.phone);
+            const totalSavings = savings.reduce((a, s) => a + (s.amount || 0), 0);
+            const activeLoans = loans.filter(l => l.status === 'active');
+            const pct = calcProfileComplete();
+
+            const isAdmin = currentUser.role === 'admin';
+            const allSavings = DB.getSavings();
+            const allUsers = DB.getUsers().filter(u => u.verified);
+            const allOrders = DB.getOrders();
+
+            document.getElementById('overview-stats').innerHTML = isAdmin ? `
+    <div class="stat-card"><div class="sc-icon sc-green">👥</div><div class="sc-val">${allUsers.length}</div><div class="sc-lbl">মোট সদস্য/ব্যবহারকারী</div></div>
+    <div class="stat-card"><div class="sc-icon sc-gold">💰</div><div class="sc-val">৳${allSavings.reduce((a, s) => a + (s.amount || 0), 0).toLocaleString('bn')}</div><div class="sc-lbl">মোট সঞ্চয়</div></div>
+    <div class="stat-card"><div class="sc-icon sc-blue">🛒</div><div class="sc-val">${allOrders.length}</div><div class="sc-lbl">মোট অর্ডার</div></div>
+    <div class="stat-card"><div class="sc-icon sc-red">🤝</div><div class="sc-val">${DB.getLoans().filter(l => l.status === 'active').length}</div><div class="sc-lbl">সক্রিয় করজ</div></div>
+  ` : `
+    <div class="stat-card"><div class="sc-icon sc-green">💰</div><div class="sc-val">৳${totalSavings.toLocaleString('bn')}</div><div class="sc-lbl">মোট সঞ্চয়</div></div>
+    <div class="stat-card"><div class="sc-icon sc-gold">📅</div><div class="sc-val">${savings.length}</div><div class="sc-lbl">সঞ্চয় এন্ট্রি</div></div>
+    <div class="stat-card"><div class="sc-icon sc-blue">🤝</div><div class="sc-val">${activeLoans.length}</div><div class="sc-lbl">সক্রিয় করজ</div></div>
+    <div class="stat-card"><div class="sc-icon sc-red">🛒</div><div class="sc-val">${orders.length}</div><div class="sc-lbl">আমার অর্ডার</div></div>
+    <div class="stat-card"><div class="sc-icon sc-green">✅</div><div class="sc-val">${pct}%</div><div class="sc-lbl">প্রোফাইল সম্পন্নতা</div></div>
+  `;
+
+            // Savings chart (last 6 months)
+            const months = [];
+            for (let i = 5; i >= 0; i--) {
+                const d = new Date(); d.setMonth(d.getMonth() - i);
+                months.push({ key: d.toISOString().slice(0, 7), label: d.toLocaleDateString('bn-BD', { month: 'short' }) });
+            }
+            const chartData = months.map(m => {
+                const mSavings = isAdmin ? DB.getSavings().filter(s => s.month === m.key) : savings.filter(s => s.month === m.key);
+                return { label: m.label, val: mSavings.reduce((a, s) => a + (s.amount || 0), 0) };
+            });
+            const maxVal = Math.max(...chartData.map(d => d.val), 1);
+            document.getElementById('savings-chart').innerHTML = chartData.map(d => `
+    <div class="savings-bar-wrap">
+      <div class="savings-bar" style="height:${Math.max(4, (d.val / maxVal * 100))}px;" title="৳${d.val.toLocaleString()}"></div>
+      <div class="savings-bar-lbl">${d.label}</div>
+    </div>`).join('');
+
+            // Recent activity
+            const acts = [];
+            savings.slice(-3).reverse().forEach(s => acts.push({ icon: '💰', text: `সঞ্চয় এন্ট্রি: ৳${s.amount}`, date: s.date }));
+            orders.slice(-2).reverse().forEach(o => acts.push({ icon: '🛒', text: `অর্ডার: ${o.productName}`, date: o.submittedAt }));
+            const actHTML = acts.length ? acts.map(a => `<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #f0f4f1;"><span>${a.icon}</span><div><div style="font-size:13px;">${a.text}</div><div style="font-size:11px;color:var(--text-muted);">${a.date ? new Date(a.date).toLocaleDateString('bn-BD') : ''}</div></div></div>`).join('')
+                : '<div style="color:var(--text-muted);font-size:13px;padding:12px 0;">কোনো কার্যক্রম নেই</div>';
+            document.getElementById('recent-activity').innerHTML = actHTML;
+        }
+
+        // ═══ SAVINGS ═══
+        function loadSavings() {
+            const savings = DB.getSavings().filter(s => s.userId === currentUser.id);
+            const total = savings.reduce((a, s) => a + (s.amount || 0), 0);
+            document.getElementById('savings-total-badge').textContent = `মোট: ৳${total.toLocaleString('bn')}`;
+            const tb = document.getElementById('savings-table');
+            if (!savings.length) { tb.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px;">কোনো সঞ্চয় এন্ট্রি নেই</td></tr>'; return; }
+            tb.innerHTML = savings.slice().reverse().map((s, i) => `<tr>
+    <td>${savings.length - i}</td>
+    <td>${s.month || '—'}</td>
+    <td class="font-bold" style="color:var(--dark-green);">৳${(s.amount || 0).toLocaleString('bn')}</td>
+    <td>${s.date ? new Date(s.date).toLocaleDateString('bn-BD') : '—'}</td>
+    <td><span class="tag tag-ok">✅ জমা</span></td>
+  </tr>`).join('');
+        }
+
+        // ═══ LOANS ═══
+        function loadLoans() {
+            const loans = DB.getLoans().filter(l => l.userId === currentUser.id);
+            const tb = document.getElementById('loans-table');
+            if (!loans.length) { tb.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#aaa;padding:20px;">কোনো করজ নেই</td></tr>'; return; }
+            const statusMap = { active: '<span class="tag tag-pend">চলমান</span>', paid: '<span class="tag tag-ok">পরিশোধিত</span>', pending: '<span class="tag tag-blue">পেন্ডিং</span>', rejected: '<span class="tag tag-no">বাতিল</span>' };
+            tb.innerHTML = loans.slice().reverse().map(l => `<tr>
+    <td style="font-size:11px;color:#888;">${l.id}</td>
+    <td>৳${(l.amount || 0).toLocaleString('bn')}</td>
+    <td>৳${(l.remaining || l.amount || 0).toLocaleString('bn')}</td>
+    <td>${l.reason || '—'}</td>
+    <td>${statusMap[l.status] || l.status}</td>
+    <td>${l.createdAt ? new Date(l.createdAt).toLocaleDateString('bn-BD') : '—'}</td>
+  </tr>`).join('');
+        }
+
+        function submitLoan() {
+            const amount = parseFloat(document.getElementById('loan-amount').value);
+            const reason = document.getElementById('loan-reason').value.trim();
+            const start = document.getElementById('loan-start').value;
+            if (!amount || !reason || !start) { toast('সকল প্রয়োজনীয় তথ্য পূরণ করুন।', '#e53e3e'); return; }
+            if (amount > 15000) { toast('সর্বোচ্চ ১৫,০০০ টাকা আবেদন করা যাবে।', '#e53e3e'); return; }
+            const loans = DB.getLoans();
+            const loan = {
+                id: DB.genID('LOAN'),
+                userId: currentUser.id,
+                userName: currentUser.name,
+                amount, remaining: amount, reason,
+                guarantor: document.getElementById('loan-guarantor').value.trim(),
+                startMonth: start,
+                months: 3,
+                status: 'pending',
+                createdAt: new Date().toISOString(),
+            };
+            loans.push(loan);
+            DB.saveLoans(loans);
+            loadLoans();
+            toast('করজে হাসানা আবেদন জমা হয়েছে! ✅');
+            ['loan-amount', 'loan-reason', 'loan-start', 'loan-guarantor'].forEach(id => document.getElementById(id).value = '');
+        }
+
+        // ═══ ORDERS ═══
+        function loadOrders() {
+            const orders = DB.getOrders().filter(o => o.customerPhone === currentUser.phone || o.nid === currentUser.nid);
+            const tb = document.getElementById('orders-table');
+            const ORDER_STEPS = ['আবেদন জমা', 'কমিটি পর্যালোচনা', 'অনুমোদন', 'পণ্য সংগ্রহ', 'বিতরণ', 'সম্পন্ন'];
+            const statusMap = { pending: '<span class="tag tag-pend">পেন্ডিং</span>', approved: '<span class="tag tag-ok">অনুমোদিত</span>', rejected: '<span class="tag tag-no">বাতিল</span>', processing: '<span class="tag tag-blue">প্রসেসিং</span>', delivered: '<span class="tag tag-ok">বিতরিত</span>' };
+            if (!orders.length) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#aaa;padding:20px;">কোনো অর্ডার নেই</td></tr>'; return; }
+            tb.innerHTML = orders.slice().reverse().map(o => `<tr>
+    <td style="font-size:11px;color:#888;">${o.id}</td>
+    <td>${o.productName || '—'}</td>
+    <td>৳${(o.price || 0).toLocaleString('bn')}</td>
+    <td>৳${(o.perInstall || 0).toLocaleString('bn')} × ৬</td>
+    <td style="font-size:12px;">${ORDER_STEPS[o.statusStep || 0]}</td>
+    <td>${statusMap[o.status] || o.status}</td>
+    <td>${o.submittedAt ? new Date(o.submittedAt).toLocaleDateString('bn-BD') : '—'}</td>
+  </tr>`).join('');
+        }
+
+        // ═══ PROFILE ═══
+        function calcProfileComplete() {
+            const u = currentUser;
+            const fields = [u.name, u.phone, u.email, u.dob, u.job, u.address, u.nid, u.username];
+            const filled = fields.filter(f => f && f.length > 0).length;
+            return Math.round((filled / fields.length) * 100);
+        }
+
+        function loadProfile() {
+            const u = currentUser;
+            document.getElementById('pf-name').value = u.name || '';
+            document.getElementById('pf-uname').value = u.username || '';
+            document.getElementById('pf-phone').value = u.phone || '';
+            document.getElementById('pf-email').value = u.email || '';
+            document.getElementById('pf-dob').value = u.dob || '';
+            document.getElementById('pf-job').value = u.job || '';
+            document.getElementById('pf-address').value = u.address || '';
+            document.getElementById('pf-nid').value = u.nid || '';
+            document.getElementById('pf-referral').value = u.referral ? getRefName(u.referral) : 'নেই';
+
+            const pct = calcProfileComplete();
+            document.getElementById('ring-num').textContent = pct + '%';
+            const offset = 251.2 - (251.2 * pct / 100);
+            document.getElementById('ring-progress').style.strokeDashoffset = offset;
+            document.getElementById('profile-name-display').textContent = u.name || '—';
+            document.getElementById('profile-role-display').textContent = { admin: 'অ্যাডমিন', member: 'সদস্য', user: 'ব্যবহারকারী', customer: 'গ্রাহক' }[u.role] || u.role;
+            document.getElementById('profile-id-display').textContent = u.memberID ? 'সদস্য আইডি: ' + u.memberID : 'আইডি: ' + u.id.slice(0, 12);
+
+            const checkItems = [
+                { label: 'নাম', done: !!u.name },
+                { label: 'মোবাইল', done: !!u.phone },
+                { label: 'ইমেইল', done: !!u.email },
+                { label: 'জন্ম তারিখ', done: !!u.dob },
+                { label: 'পেশা', done: !!u.job },
+                { label: 'ঠিকানা', done: !!u.address },
+                { label: 'এনআইডি', done: !!u.nid },
+            ];
+            document.getElementById('completion-checklist').innerHTML = checkItems.map(c => `
+    <div style="display:flex;align-items:center;gap:8px;padding:5px 0;">
+      <span>${c.done ? '✅' : '⬜'}</span>
+      <span style="color:${c.done ? 'var(--dark-green)' : 'var(--text-muted)'};">${c.label}</span>
+    </div>`).join('');
+        }
+
+        function getRefName(refId) {
+            const u = DB.getUsers().find(x => x.id === refId);
+            return u ? u.name : refId;
+        }
+
+        function saveProfile() {
+            const users = DB.getUsers();
+            const idx = users.findIndex(u => u.id === currentUser.id);
+            if (idx < 0) { toast('ব্যবহারকারী পাওয়া যায়নি।', '#e53e3e'); return; }
+
+            const newPass = document.getElementById('pf-pass').value;
+            users[idx].name = document.getElementById('pf-name').value.trim() || users[idx].name;
+            users[idx].email = document.getElementById('pf-email').value.trim() || users[idx].email;
+            users[idx].dob = document.getElementById('pf-dob').value || users[idx].dob;
+            users[idx].job = document.getElementById('pf-job').value.trim();
+            users[idx].address = document.getElementById('pf-address').value.trim();
+            users[idx].nid = document.getElementById('pf-nid').value.trim();
+            if (newPass) {
+                if (newPass.length < 8 || !/[a-zA-Z]/.test(newPass) || !/[0-9]/.test(newPass)) {
+                    toast('পাসওয়ার্ড ৮+ অক্ষর, সংখ্যা ও লেটার থাকতে হবে।', '#e53e3e'); return;
+                }
+                users[idx].password = newPass;
+            }
+
+            const pct = calcProfileCompleteFor(users[idx]);
+            users[idx].profileComplete = pct;
+
+            DB.saveUsers(users);
+            currentUser = users[idx];
+            DB.set('bf_session', currentUser);
+
+            // Update sidebar
+            document.getElementById('sb-name').textContent = currentUser.name;
+            document.getElementById('sb-complete-pct').textContent = pct + '%';
+            document.getElementById('sb-complete-fill').style.width = pct + '%';
+
+            loadProfile();
+            toast('প্রোফাইল সংরক্ষিত হয়েছে ✅');
+            document.getElementById('pf-pass').value = '';
+        }
+
+        function calcProfileCompleteFor(u) {
+            const fields = [u.name, u.phone, u.email, u.dob, u.job, u.address, u.nid, u.username];
+            return Math.round((fields.filter(f => f && f.length > 0).length / fields.length) * 100);
+        }
+
+        // ═══ ADMIN PANEL ═══
+        function loadAdminPanel() {
+            const apps = DB.getApps();
+            const products = DB.getProducts();
+            const orders = DB.getOrders();
+            const users = DB.getUsers().filter(u => u.verified);
+            const savings = DB.getSavings();
+            const loans = DB.getLoans();
+
+            document.getElementById('aq-apps').textContent = apps.length + ' টি আবেদন';
+            document.getElementById('aq-products').textContent = products.length + ' টি পণ্য';
+            document.getElementById('aq-orders').textContent = orders.length + ' টি অর্ডার';
+            document.getElementById('aq-users').textContent = users.length + ' জন ব্যবহারকারী';
+            document.getElementById('aq-savings').textContent = '৳' + savings.reduce((a, s) => a + (s.amount || 0), 0).toLocaleString('bn');
+            document.getElementById('aq-loans').textContent = loans.filter(l => l.status === 'active').length + ' টি সক্রিয়';
+
+            document.getElementById('admin-stats').innerHTML = `
+    <div class="stat-card"><div class="sc-icon sc-green">👥</div><div class="sc-val">${users.length}</div><div class="sc-lbl">মোট ব্যবহারকারী</div></div>
+    <div class="stat-card"><div class="sc-icon sc-gold">📋</div><div class="sc-val">${apps.filter(a => a.status === 'pending').length}</div><div class="sc-lbl">পেন্ডিং আবেদন</div></div>
+    <div class="stat-card"><div class="sc-icon sc-blue">🛒</div><div class="sc-val">${orders.filter(o => o.status === 'pending').length}</div><div class="sc-lbl">পেন্ডিং অর্ডার</div></div>
+    <div class="stat-card"><div class="sc-icon sc-red">🤝</div><div class="sc-val">৳${loans.filter(l => l.status === 'active').reduce((a, l) => a + (l.remaining || l.amount || 0), 0).toLocaleString('bn')}</div><div class="sc-lbl">মোট করজ বাকি</div></div>
+  `;
+
+            const tb = document.getElementById('admin-recent-apps');
+            const recApps = apps.slice().reverse().slice(0, 5);
+            const statMap = { pending: '<span class="tag tag-pend">পেন্ডিং</span>', approved: '<span class="tag tag-ok">অনুমোদিত</span>', rejected: '<span class="tag tag-no">বাতিল</span>' };
+            tb.innerHTML = recApps.length ? recApps.map(a => `<tr>
+    <td>${a.applicantNameBn || '—'}</td>
+    <td style="font-size:12px;">${a.nidNumber || '—'}</td>
+    <td style="font-size:12px;">${(a.phones || [])[0] || '—'}</td>
+    <td>${statMap[a.status] || a.status}</td>
+    <td style="font-size:12px;">${a.submittedAt ? new Date(a.submittedAt).toLocaleDateString('bn-BD') : '—'}</td>
+  </tr>`).join('')
+                : '<tr><td colspan="5" style="text-align:center;color:#aaa;padding:16px;">কোনো আবেদন নেই</td></tr>';
+        }
+
+        // ═══ ALL USERS (Admin) ═══
+        function renderAllUsers() {
+            if (currentUser.role !== 'admin') return;
+            const search = (document.getElementById('user-search')?.value || '').toLowerCase();
+            let users = DB.getUsers();
+            if (search) users = users.filter(u => (u.name || '').toLowerCase().includes(search) || (u.phone || '').includes(search) || (u.username || '').includes(search));
+            const tb = document.getElementById('all-users-table');
+            const roleMap = { admin: 'অ্যাডমিন', member: 'সদস্য', user: 'ব্যবহারকারী', customer: 'গ্রাহক' };
+            tb.innerHTML = users.length ? users.map(u => `<tr>
+    <td>${u.name || '—'}</td>
+    <td><code>${u.username || '—'}</code></td>
+    <td>${u.phone || '—'}</td>
+    <td>${u.email || '—'}</td>
+    <td><span class="tag ${u.role === 'admin' ? 'tag-pend' : u.role === 'member' ? 'tag-ok' : 'tag-blue'}">${roleMap[u.role] || u.role}</span></td>
+    <td>
+      <div class="prog-bar" style="width:80px;"><div class="prog-fill" style="width:${u.profileComplete || 0}%"></div></div>
+      <span style="font-size:10px;color:#888;">${u.profileComplete || 0}%</span>
+    </td>
+    <td>
+      <select onchange="changeUserRole('${u.id}',this.value)" style="font-size:11px;padding:3px;border:1px solid #d1fae5;border-radius:4px;">
+        <option value="user" ${u.role === 'user' ? 'selected' : ''}>ব্যবহারকারী</option>
+        <option value="customer" ${u.role === 'customer' ? 'selected' : ''}>গ্রাহক</option>
+        <option value="member" ${u.role === 'member' ? 'selected' : ''}>সদস্য</option>
+        <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>অ্যাডমিন</option>
+      </select>
+    </td>
+  </tr>`).join('')
+                : '<tr><td colspan="7" style="text-align:center;color:#aaa;padding:20px;">কোনো ব্যবহারকারী নেই</td></tr>';
+        }
+
+        function changeUserRole(userId, newRole) {
+            const users = DB.getUsers();
+            const idx = users.findIndex(u => u.id === userId);
+            if (idx >= 0) { users[idx].role = newRole; DB.saveUsers(users); toast('ভূমিকা পরিবর্তন হয়েছে ✅'); }
+        }
+
+        // ═══ ALL SAVINGS (Admin) ═══
+        function loadAllSavings() {
+            // Populate user dropdown
+            const users = DB.getUsers().filter(u => u.verified && u.role !== 'admin');
+            const sel = document.getElementById('sv-user');
+            sel.innerHTML = '<option value="">-- সদস্য নির্বাচন --</option>' +
+                users.map(u => `<option value="${u.id}">${u.name} (${u.phone})</option>`).join('');
+
+            renderSavingsTable();
+        }
+
+        function addSavingEntry() {
+            const userId = document.getElementById('sv-user').value;
+            const month = document.getElementById('sv-month').value;
+            const amount = parseFloat(document.getElementById('sv-amount').value);
+            const note = document.getElementById('sv-note').value.trim();
+            if (!userId || !month || !amount) { toast('সকল প্রয়োজনীয় তথ্য পূরণ করুন।', '#e53e3e'); return; }
+            const savings = DB.getSavings();
+            savings.push({ id: DB.genID('SV'), userId, month, amount, note, date: new Date().toISOString() });
+            DB.saveSavings(savings);
+            renderSavingsTable();
+            document.getElementById('total-savings-badge').textContent = 'মোট: ৳' + savings.reduce((a, s) => a + (s.amount || 0), 0).toLocaleString('bn');
+            toast('সঞ্চয় এন্ট্রি যোগ হয়েছে ✅');
+        }
+
+        function renderSavingsTable() {
+            const savings = DB.getSavings();
+            const users = DB.getUsers();
+            const total = savings.reduce((a, s) => a + (s.amount || 0), 0);
+            document.getElementById('total-savings-badge').textContent = 'মোট: ৳' + total.toLocaleString('bn');
+            const tb = document.getElementById('all-savings-table');
+            tb.innerHTML = savings.length ? savings.slice().reverse().map(s => {
+                const u = users.find(x => x.id === s.userId);
+                return `<tr>
+      <td>${u ? u.name : '—'}</td>
+      <td>${s.month || '—'}</td>
+      <td>৳${(s.amount || 0).toLocaleString('bn')}</td>
+      <td>${s.note || '—'}</td>
+      <td>${s.date ? new Date(s.date).toLocaleDateString('bn-BD') : '—'}</td>
+      <td><button onclick="deleteSaving('${s.id}')" style="background:#fee2e2;border:none;padding:3px 8px;border-radius:4px;cursor:pointer;font-size:11px;color:#991b1b;">🗑️</button></td>
+    </tr>`;
+            }).join('')
+                : '<tr><td colspan="6" style="text-align:center;color:#aaa;padding:20px;">কোনো সঞ্চয় নেই</td></tr>';
+        }
+
+        function deleteSaving(id) {
+            if (!confirm('এই এন্ট্রি মুছবেন?')) return;
+            DB.saveSavings(DB.getSavings().filter(s => s.id !== id));
+            renderSavingsTable();
+            toast('মুছে দেওয়া হয়েছে।', '#e53e3e');
+        }
+
+        // ═══ ALL LOANS (Admin) ═══
+        function loadAllLoans() {
+            const loans = DB.getLoans();
+            const users = DB.getUsers();
+            const tb = document.getElementById('all-loans-table');
+            const statusMap = { active: '<span class="tag tag-pend">চলমান</span>', paid: '<span class="tag tag-ok">পরিশোধিত</span>', pending: '<span class="tag tag-blue">পেন্ডিং</span>', rejected: '<span class="tag tag-no">বাতিল</span>' };
+            tb.innerHTML = loans.length ? loans.slice().reverse().map(l => {
+                const u = users.find(x => x.id === l.userId);
+                return `<tr>
+      <td style="font-size:11px;">${l.id}</td>
+      <td>${u ? u.name : l.userName || '—'}</td>
+      <td>৳${(l.amount || 0).toLocaleString('bn')}</td>
+      <td>৳${(l.remaining || l.amount || 0).toLocaleString('bn')}</td>
+      <td>${l.reason || '—'}</td>
+      <td>${statusMap[l.status] || l.status}</td>
+      <td>
+        <select onchange="updateLoanStatus('${l.id}',this.value)" style="font-size:11px;padding:3px;border:1px solid #d1fae5;border-radius:4px;">
+          <option value="pending" ${l.status === 'pending' ? 'selected' : ''}>পেন্ডিং</option>
+          <option value="active" ${l.status === 'active' ? 'selected' : ''}>অনুমোদিত</option>
+          <option value="paid" ${l.status === 'paid' ? 'selected' : ''}>পরিশোধিত</option>
+          <option value="rejected" ${l.status === 'rejected' ? 'selected' : ''}>বাতিল</option>
+        </select>
+      </td>
+    </tr>`;
+            }).join('')
+                : '<tr><td colspan="7" style="text-align:center;color:#aaa;padding:20px;">কোনো করজ নেই</td></tr>';
+        }
+
+        function updateLoanStatus(id, status) {
+            const loans = DB.getLoans();
+            const idx = loans.findIndex(l => l.id === id);
+            if (idx >= 0) { loans[idx].status = status; if (status === 'paid') loans[idx].remaining = 0; DB.saveLoans(loans); toast('অবস্থা আপডেট হয়েছে ✅'); }
+        }
+
+        // ═══ LOGOUT ═══
+        function doLogout() {
+            DB.clearSession();
+            localStorage.removeItem('bf_remember');
+            window.location.href = '../index.html';
+        }
+
+        // ═══ SIDEBAR MOBILE ═══
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlayBg').classList.toggle('show'); }
+        function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlayBg').classList.remove('show'); }
+
+        // ═══ TOAST ═══
+        function toast(msg, color = '#065F46') {
+            const t = document.getElementById('toast');
+            t.textContent = msg; t.style.background = color; t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3500);
+        }
+    </script>
+</body>
+
+</html>
