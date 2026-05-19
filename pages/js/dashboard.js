@@ -1,3 +1,5 @@
+// C: \Project\Barakah_Finance\pages\js\dashboard.js
+
 // ═══ DB — FIXED: added missing set() and proper session save ═══
 const DB = {
     get: function (k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch { return null; } },

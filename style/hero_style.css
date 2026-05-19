@@ -2,7 +2,7 @@
 
 /* ════════ HERO SECTION ═════════ */
 :root {
-/* ════════ Animation Control ════════ */
+    /* ════════ Animation Control ════════ */
     --animations-enabled: 0;
     --neumorphism-enabled: 1;
     --rainbow-enabled: 1;

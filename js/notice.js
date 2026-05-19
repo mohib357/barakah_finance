@@ -1,4 +1,4 @@
-// C:\Project\Barakah_Finance\js\notice.js
+// C: \Project\Barakah_Finance\js\notice.js
 
 // ════════ Notice Bar & Badge Section ════════
 function initNoticeBar() {

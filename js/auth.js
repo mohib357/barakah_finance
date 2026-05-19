@@ -1,4 +1,4 @@
-// C:\Project\Barakah_Finance\js\auth.js
+// C: \Project\Barakah_Finance\js\auth.js
 // ════════ AUTH SYSTEM — FIXED VERSION ════════
 
 // ════════ NAV / SCROLL / DARK MODE UTILS ════════

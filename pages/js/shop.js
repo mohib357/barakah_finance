@@ -1,4 +1,4 @@
-// C:\Project\Barakah_Finance\pages\js\shop.js  — FIXED VERSION
+// C: \Project\Barakah_Finance\pages\js\shop.js
 
 // ═══ DB helpers ═══
 const ShopDB = {

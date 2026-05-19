@@ -1,4 +1,4 @@
-// C:\Project\Barakah_Finance\js\db.js
+// C: \Project\Barakah_Finance\js\db.js
 
 // ════════ DB MODULE ════════
 const DB = {
