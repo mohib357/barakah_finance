@@ -1095,6 +1095,11 @@ body.dark-mode .terms-body {
     display: flex;
 }
 
+.nav-mobile.active {
+    left: 0 !important;
+    display: flex !important;
+}
+
 .nav-mobile a {
     color: white;
     text-decoration: none;
