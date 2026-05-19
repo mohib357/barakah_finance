@@ -1,5 +1,4 @@
 <!-- C:\Project\Barakah_Finance\admin\admin.html -->
-
 <!DOCTYPE html>
 <html lang="bn" dir="ltr">
 
@@ -20,7 +19,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <link rel="stylesheet" href="style/admin.css">
-
 </head>
 
 <body class="min-h-screen">
@@ -33,7 +31,6 @@
       <p class="text-xs text-emerald-400">সদস্য আবেদন ব্যবস্থাপনা</p>
     </div>
     <div class="flex items-center gap-3">
-      <!-- Admin login badge -->
       <div id="adminBadge"
         class="text-xs bg-emerald-900/60 border border-emerald-700 px-3 py-1.5 rounded-lg text-emerald-300 hidden">
         লগইন: <span id="adminRoleLabel">—</span>
@@ -41,6 +38,7 @@
       <button onclick="showLoginModal()" id="loginBtn" class="btn-primary text-xs py-1.5 px-4">🔑 লগইন</button>
       <button onclick="adminLogout()" id="logoutBtn" class="btn-danger text-xs py-1.5 px-4 hidden">লগআউট</button>
       <a href="../form.html" class="text-emerald-400 text-xs hover:text-emerald-300">← ফরমে ফিরুন</a>
+      <a href="../index.html" class="text-emerald-400 text-xs hover:text-emerald-300">🏠 হোম</a>
     </div>
   </header>
 
@@ -70,10 +68,10 @@
       <input type="text" class="form-input flex-1 min-w-48" placeholder="🔍 নাম, NID বা ID দিয়ে খুঁজুন..."
         id="searchBox" oninput="renderTable()" />
       <div class="flex gap-2 flex-wrap">
-        <button class="filter-btn active" onclick="setFilter('all',this)" id="f-all">সকল</button>
-        <button class="filter-btn" onclick="setFilter('pending',this)" id="f-pending">পেন্ডিং</button>
-        <button class="filter-btn" onclick="setFilter('approved',this)" id="f-approved">অনুমোদিত</button>
-        <button class="filter-btn" onclick="setFilter('rejected',this)" id="f-rejected">প্রত্যাখ্যাত</button>
+        <button class="filter-btn active" onclick="setFilter('all',this)">সকল</button>
+        <button class="filter-btn" onclick="setFilter('pending',this)">পেন্ডিং</button>
+        <button class="filter-btn" onclick="setFilter('approved',this)">অনুমোদিত</button>
+        <button class="filter-btn" onclick="setFilter('rejected',this)">প্রত্যাখ্যাত</button>
       </div>
       <button onclick="exportCSV()" class="btn-gold text-xs py-1.5 px-4">📊 CSV Export</button>
     </div>
@@ -164,15 +162,9 @@
     </div>
   </div>
 
-<script src="js/admin.js"></script>
-  <select id="hero-rainbow-speed">
-    <option value="slow">Slow</option>
-    <option value="medium">Medium</option>
-    <option value="fast">Fast</option>
-  </select>
-  <button onclick="adminHeroSettings.updateSetting('rainbowSpeed', value)">
-    Save
-  </button>
+  <!-- Load admin settings first, then admin logic -->
+  <script src="../js/admin-settings.js"></script>
+  <script src="js/admin.js"></script>
 </body>
 
 </html>
