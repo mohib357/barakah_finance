@@ -1,23 +1,14 @@
-// C: \Project\Barakah_Finance\pages\js\dashboard.js
-
-// ═══ DB — FIXED: added missing set() and proper session save ═══
-const DB = {
-    get: function (k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch { return null; } },
-    set: function (k, v) { localStorage.setItem(k, JSON.stringify(v)); },  // ← FIX: was missing
-    getUsers: function () { return JSON.parse(localStorage.getItem('bf_users') || '[]'); },
-    saveUsers: function (u) { localStorage.setItem('bf_users', JSON.stringify(u)); },
-    getSession: function () { try { return JSON.parse(localStorage.getItem('bf_session')); } catch { return null; } },
-    setSession: function (u) { localStorage.setItem('bf_session', JSON.stringify(u)); }, // ← FIX: added
-    clearSession: function () { localStorage.removeItem('bf_session'); },
-    getSavings: function () { return JSON.parse(localStorage.getItem('bf_savings') || '[]'); },
-    saveSavings: function (s) { localStorage.setItem('bf_savings', JSON.stringify(s)); },
-    getLoans: function () { return JSON.parse(localStorage.getItem('bf_loans') || '[]'); },
-    saveLoans: function (l) { localStorage.setItem('bf_loans', JSON.stringify(l)); },
-    getOrders: function () { return JSON.parse(localStorage.getItem('bf_orders') || '[]'); },
-    getApps: function () { return JSON.parse(localStorage.getItem('bf_applications') || '[]'); },
-    getProducts: function () { return JSON.parse(localStorage.getItem('bf_products') || '[]'); },
-    genID: function (p) { return (p || 'X') + '-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 5).toUpperCase(); },
-};
+// C:\Project\Barakah_Finance\pages\js\dashboard.js
+// ══════════════════════════════════════════════════════════
+// গুরুত্বপূর্ণ: dashboard.html এ নিচের script tags যোগ করুন
+// </body> এর আগে:
+//   <script src="../js/db.js"></script>
+//   <script src="../js/data.js"></script>
+//   <script src="js/dashboard.js"></script>
+//
+// পুরনো:  <script src="../pages/js/dashboard.js"></script>
+// নতুন (উপরের ৩টি লাইন)
+// ══════════════════════════════════════════════════════════
 
 let currentUser = null;
 let activePanel = '';
@@ -54,7 +45,6 @@ function initDashboard() {
     showPanel('panel-overview');
 }
 
-// ═══ NAVIGATION — FIXED: correct admin paths ═══
 function buildNav() {
     const nav = document.getElementById('sb-nav');
     const common = [
@@ -93,7 +83,6 @@ function buildNav() {
             html += '<a class="sb-item" data-panel="' + item.id + '" onclick="showPanel(\'' + item.id + '\')">' +
                 '<span class="icon">' + item.icon + '</span>' + item.label + '</a>';
         });
-        // ← FIX: correct paths from pages/ folder
         html += '<a class="sb-item" href="../admin/admin.html"><span class="icon">📋</span>সদস্য আবেদন</a>';
         html += '<a class="sb-item" href="../admin/shop_admin.html"><span class="icon">🏬</span>শপ অ্যাডমিন</a>';
     }
@@ -127,7 +116,6 @@ function showPanel(id) {
     if (id === 'panel-all-loans') loadAllLoans();
 }
 
-// ═══ OVERVIEW ═══
 function loadOverview() {
     const savings = DB.getSavings().filter(function (s) { return s.userId === currentUser.id; });
     const loans = DB.getLoans().filter(function (l) { return l.userId === currentUser.id; });
@@ -155,7 +143,6 @@ function loadOverview() {
             '<div class="stat-card"><div class="sc-icon sc-green">✅</div><div class="sc-val">' + pct + '%</div><div class="sc-lbl">প্রোফাইল সম্পন্নতা</div></div>';
     }
 
-    // Savings chart
     const months = [];
     for (var i = 5; i >= 0; i--) {
         var d = new Date(); d.setMonth(d.getMonth() - i);
@@ -175,7 +162,6 @@ function loadOverview() {
         }).join('');
     }
 
-    // Recent activity
     const acts = [];
     savings.slice(-3).reverse().forEach(function (s) { acts.push({ icon: '💰', text: 'সঞ্চয়: ৳' + s.amount, date: s.date }); });
     orders.slice(-2).reverse().forEach(function (o) { acts.push({ icon: '🛒', text: 'অর্ডার: ' + o.productName, date: o.submittedAt }); });
@@ -189,7 +175,6 @@ function loadOverview() {
     }
 }
 
-// ═══ SAVINGS ═══
 function loadSavings() {
     const savings = DB.getSavings().filter(function (s) { return s.userId === currentUser.id; });
     const total = savings.reduce(function (a, s) { return a + (s.amount || 0); }, 0);
@@ -206,7 +191,6 @@ function loadSavings() {
     }).join('');
 }
 
-// ═══ LOANS ═══
 function loadLoans() {
     const loans = DB.getLoans().filter(function (l) { return l.userId === currentUser.id; });
     const tb = document.getElementById('loans-table');
@@ -236,13 +220,12 @@ function submitLoan() {
         guarantor: document.getElementById('loan-guarantor').value.trim(),
         startMonth: start, months: 3, status: 'pending', createdAt: new Date().toISOString(),
     });
-    DB.saveLoans(loans);
+    DB.set(DB.KEYS.LOANS, loans);
     loadLoans();
     toast('করজে হাসানা আবেদন জমা হয়েছে! ✅');
     ['loan-amount', 'loan-reason', 'loan-start', 'loan-guarantor'].forEach(function (id) { var el = document.getElementById(id); if (el) el.value = ''; });
 }
 
-// ═══ ORDERS ═══
 function loadOrders() {
     const orders = DB.getOrders().filter(function (o) { return o.customerPhone === currentUser.phone || o.nid === currentUser.nid; });
     const tb = document.getElementById('orders-table');
@@ -261,23 +244,26 @@ function loadOrders() {
     }).join('');
 }
 
-// ═══ PROFILE ═══
 function calcProfileComplete() {
     var u = currentUser;
     var fields = [u.name, u.phone, u.email, u.dob, u.job, u.address, u.nid, u.username];
     return Math.round((fields.filter(function (f) { return f && f.length > 0; }).length / fields.length) * 100);
 }
 
+function calcProfileCompleteFor(u) {
+    var fields = [u.name, u.phone, u.email, u.dob, u.job, u.address, u.nid, u.username];
+    return Math.round((fields.filter(function (f) { return f && f.length > 0; }).length / fields.length) * 100);
+}
+
 function loadProfile() {
     var u = currentUser;
-    var fields = { 'pf-name': u.name, 'pf-uname': u.username, 'pf-phone': u.phone, 'pf-email': u.email, 'pf-dob': u.dob, 'pf-job': u.job, 'pf-address': u.address, 'pf-nid': u.nid };
-    Object.keys(fields).forEach(function (id) {
-        var el = document.getElementById(id);
-        if (el) el.value = fields[id] || '';
-    });
+    var map = { 'pf-name': u.name, 'pf-uname': u.username, 'pf-phone': u.phone, 'pf-email': u.email, 'pf-dob': u.dob, 'pf-job': u.job, 'pf-address': u.address, 'pf-nid': u.nid };
+    Object.keys(map).forEach(function (id) { var el = document.getElementById(id); if (el) el.value = map[id] || ''; });
     var refEl = document.getElementById('pf-referral');
-    if (refEl) refEl.value = u.referral ? getRefName(u.referral) : 'নেই';
-
+    if (refEl) {
+        var ref = u.referral ? DB.getUsers().find(function (x) { return x.id === u.referral; }) : null;
+        refEl.value = ref ? ref.name : 'নেই';
+    }
     var pct = calcProfileComplete();
     var ringNum = document.getElementById('ring-num');
     var ringProg = document.getElementById('ring-progress');
@@ -289,7 +275,6 @@ function loadProfile() {
     if (nameDisp) nameDisp.textContent = u.name || '—';
     if (roleDisp) roleDisp.textContent = ({ admin: 'অ্যাডমিন', member: 'সদস্য', user: 'ব্যবহারকারী', customer: 'গ্রাহক' }[u.role] || u.role);
     if (idDisp) idDisp.textContent = u.memberID ? 'সদস্য আইডি: ' + u.memberID : 'আইডি: ' + u.id.slice(0, 12);
-
     var checkItems = [
         { label: 'নাম', done: !!u.name }, { label: 'মোবাইল', done: !!u.phone }, { label: 'ইমেইল', done: !!u.email },
         { label: 'জন্ম তারিখ', done: !!u.dob }, { label: 'পেশা', done: !!u.job }, { label: 'ঠিকানা', done: !!u.address }, { label: 'এনআইডি', done: !!u.nid },
@@ -304,11 +289,6 @@ function loadProfile() {
     }
 }
 
-function getRefName(refId) {
-    var u = DB.getUsers().find(function (x) { return x.id === refId; });
-    return u ? u.name : refId;
-}
-
 function saveProfile() {
     var users = DB.getUsers();
     var idx = users.findIndex(function (u) { return u.id === currentUser.id; });
@@ -316,7 +296,7 @@ function saveProfile() {
     var newPass = document.getElementById('pf-pass').value;
     users[idx].name = document.getElementById('pf-name').value.trim() || users[idx].name;
     users[idx].email = document.getElementById('pf-email').value.trim() || users[idx].email;
-    users[idx].dob = document.getElementById('pf-dob').value || users[idx].dob;
+    users[idx].dob = document.getElementById('pf-dob').value;
     users[idx].job = document.getElementById('pf-job').value.trim();
     users[idx].address = document.getElementById('pf-address').value.trim();
     users[idx].nid = document.getElementById('pf-nid').value.trim();
@@ -326,32 +306,22 @@ function saveProfile() {
         }
         users[idx].password = newPass;
     }
-    var pct = calcProfileCompleteFor(users[idx]);
-    users[idx].profileComplete = pct;
+    users[idx].profileComplete = calcProfileCompleteFor(users[idx]);
     DB.saveUsers(users);
     currentUser = users[idx];
-    DB.setSession(currentUser);  // ← FIX: now uses DB.setSession() instead of DB.set()
-
-    var sbName = document.getElementById('sb-name');
-    var sbPct = document.getElementById('sb-complete-pct');
-    var sbFill = document.getElementById('sb-complete-fill');
-    if (sbName) sbName.textContent = currentUser.name;
-    if (sbPct) sbPct.textContent = pct + '%';
-    if (sbFill) sbFill.style.width = pct + '%';
+    DB.setSession(currentUser);
     loadProfile();
     toast('প্রোফাইল সংরক্ষিত হয়েছে ✅');
     document.getElementById('pf-pass').value = '';
 }
 
-function calcProfileCompleteFor(u) {
-    var fields = [u.name, u.phone, u.email, u.dob, u.job, u.address, u.nid, u.username];
-    return Math.round((fields.filter(function (f) { return f && f.length > 0; }).length / fields.length) * 100);
-}
-
-// ═══ ADMIN PANEL ═══
 function loadAdminPanel() {
-    var apps = DB.getApps(), products = DB.getProducts(), orders = DB.getOrders();
-    var users = DB.getUsers().filter(function (u) { return u.verified; }), savings = DB.getSavings(), loans = DB.getLoans();
+    var apps = JSON.parse(localStorage.getItem('bf_applications') || '[]');
+    var products = DB.getProducts();
+    var orders = DB.getOrders();
+    var users = DB.getUsers().filter(function (u) { return u.verified; });
+    var savings = DB.getSavings();
+    var loans = DB.getLoans();
     ['aq-apps', 'aq-products', 'aq-orders', 'aq-users', 'aq-savings', 'aq-loans'].forEach(function (id, i) {
         var el = document.getElementById(id); if (!el) return;
         var vals = [apps.length + ' টি আবেদন', products.length + ' টি পণ্য', orders.length + ' টি অর্ডার',
@@ -367,8 +337,7 @@ function loadAdminPanel() {
             '<div class="stat-card"><div class="sc-icon sc-blue">🛒</div><div class="sc-val">' + orders.filter(function (o) { return o.status === 'pending'; }).length + '</div><div class="sc-lbl">পেন্ডিং অর্ডার</div></div>' +
             '<div class="stat-card"><div class="sc-icon sc-red">🤝</div><div class="sc-val">৳' + loans.filter(function (l) { return l.status === 'active'; }).reduce(function (a, l) { return a + (l.remaining || l.amount || 0); }, 0).toLocaleString('bn') + '</div><div class="sc-lbl">মোট করজ বাকি</div></div>';
     }
-    var tb = document.getElementById('admin-recent-apps');
-    if (!tb) return;
+    var tb = document.getElementById('admin-recent-apps'); if (!tb) return;
     var recApps = apps.slice().reverse().slice(0, 5);
     var statMap = { pending: '<span class="tag tag-pend">পেন্ডিং</span>', approved: '<span class="tag tag-ok">অনুমোদিত</span>', rejected: '<span class="tag tag-no">বাতিল</span>' };
     tb.innerHTML = recApps.length ? recApps.map(function (a) {
@@ -379,7 +348,6 @@ function loadAdminPanel() {
     }).join('') : '<tr><td colspan="5" style="text-align:center;color:#aaa;padding:16px;">কোনো আবেদন নেই</td></tr>';
 }
 
-// ═══ ALL USERS ═══
 function renderAllUsers() {
     if (currentUser.role !== 'admin') return;
     var search = (document.getElementById('user-search')?.value || '').toLowerCase();
@@ -408,7 +376,6 @@ function changeUserRole(userId, newRole) {
     if (idx >= 0) { users[idx].role = newRole; DB.saveUsers(users); toast('ভূমিকা পরিবর্তন হয়েছে ✅'); }
 }
 
-// ═══ ALL SAVINGS ═══
 function loadAllSavings() {
     var users = DB.getUsers().filter(function (u) { return u.verified && u.role !== 'admin'; });
     var sel = document.getElementById('sv-user');
@@ -425,7 +392,7 @@ function addSavingEntry() {
     if (!userId || !month || !amount) { toast('সকল প্রয়োজনীয় তথ্য পূরণ করুন।', '#e53e3e'); return; }
     var savings = DB.getSavings();
     savings.push({ id: DB.genID('SV'), userId: userId, month: month, amount: amount, note: note, date: new Date().toISOString() });
-    DB.saveSavings(savings);
+    DB.set(DB.KEYS.SAVINGS, savings);
     renderSavingsTable();
     toast('সঞ্চয় এন্ট্রি যোগ হয়েছে ✅');
 }
@@ -447,12 +414,11 @@ function renderSavingsTable() {
 
 function deleteSaving(id) {
     if (!confirm('এই এন্ট্রি মুছবেন?')) return;
-    DB.saveSavings(DB.getSavings().filter(function (s) { return s.id !== id; }));
+    DB.set(DB.KEYS.SAVINGS, DB.getSavings().filter(function (s) { return s.id !== id; }));
     renderSavingsTable();
     toast('মুছে দেওয়া হয়েছে।', '#e53e3e');
 }
 
-// ═══ ALL LOANS ═══
 function loadAllLoans() {
     var loans = DB.getLoans(), users = DB.getUsers();
     var tb = document.getElementById('all-loans-table'); if (!tb) return;
@@ -474,21 +440,18 @@ function loadAllLoans() {
 function updateLoanStatus(id, status) {
     var loans = DB.getLoans();
     var idx = loans.findIndex(function (l) { return l.id === id; });
-    if (idx >= 0) { loans[idx].status = status; if (status === 'paid') loans[idx].remaining = 0; DB.saveLoans(loans); toast('অবস্থা আপডেট হয়েছে ✅'); }
+    if (idx >= 0) { loans[idx].status = status; if (status === 'paid') loans[idx].remaining = 0; DB.set(DB.KEYS.LOANS, loans); toast('অবস্থা আপডেট হয়েছে ✅'); }
 }
 
-// ═══ LOGOUT ═══
 function doLogout() {
     DB.clearSession();
     localStorage.removeItem('bf_remember');
     window.location.href = '../index.html';
 }
 
-// ═══ SIDEBAR ═══
 function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlayBg').classList.toggle('show'); }
 function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlayBg').classList.remove('show'); }
 
-// ═══ TOAST ═══
 function toast(msg, color) {
     color = color || '#065F46';
     var t = document.getElementById('toast');
