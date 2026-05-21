@@ -1,0 +1,383 @@
+:root {
+    --gold: #C9A227;
+    --gold-light: #F5D061;
+    --dark-green: #064E3B;
+    --mid-green: #065F46;
+    --light-green: #D1FAE5;
+    --cream: #FDFAF3;
+    --text-dark: #1A2A1A;
+    --text-muted: #4A5A4A;
+    --income: #065F46;
+    --expense: #dc2626;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Noto Sans Bengali', sans-serif;
+    background: #f0f4f1;
+    color: var(--text-dark);
+}
+
+/* TOPBAR */
+.topbar {
+    background: linear-gradient(135deg, #064E3B, #065F46);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.topbar h1 {
+    color: #F5D061;
+    font-family: 'Noto Serif Bengali', serif;
+    font-size: 18px;
+}
+
+.topbar a {
+    color: rgba(255, 255, 255, .7);
+    font-size: 13px;
+    text-decoration: none;
+    margin-left: 16px;
+}
+
+.topbar a:hover {
+    color: #F5D061;
+}
+
+/* LAYOUT */
+.container {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 24px 16px;
+}
+
+/* SUMMARY CARDS */
+.summary-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.sum-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 18px;
+    border: 1px solid #e5e7eb;
+    text-align: center;
+}
+
+.sum-card .label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+}
+
+.sum-card .value {
+    font-family: 'Noto Serif Bengali', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.income-val {
+    color: var(--income);
+}
+
+.expense-val {
+    color: var(--expense);
+}
+
+.net-pos {
+    color: var(--income);
+}
+
+.net-neg {
+    color: var(--expense);
+}
+
+/* TABS */
+.tabs {
+    display: flex;
+    gap: 4px;
+    background: #fff;
+    border-radius: 10px;
+    padding: 6px;
+    margin-bottom: 20px;
+    border: 1px solid #e5e7eb;
+}
+
+.tab {
+    flex: 1;
+    padding: 9px;
+    text-align: center;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    transition: .2s;
+}
+
+.tab.active {
+    background: var(--dark-green);
+    color: #fff;
+    font-weight: 700;
+}
+
+/* PANEL */
+.panel {
+    display: none;
+}
+
+.panel.active {
+    display: block;
+}
+
+/* CARD */
+.card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 20px;
+}
+
+.card-title {
+    font-family: 'Noto Serif Bengali', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--dark-green);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* TABLE */
+.tbl-wrap {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+thead th {
+    background: #f0fdf4;
+    color: var(--dark-green);
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    border-bottom: 1px solid #d1fae5;
+}
+
+tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f0f4f1;
+}
+
+tbody tr:hover td {
+    background: #fafff9;
+}
+
+/* BADGE */
+.badge {
+    padding: 3px 9px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.badge-income {
+    background: #d1fae5;
+    color: #065F46;
+}
+
+.badge-expense {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.badge-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.badge-active {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.badge-paid {
+    background: #d1fae5;
+    color: #065F46;
+}
+
+/* FORM */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.fg {
+    margin-bottom: 12px;
+}
+
+.fg label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--mid-green);
+    margin-bottom: 4px;
+}
+
+.fi {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1.5px solid #d1fae5;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    background: #f0fdf4;
+}
+
+.fi:focus {
+    border-color: var(--gold);
+    background: #fff;
+}
+
+.btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    transition: .2s;
+}
+
+.btn-green {
+    background: linear-gradient(135deg, #064E3B, #065F46);
+    color: #fff;
+}
+
+.btn-green:hover {
+    background: linear-gradient(135deg, #047857, #059669);
+}
+
+.btn-red {
+    background: #dc2626;
+    color: #fff;
+}
+
+.btn-gold {
+    background: linear-gradient(135deg, #C9A227, #b8922a);
+    color: #fff;
+}
+
+.btn-sm {
+    padding: 5px 12px;
+    font-size: 11px;
+}
+
+/* CHART */
+.chart-wrap {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 140px;
+    padding: 8px 0;
+}
+
+.chart-bar-g {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+}
+
+.bar-income {
+    width: 100%;
+    border-radius: 4px 4px 0 0;
+    background: linear-gradient(180deg, #1D9E75, #065F46);
+    min-height: 4px;
+}
+
+.bar-expense {
+    width: 100%;
+    border-radius: 4px 4px 0 0;
+    background: linear-gradient(180deg, #f87171, #dc2626);
+    min-height: 4px;
+}
+
+.bar-lbl {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+/* FILTER */
+.filter-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    align-items: center;
+}
+
+.filter-row select,
+.filter-row input {
+    padding: 7px 12px;
+    border: 1.5px solid #d1fae5;
+    border-radius: 8px;
+    font-size: 12px;
+    font-family: inherit;
+    outline: none;
+}
+
+/* TOAST */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #065F46;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    z-index: 9999;
+    display: none;
+    font-family: 'Noto Serif Bengali', serif;
+}
+
+@media(max-width:768px) {
+    .summary-row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media(max-width:480px) {
+    .summary-row {
+        grid-template-columns: 1fr;
+    }
+}
