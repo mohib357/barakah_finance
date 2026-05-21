@@ -1,3 +1,5 @@
+// C: \Project\Barakah_Finance\pages\js\profile.js
+
 // localStorage থেকে DB helpers
 const DB = {
     get: k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch { return null; } },
