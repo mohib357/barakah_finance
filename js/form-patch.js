@@ -1,5 +1,4 @@
 // C:\Project\Barakah_Finance\js\form-patch.js
-// ════════ PATCH: form.js এ যোগ করুন অথবা এই ফাইলটি form.js এর পরে <script> দিয়ে লোড করুন ════════
 
 // ════════ UNION LEVEL (বাংলাদেশ ইউনিয়ন) ════════
 // BD_DATA তে union level না থাকলে post office সরাসরি দেখাবে

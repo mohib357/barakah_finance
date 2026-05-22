@@ -1,6 +1,5 @@
 // C:\Project\Barakah_Finance\js\geo-address.js
 // ════════ GEO ADDRESS & COUNTRY CODE MODULE ════════
-// Handles: auto geo-detect, world country list, BD cascade (Bangla), foreign address fields, searchable phone code picker
 
 // ════════ WORLD COUNTRIES (ISO 3166-1) ════════
 // Format: { code, name (English), nameBn (Bangla), phone, flag }
