@@ -1,6 +1,4 @@
 // C:\Project\Barakah_Finance\js\api.js
-// বারাকাহ ফাইন্যান্স — API ক্লায়েন্ট
-// সকল ফ্রন্টএন্ড পেজে এই ফাইলটি include করুন (db.js এর আগে)
 
 const API_BASE = 'http://localhost:3001/api';
 

@@ -1,5 +1,5 @@
 // C: \Project\Barakah_Finance\js\auth.js
-// ════════ AUTH SYSTEM — FIXED VERSION ════════
+// ════════ AUTH SYSTEM ════════
 
 // ════════ NAV / SCROLL / DARK MODE UTILS ════════
 function smScroll(id) {
