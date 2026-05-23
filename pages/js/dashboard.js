@@ -1,14 +1,4 @@
 // C:\Project\Barakah_Finance\pages\js\dashboard.js
-// ══════════════════════════════════════════════════════════
-// গুরুত্বপূর্ণ: dashboard.html এ নিচের script tags যোগ করুন
-// </body> এর আগে:
-//   <script src="../js/db.js"></script>
-//   <script src="../js/data.js"></script>
-//   <script src="js/dashboard.js"></script>
-//
-// পুরনো:  <script src="../pages/js/dashboard.js"></script>
-// নতুন (উপরের ৩টি লাইন)
-// ══════════════════════════════════════════════════════════
 
 let currentUser = null;
 let activePanel = '';
