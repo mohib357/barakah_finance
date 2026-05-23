@@ -1,4 +1,5 @@
 // C:\Project\Barakah_Finance\backend\routes\products.js
+
 const express = require('express');
 const router = express.Router();
 const { db, uuidv4 } = require('../db/database');

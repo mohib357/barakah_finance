@@ -1,5 +1,4 @@
 // C:\Project\Barakah_Finance\backend\routes\ledger.js
-// সম্পূর্ণ হিসাব পাতি (General Ledger)
 
 const express = require('express');
 const router = express.Router();

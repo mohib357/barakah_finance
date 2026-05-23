@@ -1,5 +1,4 @@
 // C:\Project\Barakah_Finance\backend\routes\loans.js
-// করজে হাসানা হিসাব
 
 const express = require('express');
 const router = express.Router();

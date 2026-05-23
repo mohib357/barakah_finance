@@ -1,5 +1,4 @@
 // C:\Project\Barakah_Finance\backend\middleware\auth.js
-// JWT যাচাই মিডলওয়্যার
 
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET || 'barakah_finance_secret_2026';

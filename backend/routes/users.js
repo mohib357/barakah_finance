@@ -1,5 +1,4 @@
 // C:\Project\Barakah_Finance\backend\routes\users.js
-// ব্যবহারকারী ম্যানেজমেন্ট
 
 const express = require('express');
 const router = express.Router();

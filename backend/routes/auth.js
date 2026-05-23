@@ -1,5 +1,4 @@
 // C:\Project\Barakah_Finance\backend\routes\auth.js
-// লগইন, সাইনআপ, OTP যাচাই
 
 const express = require('express');
 const router = express.Router();

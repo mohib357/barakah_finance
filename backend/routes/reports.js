@@ -1,5 +1,4 @@
 // C:\Project\Barakah_Finance\backend\routes\reports.js
-// রিপোর্ট ও পরিসংখ্যান
 
 const express = require('express');
 const router = express.Router();

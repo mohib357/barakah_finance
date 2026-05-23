@@ -1,5 +1,4 @@
 // C:\Project\Barakah_Finance\backend\db\database.js
-// JSON ফাইল-ভিত্তিক ডেটাবেস (lowdb)
 
 const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');

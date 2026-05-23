@@ -1,5 +1,4 @@
 // C:\Project\Barakah_Finance\backend\routes\savings.js
-// সঞ্চয় হিসাব পাতি
 
 const express = require('express');
 const router = express.Router();

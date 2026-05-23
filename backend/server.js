@@ -1,5 +1,4 @@
 // C:\Project\Barakah_Finance\backend\server.js
-// বারাকাহ ফাইন্যান্স — Node.js ব্যাকএন্ড সার্ভার
 
 const express = require('express');
 const cors = require('cors');
