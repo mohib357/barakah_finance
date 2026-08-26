@@ -331,7 +331,7 @@ async function loadPendingActions(stats) {
   const wrap = document.getElementById('pendingActions');
   if (!wrap) return;
   const items = [
-    { label: 'পেন্ডিং সদস্য আবেদন', val: stats.pendingApplications, icon: '📝', link: '../admin/admin.html' },
+    { label: 'পেন্ডিং সদস্য আবেদন', val: stats.pendingApplications, icon: '📝', link: '../admin/panel.html#applications' },
     { label: 'পেন্ডিং অর্ডার', val: stats.pendingOrders, icon: '🛒', link: '../admin/panel.html#orders' },
     { label: 'পেন্ডিং করজ আবেদন', val: stats.pendingQard, icon: '🤝', link: '../admin/panel.html#qard-list' },
   ].filter(i => i.val > 0);
