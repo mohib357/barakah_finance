@@ -1,450 +1,603 @@
-// C:\Project\Barakah_Finance\pages\js\dashboard.js
+// ═══════════════════════════════════════════════════════════
+//  BARAKAH FINANCE — USER DASHBOARD JS
+// ═══════════════════════════════════════════════════════════
 
+const API = 'http://localhost:3001/api';
 let currentUser = null;
-let activePanel = '';
+let _allUsers = [];
 
-document.addEventListener('DOMContentLoaded', function () {
-    currentUser = DB.getSession();
-    if (!currentUser || !currentUser.verified) {
-        alert('দয়া করে প্রথমে লগইন করুন।');
-        window.location.href = '../index.html';
-        return;
-    }
-    initDashboard();
-});
+// ── Islamic Quotes ──
+const QUOTES = [
+  { text: 'يَا أَيُّهَا الَّذِينَ آمَنُوا اتَّقُوا اللَّهَ وَذَرُوا مَا بَقِيَ مِنَ الرِّبَا', src: 'সূরা বাকারা: ২৭৮', bn: 'হে মুমিনগণ, আল্লাহকে ভয় করো এবং সুদের যা বকেয়া আছে তা ছেড়ে দাও।' },
+  { text: 'الَّذِينَ يَأْكُلُونَ الرِّبَا لَا يَقُومُونَ إِلَّا كَمَا يَقُومُ الَّذِي يَتَخَبَّطُهُ الشَّيْطَانُ', src: 'সূরা বাকারা: ২৭৫', bn: 'যারা সুদ খায় তারা দণ্ডায়মান হবে না, তবে ওই ব্যক্তির মতো যাকে শয়তান স্পর্শে বিভ্রান্ত করে।' },
+  { text: 'وَأَحَلَّ اللَّهُ الْبَيْعَ وَحَرَّمَ الرِّبَا', src: 'সূরা বাকারা: ২৭৫', bn: 'আল্লাহ ব্যবসাকে হালাল করেছেন এবং সুদকে হারাম করেছেন।' },
+  { text: 'مَنْ أَخَذَ أَمْوَالَ النَّاسِ يُرِيدُ أَدَاءَهَا أَدَّى اللَّهُ عَنْهُ', src: 'বুখারি শরীফ', bn: 'যে ব্যক্তি মানুষের মাল পরিশোধের নিয়তে নেয়, আল্লাহ তার পক্ষ থেকে পরিশোধ করে দেন।' },
+  { text: 'الْمُسْلِمُونَ عَلَى شُرُوطِهِمْ', src: 'আবু দাউদ', bn: 'মুসলমানরা তাদের শর্তের উপর প্রতিষ্ঠিত থাকে।' },
+  { text: 'خَيْرُ النَّاسِ أَنْفَعُهُمْ لِلنَّاسِ', src: 'তাবারানী', bn: 'মানুষের মধ্যে সেই সর্বোত্তম যে মানুষের উপকারে আসে।' },
+  { text: 'الْيَدُ الْعُلْيَا خَيْرٌ مِنَ الْيَدِ السُّفْلَى', src: 'বুখারি শরীফ', bn: 'উপরের হাত (দাতার হাত) নিচের হাত (গ্রহীতার হাত) থেকে উত্তম।' },
+  { text: 'مَنْ سَلَكَ طَرِيقًا يَلْتَمِسُ فِيهِ عِلْمًا سَهَّلَ اللَّهُ لَهُ طَرِيقًا إِلَى الْجَنَّةِ', src: 'মুসলিম শরীফ', bn: 'যে জ্ঞান অন্বেষণের পথ চলে, আল্লাহ তার জন্য জান্নাতের পথ সহজ করেন।' },
+];
 
-function initDashboard() {
-    const avatarEl = document.getElementById('sb-avatar');
-    const nameEl = document.getElementById('sb-name');
-    if (avatarEl) avatarEl.textContent = (currentUser.name || 'ব')[0];
-    if (nameEl) nameEl.textContent = currentUser.name || 'ব্যবহারকারী';
+document.addEventListener('DOMContentLoaded', initDashboard);
 
-    const pct = calcProfileComplete();
-    const pctEl = document.getElementById('sb-complete-pct');
-    const fillEl = document.getElementById('sb-complete-fill');
-    if (pctEl) pctEl.textContent = pct + '%';
-    if (fillEl) fillEl.style.width = pct + '%';
-
-    const roleBadge = document.getElementById('sb-role-badge');
-    if (roleBadge) {
-        if (currentUser.role === 'admin') { roleBadge.textContent = 'অ্যাডমিন'; roleBadge.className = 'sb-role role-admin'; }
-        else if (currentUser.role === 'member') { roleBadge.textContent = 'সদস্য'; roleBadge.className = 'sb-role role-member'; }
-        else { roleBadge.textContent = 'গ্রাহক'; roleBadge.className = 'sb-role role-customer'; }
-    }
-    buildNav();
-    showPanel('panel-overview');
-}
-
-function buildNav() {
-    const nav = document.getElementById('sb-nav');
-    const common = [
-        { id: 'panel-overview', icon: '📊', label: 'ওভারভিউ' },
-        { id: 'panel-profile', icon: '👤', label: 'আমার প্রোফাইল' },
-        { id: 'panel-orders', icon: '🛒', label: 'আমার অর্ডার' },
-    ];
-    const member = [
-        { id: 'panel-savings', icon: '💰', label: 'সঞ্চয় বিবরণ' },
-        { id: 'panel-loans', icon: '🤝', label: 'করজে হাসানা' },
-    ];
-    const admin = [
-        { id: 'panel-admin', icon: '🛡️', label: 'অ্যাডমিন প্যানেল' },
-        { id: 'panel-all-users', icon: '👥', label: 'সকল ব্যবহারকারী' },
-        { id: 'panel-all-savings', icon: '💰', label: 'সঞ্চয় হিসাব' },
-        { id: 'panel-all-loans', icon: '🤝', label: 'করজে হাসানা' },
-    ];
-
-    let html = '<div class="sb-section">মূল মেনু</div>';
-    common.forEach(function (item) {
-        html += '<a class="sb-item" data-panel="' + item.id + '" onclick="showPanel(\'' + item.id + '\')">' +
-            '<span class="icon">' + item.icon + '</span>' + item.label + '</a>';
-    });
-
-    if (currentUser.role === 'member' || currentUser.role === 'admin') {
-        html += '<div class="sb-section">সদস্য সেবা</div>';
-        member.forEach(function (item) {
-            html += '<a class="sb-item" data-panel="' + item.id + '" onclick="showPanel(\'' + item.id + '\')">' +
-                '<span class="icon">' + item.icon + '</span>' + item.label + '</a>';
-        });
-    }
-
-    if (currentUser.role === 'admin') {
-        html += '<div class="sb-section">অ্যাডমিন</div>';
-        admin.forEach(function (item) {
-            html += '<a class="sb-item" data-panel="' + item.id + '" onclick="showPanel(\'' + item.id + '\')">' +
-                '<span class="icon">' + item.icon + '</span>' + item.label + '</a>';
-        });
-        html += '<a class="sb-item" href="../admin/admin.html"><span class="icon">📋</span>সদস্য আবেদন</a>';
-        html += '<a class="sb-item" href="../admin/shop_admin.html"><span class="icon">🏬</span>শপ অ্যাডমিন</a>';
-    }
-    nav.innerHTML = html;
-}
-
-function showPanel(id) {
-    document.querySelectorAll('.panel').forEach(function (p) { p.classList.remove('active'); });
-    document.querySelectorAll('.sb-item').forEach(function (b) { b.classList.remove('active'); });
-    const panel = document.getElementById(id);
-    if (panel) panel.classList.add('active');
-    const navItem = document.querySelector('.sb-item[data-panel="' + id + '"]');
-    if (navItem) navItem.classList.add('active');
-    activePanel = id;
-    const titles = {
-        'panel-overview': 'ওভারভিউ', 'panel-savings': 'সঞ্চয় বিবরণ', 'panel-loans': 'করজে হাসানা',
-        'panel-orders': 'আমার অর্ডার', 'panel-profile': 'প্রোফাইল', 'panel-admin': 'অ্যাডমিন প্যানেল',
-        'panel-all-users': 'সকল ব্যবহারকারী', 'panel-all-savings': 'সঞ্চয় হিসাব', 'panel-all-loans': 'করজে হাসানা',
-    };
-    const titleEl = document.getElementById('topbar-title');
-    if (titleEl) titleEl.textContent = titles[id] || 'ড্যাশবোর্ড';
-    closeSidebar();
-    if (id === 'panel-overview') loadOverview();
-    if (id === 'panel-savings') loadSavings();
-    if (id === 'panel-loans') loadLoans();
-    if (id === 'panel-orders') loadOrders();
-    if (id === 'panel-profile') loadProfile();
-    if (id === 'panel-admin') loadAdminPanel();
-    if (id === 'panel-all-users') renderAllUsers();
-    if (id === 'panel-all-savings') loadAllSavings();
-    if (id === 'panel-all-loans') loadAllLoans();
-}
-
-function loadOverview() {
-    const savings = DB.getSavings().filter(function (s) { return s.userId === currentUser.id; });
-    const loans = DB.getLoans().filter(function (l) { return l.userId === currentUser.id; });
-    const orders = DB.getOrders().filter(function (o) { return o.customerPhone === currentUser.phone; });
-    const totalSavings = savings.reduce(function (a, s) { return a + (s.amount || 0); }, 0);
-    const activeLoans = loans.filter(function (l) { return l.status === 'active'; });
-    const pct = calcProfileComplete();
-    const isAdmin = currentUser.role === 'admin';
-    const allSavings = DB.getSavings();
-    const allUsers = DB.getUsers().filter(function (u) { return u.verified; });
-    const allOrders = DB.getOrders();
-
-    const statsEl = document.getElementById('overview-stats');
-    if (statsEl) {
-        statsEl.innerHTML = isAdmin ?
-            '<div class="stat-card"><div class="sc-icon sc-green">👥</div><div class="sc-val">' + allUsers.length + '</div><div class="sc-lbl">মোট ব্যবহারকারী</div></div>' +
-            '<div class="stat-card"><div class="sc-icon sc-gold">💰</div><div class="sc-val">৳' + allSavings.reduce(function (a, s) { return a + (s.amount || 0); }, 0).toLocaleString('bn') + '</div><div class="sc-lbl">মোট সঞ্চয়</div></div>' +
-            '<div class="stat-card"><div class="sc-icon sc-blue">🛒</div><div class="sc-val">' + allOrders.length + '</div><div class="sc-lbl">মোট অর্ডার</div></div>' +
-            '<div class="stat-card"><div class="sc-icon sc-red">🤝</div><div class="sc-val">' + DB.getLoans().filter(function (l) { return l.status === 'active'; }).length + '</div><div class="sc-lbl">সক্রিয় করজ</div></div>'
-            :
-            '<div class="stat-card"><div class="sc-icon sc-green">💰</div><div class="sc-val">৳' + totalSavings.toLocaleString('bn') + '</div><div class="sc-lbl">মোট সঞ্চয়</div></div>' +
-            '<div class="stat-card"><div class="sc-icon sc-gold">📅</div><div class="sc-val">' + savings.length + '</div><div class="sc-lbl">সঞ্চয় এন্ট্রি</div></div>' +
-            '<div class="stat-card"><div class="sc-icon sc-blue">🤝</div><div class="sc-val">' + activeLoans.length + '</div><div class="sc-lbl">সক্রিয় করজ</div></div>' +
-            '<div class="stat-card"><div class="sc-icon sc-red">🛒</div><div class="sc-val">' + orders.length + '</div><div class="sc-lbl">আমার অর্ডার</div></div>' +
-            '<div class="stat-card"><div class="sc-icon sc-green">✅</div><div class="sc-val">' + pct + '%</div><div class="sc-lbl">প্রোফাইল সম্পন্নতা</div></div>';
-    }
-
-    const months = [];
-    for (var i = 5; i >= 0; i--) {
-        var d = new Date(); d.setMonth(d.getMonth() - i);
-        months.push({ key: d.toISOString().slice(0, 7), label: d.toLocaleDateString('bn-BD', { month: 'short' }) });
-    }
-    const chartData = months.map(function (m) {
-        const mSv = isAdmin ? DB.getSavings().filter(function (s) { return s.month === m.key; }) : savings.filter(function (s) { return s.month === m.key; });
-        return { label: m.label, val: mSv.reduce(function (a, s) { return a + (s.amount || 0); }, 0) };
-    });
-    const maxVal = Math.max.apply(null, chartData.map(function (d) { return d.val; }).concat([1]));
-    const chartEl = document.getElementById('savings-chart');
-    if (chartEl) {
-        chartEl.innerHTML = chartData.map(function (d) {
-            return '<div class="savings-bar-wrap">' +
-                '<div class="savings-bar" style="height:' + Math.max(4, (d.val / maxVal * 100)) + 'px;" title="৳' + d.val.toLocaleString() + '"></div>' +
-                '<div class="savings-bar-lbl">' + d.label + '</div></div>';
-        }).join('');
-    }
-
-    const acts = [];
-    savings.slice(-3).reverse().forEach(function (s) { acts.push({ icon: '💰', text: 'সঞ্চয়: ৳' + s.amount, date: s.date }); });
-    orders.slice(-2).reverse().forEach(function (o) { acts.push({ icon: '🛒', text: 'অর্ডার: ' + o.productName, date: o.submittedAt }); });
-    const actEl = document.getElementById('recent-activity');
-    if (actEl) {
-        actEl.innerHTML = acts.length ? acts.map(function (a) {
-            return '<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #f0f4f1;">' +
-                '<span>' + a.icon + '</span><div><div style="font-size:13px;">' + a.text + '</div>' +
-                '<div style="font-size:11px;color:var(--text-muted);">' + (a.date ? new Date(a.date).toLocaleDateString('bn-BD') : '') + '</div></div></div>';
-        }).join('') : '<div style="color:var(--text-muted);font-size:13px;padding:12px 0;">কোনো কার্যক্রম নেই</div>';
-    }
-}
-
-function loadSavings() {
-    const savings = DB.getSavings().filter(function (s) { return s.userId === currentUser.id; });
-    const total = savings.reduce(function (a, s) { return a + (s.amount || 0); }, 0);
-    const badgeEl = document.getElementById('savings-total-badge');
-    if (badgeEl) badgeEl.textContent = 'মোট: ৳' + total.toLocaleString('bn');
-    const tb = document.getElementById('savings-table');
-    if (!tb) return;
-    if (!savings.length) { tb.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px;">কোনো সঞ্চয় এন্ট্রি নেই</td></tr>'; return; }
-    tb.innerHTML = savings.slice().reverse().map(function (s, i) {
-        return '<tr><td>' + (savings.length - i) + '</td><td>' + (s.month || '—') + '</td>' +
-            '<td style="color:var(--dark-green);font-weight:700;">৳' + (s.amount || 0).toLocaleString('bn') + '</td>' +
-            '<td>' + (s.date ? new Date(s.date).toLocaleDateString('bn-BD') : '—') + '</td>' +
-            '<td><span class="tag tag-ok">✅ জমা</span></td></tr>';
-    }).join('');
-}
-
-function loadLoans() {
-    const loans = DB.getLoans().filter(function (l) { return l.userId === currentUser.id; });
-    const tb = document.getElementById('loans-table');
-    if (!tb) return;
-    if (!loans.length) { tb.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#aaa;padding:20px;">কোনো করজ নেই</td></tr>'; return; }
-    const statusMap = { active: '<span class="tag tag-pend">চলমান</span>', paid: '<span class="tag tag-ok">পরিশোধিত</span>', pending: '<span class="tag tag-blue">পেন্ডিং</span>', rejected: '<span class="tag tag-no">বাতিল</span>' };
-    tb.innerHTML = loans.slice().reverse().map(function (l) {
-        return '<tr><td style="font-size:11px;color:#888;">' + l.id + '</td>' +
-            '<td>৳' + (l.amount || 0).toLocaleString('bn') + '</td>' +
-            '<td>৳' + (l.remaining || l.amount || 0).toLocaleString('bn') + '</td>' +
-            '<td>' + (l.reason || '—') + '</td>' +
-            '<td>' + (statusMap[l.status] || l.status) + '</td>' +
-            '<td>' + (l.createdAt ? new Date(l.createdAt).toLocaleDateString('bn-BD') : '—') + '</td></tr>';
-    }).join('');
-}
-
-function submitLoan() {
-    const amount = parseFloat(document.getElementById('loan-amount').value);
-    const reason = document.getElementById('loan-reason').value.trim();
-    const start = document.getElementById('loan-start').value;
-    if (!amount || !reason || !start) { toast('সকল প্রয়োজনীয় তথ্য পূরণ করুন।', '#e53e3e'); return; }
-    if (amount > 15000) { toast('সর্বোচ্চ ১৫,০০০ টাকা আবেদন করা যাবে।', '#e53e3e'); return; }
-    const loans = DB.getLoans();
-    loans.push({
-        id: DB.genID('LOAN'), userId: currentUser.id, userName: currentUser.name,
-        amount: amount, remaining: amount, reason: reason,
-        guarantor: document.getElementById('loan-guarantor').value.trim(),
-        startMonth: start, months: 3, status: 'pending', createdAt: new Date().toISOString(),
-    });
-    DB.set(DB.KEYS.LOANS, loans);
-    loadLoans();
-    toast('করজে হাসানা আবেদন জমা হয়েছে! ✅');
-    ['loan-amount', 'loan-reason', 'loan-start', 'loan-guarantor'].forEach(function (id) { var el = document.getElementById(id); if (el) el.value = ''; });
-}
-
-function loadOrders() {
-    const orders = DB.getOrders().filter(function (o) { return o.customerPhone === currentUser.phone || o.nid === currentUser.nid; });
-    const tb = document.getElementById('orders-table');
-    if (!tb) return;
-    const ORDER_STEPS = ['আবেদন জমা', 'কমিটি পর্যালোচনা', 'অনুমোদন', 'পণ্য সংগ্রহ', 'বিতরণ', 'সম্পন্ন'];
-    const statusMap = { pending: '<span class="tag tag-pend">পেন্ডিং</span>', approved: '<span class="tag tag-ok">অনুমোদিত</span>', rejected: '<span class="tag tag-no">বাতিল</span>', processing: '<span class="tag tag-blue">প্রসেসিং</span>', delivered: '<span class="tag tag-ok">বিতরিত</span>' };
-    if (!orders.length) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#aaa;padding:20px;">কোনো অর্ডার নেই</td></tr>'; return; }
-    tb.innerHTML = orders.slice().reverse().map(function (o) {
-        return '<tr><td style="font-size:11px;color:#888;">' + o.id + '</td>' +
-            '<td>' + (o.productName || '—') + '</td>' +
-            '<td>৳' + (o.price || 0).toLocaleString('bn') + '</td>' +
-            '<td>৳' + (o.perInstall || 0).toLocaleString('bn') + ' × ৬</td>' +
-            '<td style="font-size:12px;">' + (ORDER_STEPS[o.statusStep || 0]) + '</td>' +
-            '<td>' + (statusMap[o.status] || o.status) + '</td>' +
-            '<td>' + (o.submittedAt ? new Date(o.submittedAt).toLocaleDateString('bn-BD') : '—') + '</td></tr>';
-    }).join('');
-}
-
-function calcProfileComplete() {
-    var u = currentUser;
-    var fields = [u.name, u.phone, u.email, u.dob, u.job, u.address, u.nid, u.username];
-    return Math.round((fields.filter(function (f) { return f && f.length > 0; }).length / fields.length) * 100);
-}
-
-function calcProfileCompleteFor(u) {
-    var fields = [u.name, u.phone, u.email, u.dob, u.job, u.address, u.nid, u.username];
-    return Math.round((fields.filter(function (f) { return f && f.length > 0; }).length / fields.length) * 100);
-}
-
-function loadProfile() {
-    var u = currentUser;
-    var map = { 'pf-name': u.name, 'pf-uname': u.username, 'pf-phone': u.phone, 'pf-email': u.email, 'pf-dob': u.dob, 'pf-job': u.job, 'pf-address': u.address, 'pf-nid': u.nid };
-    Object.keys(map).forEach(function (id) { var el = document.getElementById(id); if (el) el.value = map[id] || ''; });
-    var refEl = document.getElementById('pf-referral');
-    if (refEl) {
-        var ref = u.referral ? DB.getUsers().find(function (x) { return x.id === u.referral; }) : null;
-        refEl.value = ref ? ref.name : 'নেই';
-    }
-    var pct = calcProfileComplete();
-    var ringNum = document.getElementById('ring-num');
-    var ringProg = document.getElementById('ring-progress');
-    var nameDisp = document.getElementById('profile-name-display');
-    var roleDisp = document.getElementById('profile-role-display');
-    var idDisp = document.getElementById('profile-id-display');
-    if (ringNum) ringNum.textContent = pct + '%';
-    if (ringProg) ringProg.style.strokeDashoffset = 251.2 - (251.2 * pct / 100);
-    if (nameDisp) nameDisp.textContent = u.name || '—';
-    if (roleDisp) roleDisp.textContent = ({ admin: 'অ্যাডমিন', member: 'সদস্য', user: 'ব্যবহারকারী', customer: 'গ্রাহক' }[u.role] || u.role);
-    if (idDisp) idDisp.textContent = u.memberID ? 'সদস্য আইডি: ' + u.memberID : 'আইডি: ' + u.id.slice(0, 12);
-    var checkItems = [
-        { label: 'নাম', done: !!u.name }, { label: 'মোবাইল', done: !!u.phone }, { label: 'ইমেইল', done: !!u.email },
-        { label: 'জন্ম তারিখ', done: !!u.dob }, { label: 'পেশা', done: !!u.job }, { label: 'ঠিকানা', done: !!u.address }, { label: 'এনআইডি', done: !!u.nid },
-    ];
-    var checkEl = document.getElementById('completion-checklist');
-    if (checkEl) {
-        checkEl.innerHTML = checkItems.map(function (c) {
-            return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;">' +
-                '<span>' + (c.done ? '✅' : '⬜') + '</span>' +
-                '<span style="color:' + (c.done ? 'var(--dark-green)' : 'var(--text-muted)') + ';">' + c.label + '</span></div>';
-        }).join('');
-    }
-}
-
-function saveProfile() {
-    var users = DB.getUsers();
-    var idx = users.findIndex(function (u) { return u.id === currentUser.id; });
-    if (idx < 0) { toast('ব্যবহারকারী পাওয়া যায়নি।', '#e53e3e'); return; }
-    var newPass = document.getElementById('pf-pass').value;
-    users[idx].name = document.getElementById('pf-name').value.trim() || users[idx].name;
-    users[idx].email = document.getElementById('pf-email').value.trim() || users[idx].email;
-    users[idx].dob = document.getElementById('pf-dob').value;
-    users[idx].job = document.getElementById('pf-job').value.trim();
-    users[idx].address = document.getElementById('pf-address').value.trim();
-    users[idx].nid = document.getElementById('pf-nid').value.trim();
-    if (newPass) {
-        if (newPass.length < 8 || !/[a-zA-Z]/.test(newPass) || !/[0-9]/.test(newPass)) {
-            toast('পাসওয়ার্ড ৮+ অক্ষর, সংখ্যা ও লেটার থাকতে হবে।', '#e53e3e'); return;
-        }
-        users[idx].password = newPass;
-    }
-    users[idx].profileComplete = calcProfileCompleteFor(users[idx]);
-    DB.saveUsers(users);
-    currentUser = users[idx];
-    DB.setSession(currentUser);
-    loadProfile();
-    toast('প্রোফাইল সংরক্ষিত হয়েছে ✅');
-    document.getElementById('pf-pass').value = '';
-}
-
-function loadAdminPanel() {
-    var apps = JSON.parse(localStorage.getItem('bf_applications') || '[]');
-    var products = DB.getProducts();
-    var orders = DB.getOrders();
-    var users = DB.getUsers().filter(function (u) { return u.verified; });
-    var savings = DB.getSavings();
-    var loans = DB.getLoans();
-    ['aq-apps', 'aq-products', 'aq-orders', 'aq-users', 'aq-savings', 'aq-loans'].forEach(function (id, i) {
-        var el = document.getElementById(id); if (!el) return;
-        var vals = [apps.length + ' টি আবেদন', products.length + ' টি পণ্য', orders.length + ' টি অর্ডার',
-        users.length + ' জন', '৳' + savings.reduce(function (a, s) { return a + (s.amount || 0); }, 0).toLocaleString('bn'),
-        loans.filter(function (l) { return l.status === 'active'; }).length + ' টি সক্রিয়'];
-        el.textContent = vals[i];
-    });
-    var adminStats = document.getElementById('admin-stats');
-    if (adminStats) {
-        adminStats.innerHTML =
-            '<div class="stat-card"><div class="sc-icon sc-green">👥</div><div class="sc-val">' + users.length + '</div><div class="sc-lbl">মোট ব্যবহারকারী</div></div>' +
-            '<div class="stat-card"><div class="sc-icon sc-gold">📋</div><div class="sc-val">' + apps.filter(function (a) { return a.status === 'pending'; }).length + '</div><div class="sc-lbl">পেন্ডিং আবেদন</div></div>' +
-            '<div class="stat-card"><div class="sc-icon sc-blue">🛒</div><div class="sc-val">' + orders.filter(function (o) { return o.status === 'pending'; }).length + '</div><div class="sc-lbl">পেন্ডিং অর্ডার</div></div>' +
-            '<div class="stat-card"><div class="sc-icon sc-red">🤝</div><div class="sc-val">৳' + loans.filter(function (l) { return l.status === 'active'; }).reduce(function (a, l) { return a + (l.remaining || l.amount || 0); }, 0).toLocaleString('bn') + '</div><div class="sc-lbl">মোট করজ বাকি</div></div>';
-    }
-    var tb = document.getElementById('admin-recent-apps'); if (!tb) return;
-    var recApps = apps.slice().reverse().slice(0, 5);
-    var statMap = { pending: '<span class="tag tag-pend">পেন্ডিং</span>', approved: '<span class="tag tag-ok">অনুমোদিত</span>', rejected: '<span class="tag tag-no">বাতিল</span>' };
-    tb.innerHTML = recApps.length ? recApps.map(function (a) {
-        return '<tr><td>' + (a.applicantNameBn || '—') + '</td><td style="font-size:12px;">' + (a.nidNumber || '—') + '</td>' +
-            '<td style="font-size:12px;">' + ((a.phones || [])[0] || '—') + '</td>' +
-            '<td>' + (statMap[a.status] || a.status) + '</td>' +
-            '<td style="font-size:12px;">' + (a.submittedAt ? new Date(a.submittedAt).toLocaleDateString('bn-BD') : '—') + '</td></tr>';
-    }).join('') : '<tr><td colspan="5" style="text-align:center;color:#aaa;padding:16px;">কোনো আবেদন নেই</td></tr>';
-}
-
-function renderAllUsers() {
-    if (currentUser.role !== 'admin') return;
-    var search = (document.getElementById('user-search')?.value || '').toLowerCase();
-    var users = DB.getUsers();
-    if (search) users = users.filter(function (u) { return (u.name || '').toLowerCase().includes(search) || (u.phone || '').includes(search) || (u.username || '').includes(search); });
-    var tb = document.getElementById('all-users-table'); if (!tb) return;
-    var roleMap = { admin: 'অ্যাডমিন', member: 'সদস্য', user: 'ব্যবহারকারী', customer: 'গ্রাহক' };
-    tb.innerHTML = users.length ? users.map(function (u) {
-        return '<tr><td>' + (u.name || '—') + '</td><td><code>' + (u.username || '—') + '</code></td>' +
-            '<td>' + (u.phone || '—') + '</td><td>' + (u.email || '—') + '</td>' +
-            '<td><span class="tag ' + (u.role === 'admin' ? 'tag-pend' : u.role === 'member' ? 'tag-ok' : 'tag-blue') + '">' + (roleMap[u.role] || u.role) + '</span></td>' +
-            '<td><div class="prog-bar" style="width:80px;"><div class="prog-fill" style="width:' + (u.profileComplete || 0) + '%"></div></div>' +
-            '<span style="font-size:10px;color:#888;">' + (u.profileComplete || 0) + '%</span></td>' +
-            '<td><select onchange="changeUserRole(\'' + u.id + '\',this.value)" style="font-size:11px;padding:3px;border:1px solid #d1fae5;border-radius:4px;">' +
-            '<option value="user"' + (u.role === 'user' ? ' selected' : '') + '>ব্যবহারকারী</option>' +
-            '<option value="customer"' + (u.role === 'customer' ? ' selected' : '') + '>গ্রাহক</option>' +
-            '<option value="member"' + (u.role === 'member' ? ' selected' : '') + '>সদস্য</option>' +
-            '<option value="admin"' + (u.role === 'admin' ? ' selected' : '') + '>অ্যাডমিন</option>' +
-            '</select></td></tr>';
-    }).join('') : '<tr><td colspan="7" style="text-align:center;color:#aaa;padding:20px;">কোনো ব্যবহারকারী নেই</td></tr>';
-}
-
-function changeUserRole(userId, newRole) {
-    var users = DB.getUsers();
-    var idx = users.findIndex(function (u) { return u.id === userId; });
-    if (idx >= 0) { users[idx].role = newRole; DB.saveUsers(users); toast('ভূমিকা পরিবর্তন হয়েছে ✅'); }
-}
-
-function loadAllSavings() {
-    var users = DB.getUsers().filter(function (u) { return u.verified && u.role !== 'admin'; });
-    var sel = document.getElementById('sv-user');
-    if (sel) sel.innerHTML = '<option value="">-- সদস্য নির্বাচন --</option>' +
-        users.map(function (u) { return '<option value="' + u.id + '">' + u.name + ' (' + u.phone + ')</option>'; }).join('');
-    renderSavingsTable();
-}
-
-function addSavingEntry() {
-    var userId = document.getElementById('sv-user').value;
-    var month = document.getElementById('sv-month').value;
-    var amount = parseFloat(document.getElementById('sv-amount').value);
-    var note = document.getElementById('sv-note').value.trim();
-    if (!userId || !month || !amount) { toast('সকল প্রয়োজনীয় তথ্য পূরণ করুন।', '#e53e3e'); return; }
-    var savings = DB.getSavings();
-    savings.push({ id: DB.genID('SV'), userId: userId, month: month, amount: amount, note: note, date: new Date().toISOString() });
-    DB.set(DB.KEYS.SAVINGS, savings);
-    renderSavingsTable();
-    toast('সঞ্চয় এন্ট্রি যোগ হয়েছে ✅');
-}
-
-function renderSavingsTable() {
-    var savings = DB.getSavings(), users = DB.getUsers();
-    var total = savings.reduce(function (a, s) { return a + (s.amount || 0); }, 0);
-    var badgeEl = document.getElementById('total-savings-badge');
-    if (badgeEl) badgeEl.textContent = 'মোট: ৳' + total.toLocaleString('bn');
-    var tb = document.getElementById('all-savings-table'); if (!tb) return;
-    tb.innerHTML = savings.length ? savings.slice().reverse().map(function (s) {
-        var u = users.find(function (x) { return x.id === s.userId; });
-        return '<tr><td>' + (u ? u.name : '—') + '</td><td>' + (s.month || '—') + '</td>' +
-            '<td>৳' + (s.amount || 0).toLocaleString('bn') + '</td><td>' + (s.note || '—') + '</td>' +
-            '<td>' + (s.date ? new Date(s.date).toLocaleDateString('bn-BD') : '—') + '</td>' +
-            '<td><button onclick="deleteSaving(\'' + s.id + '\')" style="background:#fee2e2;border:none;padding:3px 8px;border-radius:4px;cursor:pointer;font-size:11px;color:#991b1b;">🗑️</button></td></tr>';
-    }).join('') : '<tr><td colspan="6" style="text-align:center;color:#aaa;padding:20px;">কোনো সঞ্চয় নেই</td></tr>';
-}
-
-function deleteSaving(id) {
-    if (!confirm('এই এন্ট্রি মুছবেন?')) return;
-    DB.set(DB.KEYS.SAVINGS, DB.getSavings().filter(function (s) { return s.id !== id; }));
-    renderSavingsTable();
-    toast('মুছে দেওয়া হয়েছে।', '#e53e3e');
-}
-
-function loadAllLoans() {
-    var loans = DB.getLoans(), users = DB.getUsers();
-    var tb = document.getElementById('all-loans-table'); if (!tb) return;
-    var statusMap = { active: '<span class="tag tag-pend">চলমান</span>', paid: '<span class="tag tag-ok">পরিশোধিত</span>', pending: '<span class="tag tag-blue">পেন্ডিং</span>', rejected: '<span class="tag tag-no">বাতিল</span>' };
-    tb.innerHTML = loans.length ? loans.slice().reverse().map(function (l) {
-        var u = users.find(function (x) { return x.id === l.userId; });
-        return '<tr><td style="font-size:11px;">' + l.id + '</td><td>' + (u ? u.name : l.userName || '—') + '</td>' +
-            '<td>৳' + (l.amount || 0).toLocaleString('bn') + '</td><td>৳' + (l.remaining || l.amount || 0).toLocaleString('bn') + '</td>' +
-            '<td>' + (l.reason || '—') + '</td><td>' + (statusMap[l.status] || l.status) + '</td>' +
-            '<td><select onchange="updateLoanStatus(\'' + l.id + '\',this.value)" style="font-size:11px;padding:3px;border:1px solid #d1fae5;border-radius:4px;">' +
-            '<option value="pending"' + (l.status === 'pending' ? ' selected' : '') + '>পেন্ডিং</option>' +
-            '<option value="active"' + (l.status === 'active' ? ' selected' : '') + '>অনুমোদিত</option>' +
-            '<option value="paid"' + (l.status === 'paid' ? ' selected' : '') + '>পরিশোধিত</option>' +
-            '<option value="rejected"' + (l.status === 'rejected' ? ' selected' : '') + '>বাতিল</option>' +
-            '</select></td></tr>';
-    }).join('') : '<tr><td colspan="7" style="text-align:center;color:#aaa;padding:20px;">কোনো করজ নেই</td></tr>';
-}
-
-function updateLoanStatus(id, status) {
-    var loans = DB.getLoans();
-    var idx = loans.findIndex(function (l) { return l.id === id; });
-    if (idx >= 0) { loans[idx].status = status; if (status === 'paid') loans[idx].remaining = 0; DB.set(DB.KEYS.LOANS, loans); toast('অবস্থা আপডেট হয়েছে ✅'); }
-}
-
-function doLogout() {
-    DB.clearSession();
-    localStorage.removeItem('bf_remember');
+async function initDashboard() {
+  currentUser = (typeof DB !== 'undefined') ? DB.getSession() : null;
+  if (!currentUser || !currentUser.verified) {
+    alert('দয়া করে প্রথমে লগইন করুন।');
     window.location.href = '../index.html';
+    return;
+  }
+
+  // Setup UI
+  setupSidebarUser();
+  showQuote();
+  buildNav();
+  showPanel('overview', document.querySelector('.sb-nav-item'));
+
+  // Load data
+  await refreshUserData();
 }
 
-function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlayBg').classList.toggle('show'); }
-function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlayBg').classList.remove('show'); }
+// ─── Refresh user from server ───
+async function refreshUserData() {
+  try {
+    const res = await fetch(`${API}/auth/me`, {
+      headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
+      signal: AbortSignal.timeout(3000)
+    });
+    if (res.ok) {
+      const fresh = await res.json();
+      currentUser = { ...currentUser, ...fresh };
+      if (typeof DB !== 'undefined') DB.setSession(currentUser);
+    }
+  } catch (_) {}
+  setupSidebarUser();
+}
 
-function toast(msg, color) {
-    color = color || '#065F46';
-    var t = document.getElementById('toast');
-    t.textContent = msg; t.style.background = color; t.style.display = 'block';
-    setTimeout(function () { t.style.display = 'none'; }, 3500);
+// ─── Sidebar User Card ───
+function setupSidebarUser() {
+  const name = currentUser.name || 'ব্যবহারকারী';
+  const pct  = currentUser.profileComplete || 40;
+  const roles = { admin:'অ্যাডমিন', super_admin:'সুপার অ্যাডমিন', member:'সদস্য', user:'গ্রাহক' };
+
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('sbAvatar', name[0]);
+  set('sbName', name);
+  set('sbRole', roles[currentUser.role] || 'গ্রাহক');
+  set('sbPct', pct + '%');
+  const fill = document.getElementById('sbPctFill');
+  if (fill) fill.style.width = pct + '%';
+
+  // Also update nav user
+  const av = document.getElementById('navUserAvatar');
+  if (av) av.textContent = name[0];
+  set('userMenuName', name);
+  set('userMenuRole', roles[currentUser.role] || 'গ্রাহক');
+}
+
+// ─── Build Nav based on role ───
+function buildNav() {
+  const isMember = currentUser.role === 'member' || currentUser.role === 'admin' || currentUser.role === 'super_admin';
+  const isAdmin  = currentUser.role === 'admin' || currentUser.role === 'super_admin';
+
+  const show = (id) => { const el = document.getElementById(id); if (el) el.style.display = ''; };
+
+  if (isMember) {
+    show('memberNavLabel');
+    show('navSavings');
+    show('navLoans');
+    show('navLedger');
+  }
+  if (isAdmin) {
+    show('adminNavLabel');
+    show('navAdminPanel');
+    show('navAllUsers');
+  }
+}
+
+// ─── Show Panel ───
+function showPanel(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sb-nav-item').forEach(b => b.classList.remove('active'));
+  const panel = document.getElementById('panel-' + id);
+  if (panel) panel.classList.add('active');
+  if (btn) btn.classList.add('active');
+
+  // Close mobile sidebar
+  document.getElementById('dashSidebar')?.classList.remove('open');
+
+  // Load content
+  const loaders = {
+    overview:      loadOverview,
+    savings:       loadSavings,
+    loans:         loadLoans,
+    orders:        loadOrders,
+    profile:       loadProfilePanel,
+    allUsers:      loadAllUsers,
+    notifications: loadNotifications,
+  };
+  loaders[id]?.();
+}
+
+function toggleSidebar() {
+  document.getElementById('dashSidebar')?.classList.toggle('open');
+}
+
+// ─── Quote Rotator ───
+function showQuote() {
+  const used   = JSON.parse(sessionStorage.getItem('bf_used_quotes') || '[]');
+  const avail  = QUOTES.filter((_, i) => !used.includes(i));
+  const pool   = avail.length ? avail : QUOTES;
+  const idx    = Math.floor(Math.random() * pool.length);
+  const q      = pool[idx];
+  const realIdx= QUOTES.indexOf(q);
+
+  const newUsed = [...used, realIdx].slice(-QUOTES.length);
+  sessionStorage.setItem('bf_used_quotes', JSON.stringify(newUsed));
+
+  const txt = document.getElementById('quoteTxt');
+  const src = document.getElementById('quoteSrc');
+  if (txt) txt.innerHTML = `<span style="font-family:'Noto Serif Bengali',serif;font-size:.95rem;color:var(--text-primary)">${q.bn}</span>`;
+  if (src) src.textContent = '— ' + q.src;
+}
+
+// ─── Overview ───
+async function loadOverview() {
+  const name = currentUser.name || 'ব্যবহারকারী';
+  const el = document.getElementById('ovName');
+  if (el) el.textContent = name.split(' ')[0];
+
+  const isAdmin  = currentUser.role === 'admin' || currentUser.role === 'super_admin';
+  const isMember = currentUser.role === 'member' || isAdmin;
+
+  // Fetch stats
+  let stats = {};
+  try {
+    const res = await fetch(`${API}/reports/dashboard`, {
+      headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
+      signal: AbortSignal.timeout(3000)
+    });
+    if (res.ok) stats = await res.json();
+  } catch (_) {}
+
+  // Build stat cards
+  const savings  = (typeof DB !== 'undefined') ? DB.getSavings().filter(s => s.userId === currentUser.id) : [];
+  const loans    = (typeof DB !== 'undefined') ? DB.getLoans().filter(l => l.userId === currentUser.id) : [];
+  const orders   = (typeof DB !== 'undefined') ? DB.getOrders().filter(o => o.customerId === currentUser.id || o.customerPhone === currentUser.phone) : [];
+  const totalSav = savings.reduce((a, s) => a + (s.amount || 0), 0);
+  const activeL  = loans.filter(l => l.status === 'active' || l.status === 'disbursed');
+
+  let cards = [];
+
+  if (isAdmin) {
+    cards = [
+      { icon: '👥', label: 'মোট ব্যবহারকারী', val: stats.totalUsers || '—', color: 'green' },
+      { icon: '🪪', label: 'সক্রিয় সদস্য',   val: stats.totalMembers || '—', color: 'gold' },
+      { icon: '💰', label: 'মোট সঞ্চয়',       val: '৳ ' + fmtN(stats.totalSavings || 0), color: 'green' },
+      { icon: '🛒', label: 'মোট অর্ডার',       val: stats.totalOrders || '—', color: 'blue' },
+      { icon: '🤝', label: 'সক্রিয় করজ',      val: stats.activeLoans || '—', color: 'red' },
+      { icon: '📋', label: 'পেন্ডিং আবেদন',   val: stats.pendingApplications || '—', color: 'gold' },
+      { icon: '💵', label: 'SMS ব্যালেন্স',    val: stats.smsBalance || '—', color: 'blue' },
+      { icon: '📊', label: 'মোট আয় (এই মাসে)', val: '৳ ' + fmtN(stats.monthlyIncome || 0), color: 'green' },
+    ];
+  } else if (isMember) {
+    cards = [
+      { icon: '💰', label: 'মোট জমা',     val: '৳ ' + fmtN(totalSav), color: 'green' },
+      { icon: '📊', label: 'ইউনিট সংখ্যা', val: ((totalSav / 2000) || 0).toFixed(2), color: 'gold' },
+      { icon: '🤝', label: 'সক্রিয় করজ',  val: activeL.length || 0, color: 'blue' },
+      { icon: '🛒', label: 'আমার অর্ডার',  val: orders.length || 0, color: 'red' },
+    ];
+  } else {
+    cards = [
+      { icon: '🛒', label: 'আমার অর্ডার', val: orders.length || 0, color: 'green' },
+      { icon: '🪪', label: 'সদস্যপদ',     val: 'আবেদন করুন', color: 'gold', link: '../form.html' },
+    ];
+  }
+
+  const statsEl = document.getElementById('ovStats');
+  if (statsEl) {
+    statsEl.innerHTML = cards.map(c => `
+      <div class="stat-card" ${c.link ? `onclick="window.location='${c.link}'" style="cursor:pointer"` : ''}>
+        <div class="stat-icon stat-icon-${c.color}">${c.icon}</div>
+        <div class="stat-val">${c.val}</div>
+        <div class="stat-lbl">${c.label}</div>
+      </div>`).join('');
+  }
+
+  // Charts
+  renderSavingsChart(savings);
+  renderFundChart(stats);
+
+  // Recent activity
+  loadRecentActivity();
+
+  // Pending actions for admin
+  if (isAdmin) loadPendingActions(stats);
+}
+
+function fmtN(n) { return Math.round(n || 0).toLocaleString('en-IN'); }
+
+// ─── Savings Chart (6 months) ───
+function renderSavingsChart(savings) {
+  const canvas = document.getElementById('savingsChart');
+  if (!canvas || typeof Chart === 'undefined') return;
+  if (canvas._chartInstance) canvas._chartInstance.destroy();
+
+  const months = [];
+  const amounts = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date();
+    d.setMonth(d.getMonth() - i);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const label = d.toLocaleDateString('bn-BD', { month: 'short', year: '2-digit' });
+    months.push(label);
+    const total = savings.filter(s => (s.month || '').startsWith(key)).reduce((a, s) => a + (s.amount || 0), 0);
+    amounts.push(total);
+  }
+
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  canvas._chartInstance = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [{ label: 'সঞ্চয় (৳)', data: amounts, backgroundColor: 'rgba(29,158,117,.7)', borderRadius: 6 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { ticks: { color: isDark ? '#aaa' : '#555', callback: v => '৳' + v.toLocaleString('en-IN') }, grid: { color: isDark ? 'rgba(255,255,255,.05)' : 'rgba(0,0,0,.05)' } },
+        x: { ticks: { color: isDark ? '#aaa' : '#555' }, grid: { display: false } }
+      }
+    }
+  });
+}
+
+// ─── Fund Chart (donut) ───
+function renderFundChart(stats) {
+  const canvas = document.getElementById('fundChart');
+  if (!canvas || typeof Chart === 'undefined') return;
+  if (canvas._chartInstance) canvas._chartInstance.destroy();
+
+  const data = [
+    stats.memberFund || stats.totalSavings || 1,
+    stats.qardFund   || 0,
+    stats.charityFund|| 0,
+    stats.orgFund    || 0,
+  ];
+  canvas._chartInstance = new Chart(canvas, {
+    type: 'doughnut',
+    data: {
+      labels: ['সদস্য তহবিল', 'করজ ফান্ড', 'চ্যারিটি ফান্ড', 'সংগঠন ফান্ড'],
+      datasets: [{ data, backgroundColor: ['#1D9E75', '#C9A227', '#ef4444', '#3b82f6'], borderWidth: 0 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#aaa' : '#555' } } }
+    }
+  });
+}
+
+// ─── Recent Activity ───
+async function loadRecentActivity() {
+  const wrap = document.getElementById('recentActivity');
+  if (!wrap) return;
+
+  let activities = [];
+  try {
+    const res = await fetch(`${API}/audit/live?n=10`, {
+      headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
+      signal: AbortSignal.timeout(3000)
+    });
+    if (res.ok) { const d = await res.json(); activities = d.activities || d.log || []; }
+  } catch (_) {}
+
+  if (!activities.length) {
+    // Fallback: local savings/loans
+    const savings = (typeof DB !== 'undefined') ? DB.getSavings().filter(s => s.userId === currentUser.id).slice(-5) : [];
+    activities = savings.map(s => ({
+      action: 'SAVINGS_ADDED', module: 'savings',
+      detail: `৳${(s.amount || 0).toLocaleString('en-IN')} সঞ্চয় — ${s.month || ''}`,
+      date: s.date || s.createdAt
+    }));
+  }
+
+  if (!activities.length) {
+    wrap.innerHTML = `<div class="empty-state" style="padding:30px"><div class="empty-state-icon">📋</div><div class="empty-state-title">কোনো কার্যক্রম নেই</div></div>`;
+    return;
+  }
+
+  const icons = { SAVINGS_ADDED:'💰', ORDER_CREATED:'🛒', LOAN_APPLIED:'🤝', LOGIN:'🔐', MEMBER_ADDED:'👤', CREATE_CLIENT:'🏷️' };
+  wrap.innerHTML = `<div style="display:flex;flex-direction:column;gap:8px;padding:8px 0">` +
+    activities.map(a => `
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:10px;background:var(--bg-surface-2)">
+        <span style="font-size:1.3rem">${icons[a.action] || '📌'}</span>
+        <div style="flex:1">
+          <div style="font-size:.85rem;font-weight:600;color:var(--text-primary)">${a.detail || a.action || ''}</div>
+          <div style="font-size:.75rem;color:var(--text-muted)">${fmtDT(a.date)}</div>
+        </div>
+        <span class="badge badge-muted" style="font-size:.7rem">${a.module || ''}</span>
+      </div>`).join('') + `</div>`;
+}
+
+function fmtDT(s) {
+  if (!s) return '';
+  try { return new Date(s).toLocaleString('bn-BD', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+  catch { return s; }
+}
+
+// ─── Pending actions ───
+async function loadPendingActions(stats) {
+  const wrap = document.getElementById('pendingActions');
+  if (!wrap) return;
+  const items = [
+    { label: 'পেন্ডিং সদস্য আবেদন', val: stats.pendingApplications, icon: '📝', link: '../admin/admin.html' },
+    { label: 'পেন্ডিং অর্ডার', val: stats.pendingOrders, icon: '🛒', link: '../admin/panel.html#orders' },
+    { label: 'পেন্ডিং করজ আবেদন', val: stats.pendingQard, icon: '🤝', link: '../admin/panel.html#qard-list' },
+  ].filter(i => i.val > 0);
+  if (!items.length) return;
+
+  wrap.innerHTML = `
+    <div class="admin-card" style="border-left:4px solid var(--clr-warning)">
+      <div class="card-title">⚠️ অ্যাকশন প্রয়োজন</div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px">
+        ${items.map(i => `
+          <a href="${i.link}" class="btn btn-outline btn-sm">
+            ${i.icon} ${i.label} <span class="badge badge-warning">${i.val}</span>
+          </a>`).join('')}
+      </div>
+    </div>`;
+}
+
+// ─── Savings Panel ───
+async function loadSavings() {
+  let savings = [];
+  try {
+    const res = await fetch(`${API}/savings/user/${currentUser.id}`, {
+      headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
+      signal: AbortSignal.timeout(3000)
+    });
+    if (res.ok) { const d = await res.json(); savings = d.savings || []; }
+  } catch (_) {}
+  if (!savings.length && typeof DB !== 'undefined') savings = DB.getSavings().filter(s => s.userId === currentUser.id);
+
+  const total    = savings.reduce((a, s) => a + (s.amount || 0), 0);
+  const lateFees = savings.reduce((a, s) => a + (s.lateFee || 0), 0);
+  const units    = (total / 2000).toFixed(2);
+
+  const statsEl = document.getElementById('savingsStats');
+  if (statsEl) {
+    statsEl.innerHTML = `
+      <div class="stat-card"><div class="stat-icon stat-icon-green">💰</div><div class="stat-val">৳ ${fmtN(total)}</div><div class="stat-lbl">মোট জমা</div></div>
+      <div class="stat-card"><div class="stat-icon stat-icon-gold">📊</div><div class="stat-val">${units}</div><div class="stat-lbl">মোট ইউনিট</div></div>
+      <div class="stat-card"><div class="stat-icon stat-icon-red">⚠️</div><div class="stat-val">৳ ${fmtN(lateFees)}</div><div class="stat-lbl">বিলম্ব ফি</div></div>`;
+  }
+
+  const tbody = document.getElementById('savingsTbody');
+  if (!tbody) return;
+  if (!savings.length) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px">কোনো সঞ্চয় নেই</td></tr>`; return; }
+
+  tbody.innerHTML = savings.sort((a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt)).map(s => `
+    <tr>
+      <td>${s.month || '—'}</td>
+      <td style="font-weight:700;color:var(--clr-primary-500)">৳ ${fmtN(s.amount)}</td>
+      <td>${s.lateFee ? `<span class="badge badge-warning">৳ ${fmtN(s.lateFee)}</span>` : '—'}</td>
+      <td>${fmtDT(s.date || s.createdAt)}</td>
+      <td><span class="badge badge-${s.status === 'paid' ? 'paid' : 'pending'}">${s.status === 'paid' ? 'পরিশোধিত' : 'পেন্ডিং'}</span></td>
+    </tr>`).join('');
+}
+
+// ─── Loans Panel ───
+async function loadLoans() {
+  let loans = [];
+  try {
+    const res = await fetch(`${API}/loans/user/${currentUser.id}`, {
+      headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
+      signal: AbortSignal.timeout(3000)
+    });
+    if (res.ok) { const d = await res.json(); loans = d.loans || []; }
+  } catch (_) {}
+  if (!loans.length && typeof DB !== 'undefined') loans = DB.getLoans().filter(l => l.userId === currentUser.id);
+
+  const active  = loans.filter(l => ['active','disbursed','approved'].includes(l.status));
+  const pending = loans.filter(l => l.status === 'pending' || l.status === 'applied');
+  const paid    = loans.filter(l => l.status === 'completed' || l.status === 'paid');
+
+  const statsEl = document.getElementById('loansStats');
+  if (statsEl) {
+    statsEl.innerHTML = `
+      <div class="stat-card"><div class="stat-icon stat-icon-blue">🤝</div><div class="stat-val">${active.length}</div><div class="stat-lbl">সক্রিয় করজ</div></div>
+      <div class="stat-card"><div class="stat-icon stat-icon-gold">⏳</div><div class="stat-val">${pending.length}</div><div class="stat-lbl">পেন্ডিং</div></div>
+      <div class="stat-card"><div class="stat-icon stat-icon-green">✅</div><div class="stat-val">${paid.length}</div><div class="stat-lbl">পরিশোধিত</div></div>`;
+  }
+
+  const tbody = document.getElementById('loansTbody');
+  if (!tbody) return;
+  if (!loans.length) { tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:20px">কোনো করজ নেই</td></tr>`; return; }
+
+  const statusBadge = { applied:'badge-warning', pending:'badge-warning', approved:'badge-info', disbursed:'badge-info', active:'badge-info', completed:'badge-paid', paid:'badge-paid', rejected:'badge-danger' };
+  const statusLabel = { applied:'আবেদনকৃত', pending:'পেন্ডিং', approved:'অনুমোদিত', disbursed:'বিতরিত', active:'সক্রিয়', completed:'সম্পন্ন', paid:'পরিশোধিত', rejected:'প্রত্যাখ্যাত' };
+
+  tbody.innerHTML = loans.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(l => `
+    <tr>
+      <td><code>${l.loanId || l.id?.slice(0,8) || '—'}</code></td>
+      <td style="font-weight:700">৳ ${fmtN(l.amount)}</td>
+      <td>৳ ${fmtN(l.remaining || 0)}</td>
+      <td style="font-size:.8rem;color:var(--text-muted)">${l.reason || '—'}</td>
+      <td>${fmtDT(l.createdAt)}</td>
+      <td><span class="badge ${statusBadge[l.status] || 'badge-muted'}">${statusLabel[l.status] || l.status}</span></td>
+    </tr>`).join('');
+}
+
+// ─── Orders Panel ───
+async function loadOrders() {
+  let orders = [];
+  try {
+    const res = await fetch(`${API}/orders/user/${currentUser.phone}`, {
+      headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
+      signal: AbortSignal.timeout(3000)
+    });
+    if (res.ok) { const d = await res.json(); orders = d.orders || []; }
+  } catch (_) {}
+  if (!orders.length && typeof DB !== 'undefined') orders = DB.getOrders().filter(o => o.customerId === currentUser.id || o.customerPhone === currentUser.phone);
+
+  const tbody = document.getElementById('ordersTbody');
+  if (!tbody) return;
+  if (!orders.length) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px">কোনো অর্ডার নেই। <a href="shop.html" style="color:var(--clr-primary-500)">শপ দেখুন →</a></td></tr>`; return; }
+
+  const statusBadge = { pending:'badge-warning', approved:'badge-info', confirmed:'badge-info', delivered:'badge-paid', cancelled:'badge-danger' };
+  const statusLabel = { pending:'পেন্ডিং', approved:'অনুমোদিত', confirmed:'নিশ্চিত', delivered:'ডেলিভারি', cancelled:'বাতিল' };
+
+  tbody.innerHTML = orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(o => `
+    <tr>
+      <td style="font-weight:600">${o.productName || '—'}</td>
+      <td>৳ ${fmtN(o.salePrice || o.price)}</td>
+      <td>${o.installments ? `${o.installments} কিস্তি × ৳${fmtN(o.monthlyAmount)}` : '—'}</td>
+      <td>${fmtDT(o.createdAt)}</td>
+      <td><span class="badge ${statusBadge[o.status] || 'badge-muted'}">${statusLabel[o.status] || o.status}</span></td>
+    </tr>`).join('');
+}
+
+// ─── Profile Panel ───
+async function loadProfilePanel() {
+  const wrap = document.getElementById('profileContent');
+  if (!wrap) return;
+  const u = currentUser;
+  wrap.innerHTML = `
+    <div class="admin-card">
+      <div style="display:flex;align-items:flex-start;gap:24px;flex-wrap:wrap">
+        <div style="text-align:center">
+          <div class="avatar avatar-xl" style="background:linear-gradient(135deg,var(--clr-primary-400),var(--clr-primary-700))">${(u.name||'ব')[0]}</div>
+          <div style="margin-top:8px;font-size:.8rem;color:var(--text-muted)">ইউজারনেম: @${u.username||'—'}</div>
+          <span class="badge badge-${u.role==='admin'?'green':u.role==='member'?'info':'muted'} mt-2">${{admin:'অ্যাডমিন',super_admin:'সুপার অ্যাডমিন',member:'সদস্য',user:'গ্রাহক'}[u.role]||'গ্রাহক'}</span>
+        </div>
+        <div style="flex:1;min-width:200px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:.9rem">
+            ${profileRow('নাম', u.name)}
+            ${profileRow('মোবাইল', u.phone)}
+            ${profileRow('ইমেইল', u.email)}
+            ${profileRow('জন্ম তারিখ', u.dob)}
+            ${profileRow('সদস্য আইডি', u.memberID)}
+            ${profileRow('প্রোফাইল', (u.profileComplete||40)+'% সম্পূর্ণ')}
+          </div>
+          <div style="margin-top:16px">
+            <a href="profile.html" class="btn btn-primary btn-sm">✏️ প্রোফাইল সম্পাদনা করুন</a>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function profileRow(lbl, val) {
+  return `<div style="padding:8px;background:var(--bg-surface-2);border-radius:8px"><div style="font-size:.72rem;color:var(--text-muted);margin-bottom:2px">${lbl}</div><div style="font-weight:600;color:var(--text-primary)">${val||'—'}</div></div>`;
+}
+
+// ─── All Users (admin) ───
+async function loadAllUsers() {
+  let users = [];
+  try {
+    const res = await fetch(`${API}/users`, {
+      headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
+      signal: AbortSignal.timeout(4000)
+    });
+    if (res.ok) { const d = await res.json(); users = d.users || d; }
+  } catch (_) {}
+  if (!users.length && typeof DB !== 'undefined') users = DB.getUsers();
+  _allUsers = users;
+  renderUsersTable(users);
+}
+
+function filterUsers() {
+  const q = (document.getElementById('usersSearch')?.value || '').toLowerCase();
+  const filtered = _allUsers.filter(u => !q || (u.name||'').toLowerCase().includes(q) || (u.phone||'').includes(q) || (u.email||'').toLowerCase().includes(q));
+  renderUsersTable(filtered);
+}
+
+function renderUsersTable(users) {
+  const tbody = document.getElementById('usersTbody');
+  if (!tbody) return;
+  if (!users.length) { tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:20px">কোনো ব্যবহারকারী নেই</td></tr>`; return; }
+  const roleLabel = { admin:'অ্যাডমিন', super_admin:'সুপার অ্যাডমিন', member:'সদস্য', user:'গ্রাহক' };
+  tbody.innerHTML = users.slice(0, 100).map(u => `
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="avatar avatar-sm">${(u.name||'ব')[0]}</div>
+          <div><div style="font-weight:600">${u.name||'—'}</div><div style="font-size:.75rem;color:var(--text-muted)">@${u.username||''}</div></div>
+        </div>
+      </td>
+      <td>${u.phone||'—'}</td>
+      <td><span class="badge badge-${u.role==='admin'?'green':u.role==='member'?'info':'muted'}">${roleLabel[u.role]||'গ্রাহক'}</span></td>
+      <td style="font-size:.8rem">${fmtDT(u.createdAt)}</td>
+      <td><span class="badge badge-${u.verified?'active':'pending'}">${u.verified?'যাচাইকৃত':'অযাচাই'}</span></td>
+      <td>
+        <button class="btn btn-sm btn-ghost" onclick="changeRole('${u.id}','${u.role}')">✏️</button>
+      </td>
+    </tr>`).join('');
+}
+
+async function changeRole(userId, currentRole) {
+  const newRole = prompt('নতুন রোল (user/member/admin):', currentRole);
+  if (!newRole || newRole === currentRole) return;
+  try {
+    await fetch(`${API}/users/${userId}/role`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
+      body: JSON.stringify({ role: newRole })
+    });
+    showToast('রোল পরিবর্তন হয়েছে।', 'success');
+    loadAllUsers();
+  } catch (_) { showToast('ব্যর্থ হয়েছে।', 'error'); }
+}
+
+// ─── Notifications ───
+async function loadNotifications() {
+  const wrap = document.getElementById('notifList');
+  if (!wrap) return;
+  // Demo notifications
+  const notifs = [
+    { icon:'💰', text:'আপনার মাসিক সঞ্চয় জমার শেষ তারিখ ১৫ তারিখ।', date: new Date().toISOString(), type:'warning' },
+    { icon:'📱', text:'আপনার প্রোফাইল ৪০% সম্পূর্ণ। বাকিটা পূরণ করুন।', date: new Date().toISOString(), type:'info' },
+  ];
+  wrap.innerHTML = notifs.map(n => `
+    <div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-radius:12px;background:var(--bg-surface-2);margin-bottom:8px;border-left:3px solid ${n.type==='warning'?'var(--clr-warning)':'var(--clr-info)'}">
+      <span style="font-size:1.3rem">${n.icon}</span>
+      <div style="flex:1">
+        <div style="font-size:.88rem;color:var(--text-primary)">${n.text}</div>
+        <div style="font-size:.75rem;color:var(--text-muted);margin-top:3px">${fmtDT(n.date)}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ─── Qard Apply from Dashboard ───
+function openQardApplyDash() {
+  document.getElementById('qardDashModal')?.classList.remove('hidden');
+}
+
+async function submitQardDash() {
+  const amount = parseFloat(document.getElementById('qdAmount')?.value) || 0;
+  const reason = document.getElementById('qdReason')?.value.trim();
+  const months = parseInt(document.getElementById('qdMonths')?.value) || 3;
+  if (!amount || !reason) { showToast('সব তথ্য দিন।', 'error'); return; }
+  if (amount > 15000) { showToast('সর্বোচ্চ ১৫,০০০ টাকা।', 'error'); return; }
+
+  try {
+    const res = await fetch(`${API}/loans`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
+      body: JSON.stringify({ amount, reason, months, userId: currentUser.id }),
+      signal: AbortSignal.timeout(4000)
+    });
+    if (res.ok) {
+      document.getElementById('qardDashModal')?.classList.add('hidden');
+      showToast('করজ আবেদন সফল! কমিটি পর্যালোচনা করবে।', 'success');
+      return;
+    }
+  } catch (_) {}
+  // Offline
+  if (typeof DB !== 'undefined') {
+    DB.addLoan({ id: 'QL-' + Date.now(), userId: currentUser.id, amount, reason, months, status: 'applied', remaining: amount, createdAt: new Date().toISOString() });
+  }
+  document.getElementById('qardDashModal')?.classList.add('hidden');
+  showToast('করজ আবেদন সফল!', 'success');
 }
