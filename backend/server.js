@@ -50,6 +50,12 @@ const committeeRoutes = require('./routes/committee');
 const smsRoutes = require('./routes/sms');
 const auditRoutes = require('./routes/audit');
 const charityRoutes = require('./routes/charity');
+// Additional routes
+const fundTransfersRoutes = require('./routes/fund_transfers');
+const reviewsRoutes = require('./routes/reviews');
+const postsRoutes = require('./routes/posts');
+const { router: permissionsRouter } = require('./routes/permissions');
+const profitRoutes = require('./routes/profit');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -71,6 +77,12 @@ app.use('/api/committee', committeeRoutes);
 app.use('/api/sms', smsRoutes);
 app.use('/api/audit', auditRoutes);
 app.use('/api/charity', charityRoutes);
+// Additional routes
+app.use('/api/fund-transfers', fundTransfersRoutes);
+app.use('/api/reviews', reviewsRoutes);
+app.use('/api/posts', postsRoutes);
+app.use('/api/permissions', permissionsRouter);
+app.use('/api/profit', profitRoutes);
 
 // ── Health check ──
 app.get('/api/health', (req, res) => {

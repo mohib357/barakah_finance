@@ -116,27 +116,67 @@ router.post('/', verifyToken, requireAdmin, (req, res) => {
         db.get('clients').push(client).write();
 
         // Generate installment schedule
+        // Website.txt: "সব installment-এর যোগফল Total Payable-এর সঙ্গে 100% মিলবে"
         const purchaseDateObj = new Date(purchaseDate);
         const installments = [];
-        for (let i = 1; i <= n; i++) {
-            const dueDate = new Date(purchaseDateObj);
-            dueDate.setMonth(dueDate.getMonth() + i);
-            const dueAmount = i === n ? Math.round(lastInstall) : baseInstall;
-            const instId = uuidv4();
-            installments.push({
-                id: instId, clientId: id, installmentNumber: i,
-                dueAmount, dueDate: dueDate.toISOString().split('T')[0],
-                paidAmount: 0, remainingAmount: dueAmount,
-                status: 'upcoming', lateStatus: false, lateFee: 0,
-                paymentDate: null, createdAt: now
-            });
+
+        // Down payment logic:
+        // প্রথম কিস্তি = down payment হলে বাকি n-1 কিস্তিতে remaining টাকা ভাগ হবে
+        if (down > 0) {
+            // Down payment — ক্রয়ের দিনেই
+            const downInstall = {
+                id: uuidv4(), clientId: id, installmentNumber: 1,
+                dueAmount: Math.round(down * 100) / 100,
+                remainingAmount: Math.round(down * 100) / 100,
+                dueDate: purchaseDate,
+                paidAmount: 0, status: 'due', lateStatus: false, lateFee: 0,
+                paymentDate: null, isDownPayment: true, createdAt: now
+            };
+            installments.push(downInstall);
+
+            // বাকি টাকা পরবর্তী কিস্তিতে
+            const remainingAfterDown = Math.round((remaining) * 100) / 100;
+            const remainingInstalls = n - 1;
+            const baseRem = Math.floor(remainingAfterDown / remainingInstalls * 100) / 100;
+            const lastRem = Math.round((remainingAfterDown - baseRem * (remainingInstalls - 1)) * 100) / 100;
+
+            for (let i = 2; i <= n; i++) {
+                const dueDate = new Date(purchaseDateObj);
+                dueDate.setMonth(dueDate.getMonth() + (i - 1));
+                const dueAmt = i === n ? lastRem : baseRem;
+                installments.push({
+                    id: uuidv4(), clientId: id, installmentNumber: i,
+                    dueAmount: dueAmt, remainingAmount: dueAmt,
+                    dueDate: dueDate.toISOString().split('T')[0],
+                    paidAmount: 0, status: 'upcoming', lateStatus: false, lateFee: 0,
+                    paymentDate: null, createdAt: now
+                });
+            }
+        } else {
+            // No down payment — সব কিস্তি পরের মাস থেকে
+            const baseInstall = Math.floor(remaining / n * 100) / 100;
+            const lastInstall  = Math.round((remaining - baseInstall * (n - 1)) * 100) / 100;
+
+            for (let i = 1; i <= n; i++) {
+                const dueDate = new Date(purchaseDateObj);
+                dueDate.setMonth(dueDate.getMonth() + i);
+                installments.push({
+                    id: uuidv4(), clientId: id, installmentNumber: i,
+                    dueAmount: i === n ? lastInstall : baseInstall,
+                    remainingAmount: i === n ? lastInstall : baseInstall,
+                    dueDate: dueDate.toISOString().split('T')[0],
+                    paidAmount: 0, status: 'upcoming', lateStatus: false, lateFee: 0,
+                    paymentDate: null, createdAt: now
+                });
+            }
         }
 
-        // First installment = down payment (if any)
-        if (down > 0 && installments[0]) {
-            installments[0].dueAmount = down;
-            installments[0].remainingAmount = down;
-            installments[0].dueDate = purchaseDate;
+        // Verify total matches — Website.txt: "Total Payable = installment sum"
+        const installmentSum = installments.reduce((s, i) => s + i.dueAmount, 0);
+        const diff = Math.round((salePrice - installmentSum) * 100) / 100;
+        if (Math.abs(diff) > 0.01 && installments.length > 0) {
+            installments[installments.length - 1].dueAmount += diff;
+            installments[installments.length - 1].remainingAmount += diff;
         }
 
         installments.forEach(inst => db.get('installments').push(inst).write());

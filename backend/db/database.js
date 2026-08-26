@@ -46,6 +46,8 @@ db.defaults({
     permissions: {},      // user/role permission matrix
     pay_order_rules: [],  // payment rule templates
     pay_orders: [],       // assigned pay orders
+    profit_distributions: [],  // profit distribution history
+    withdrawal_requests: [],   // member withdrawal requests
     settings: {
         siteName: 'বারাকাহ ফাইন্যান্স',
         slogan: 'সুদমুক্ত লেনদেনে সমৃদ্ধি সবার',

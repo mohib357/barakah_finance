@@ -95,6 +95,19 @@ router.post('/', verifyToken, requireAdmin, (req, res) => {
             refId: entry.id,
             addedBy: req.user.id
         });
+
+        // Website.txt: "Late Fee সংগঠনের আয় বা লাভ হিসেব হবেনা। চ্যারিটি ফান্ডে ক্রেডিট হতে হবে।"
+        db.get('charity_fundraising').push({
+            id: uuidv4(),
+            category: 'late_fee',
+            amount: settings.lateFee,
+            date: new Date().toISOString().split('T')[0],
+            description: `বিলম্ব ফি থেকে চ্যারিটি — ${user.name} (${month})`,
+            donorName: user.name,
+            addedBy: req.user.id,
+            createdAt: new Date().toISOString(),
+            refId: entry.id
+        }).write();
     }
 
     res.status(201).json({ entry, message: 'সঞ্চয় এন্ট্রি যোগ হয়েছে' });
