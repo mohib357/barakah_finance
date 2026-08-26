@@ -45,20 +45,33 @@ if (grid) {
     });
 }
 
-// ── Calculator ──
+// ── Calculator Mode 1 ──
 function calculate() {
     const price = parseFloat(document.getElementById('productPrice').value) || 0;
     const travel = parseFloat(document.getElementById('travelCost').value) || 0;
+    const n = parseInt(document.getElementById('installNum1')?.value || '6');
     if (price <= 0) { document.getElementById('calcResult').style.display = 'none'; return; }
     const cost = price + travel;
     const profit = cost * 0.10;
     const total = cost + profit;
-    const perInstall = total / 6;
+    const perInstall = Math.round(total / n);
+    const lastInstall = total - perInstall * (n - 1); // last installment adjustment
+
     document.getElementById('calcResult').style.display = 'block';
     document.getElementById('totalPrice').textContent = '৳' + Math.round(total).toLocaleString('bn');
-    document.getElementById('downPayment').textContent = '৳' + Math.round(perInstall).toLocaleString('bn');
-    document.getElementById('monthlyInstall').textContent = '৳' + Math.round(perInstall).toLocaleString('bn');
+    document.getElementById('downPayment').textContent = '৳' + perInstall.toLocaleString('bn');
+    document.getElementById('monthlyInstall').textContent = '৳' + perInstall.toLocaleString('bn');
     document.getElementById('profit').textContent = '৳' + Math.round(profit).toLocaleString('bn');
+
+    // Installment schedule
+    let sch = '<div class="install-schedule"><h4>কিস্তি সময়সূচী</h4><table class="calc-table"><thead><tr><th>কিস্তি</th><th>পরিমাণ</th></tr></thead><tbody>';
+    for(let i=1;i<=n;i++){
+        const amt = i===n ? Math.round(lastInstall) : perInstall;
+        sch += `<tr><td>${i}${i===1?' (ডাউনপেমেন্ট)':''}</td><td>৳${amt.toLocaleString('bn')}</td></tr>`;
+    }
+    sch += '</tbody></table></div>';
+    const sch1el = document.getElementById('installSchedule1');
+    if(sch1el) sch1el.innerHTML = sch;
 }
 
 // ── Quick Form Tabs (Home page apply section) ──

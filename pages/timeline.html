@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>টাইমলাইন — বারাকাহ ফাইন্যান্স</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700&family=Noto+Sans+Bengali:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style/style.css"/>
+  <link rel="stylesheet" href="../style/navbar_style.css"/>
+  <link rel="stylesheet" href="../style/notice_bar.css"/>
+  <style>
+    :root{--gold:#C9A227;--gold-light:#F5D061;--bg:#0a1a0e;--card-bg:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:#e8f5e9;font-family:'Noto Serif Bengali',serif;min-height:100vh;}
+
+    .timeline-page{padding-top:100px;min-height:100vh;}
+    .timeline-content{max-width:720px;margin:0 auto;padding:30px 5% 60px;}
+
+    /* ── Post cards ── */
+    .post-card{
+      background:var(--card-bg);border:1px solid var(--border);
+      border-radius:16px;margin-bottom:20px;overflow:hidden;
+      transition:box-shadow 0.2s;
+    }
+    .post-card:hover{box-shadow:0 6px 25px rgba(0,0,0,0.25);border-color:rgba(201,162,39,0.15);}
+
+    /* Post header */
+    .post-header{
+      display:flex;align-items:center;gap:12px;
+      padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.06);
+    }
+    .post-avatar{
+      width:44px;height:44px;border-radius:50%;flex-shrink:0;
+      background:linear-gradient(135deg,#C9A227,#A67C00);
+      display:flex;align-items:center;justify-content:center;
+      font-size:18px;font-weight:700;color:#fff;overflow:hidden;
+    }
+    .post-avatar img{width:100%;height:100%;object-fit:cover;}
+    .post-meta{flex:1;}
+    .post-meta .post-author{font-size:14px;font-weight:600;color:#fff;}
+    .post-meta .post-date{font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;}
+    .post-type-badge{
+      font-size:10px;padding:3px 10px;border-radius:20px;
+      background:rgba(201,162,39,0.15);color:var(--gold);
+    }
+
+    /* Post body */
+    .post-body{padding:16px 18px;}
+    .post-body .post-text{font-size:14px;color:rgba(255,255,255,0.85);line-height:1.9;white-space:pre-line;}
+    .post-body .post-img{
+      margin-top:12px;border-radius:10px;overflow:hidden;
+      max-height:350px;background:#050d07;
+    }
+    .post-body .post-img img{width:100%;object-fit:cover;}
+    .post-body .post-link{
+      display:block;margin-top:10px;padding:10px 14px;
+      background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+      border-radius:8px;color:var(--gold);font-size:12px;text-decoration:none;
+      transition:background 0.2s;
+    }
+    .post-body .post-link:hover{background:rgba(201,162,39,0.1);}
+
+    /* Facebook embed */
+    .fb-post-wrap{padding:10px 18px;text-align:center;}
+
+    /* Reactions */
+    .post-reactions{
+      display:flex;align-items:center;gap:0;padding:4px 14px;
+      border-top:1px solid rgba(255,255,255,0.06);
+    }
+    .react-btn{
+      display:flex;align-items:center;gap:5px;padding:8px 12px;
+      background:none;border:none;color:rgba(255,255,255,0.5);
+      cursor:pointer;font-size:12px;font-family:'Noto Serif Bengali',serif;
+      border-radius:6px;transition:all 0.15s;
+    }
+    .react-btn:hover{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.85);}
+    .react-btn.reacted{color:var(--gold);}
+    .react-emoji{font-size:16px;}
+    .react-count{font-size:11px;}
+    .react-sep{width:1px;height:20px;background:rgba(255,255,255,0.08);margin:0 4px;}
+
+    /* Comments */
+    .post-comments{padding:0 18px 14px;border-top:1px solid rgba(255,255,255,0.06);}
+    .comment-item{display:flex;gap:8px;margin-top:10px;}
+    .comment-avatar{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
+    .comment-body{background:rgba(255,255,255,0.05);border-radius:10px;padding:8px 12px;flex:1;}
+    .comment-body .comment-author{font-size:11px;color:var(--gold);font-weight:600;margin-bottom:2px;}
+    .comment-body .comment-text{font-size:12px;color:rgba(255,255,255,0.8);}
+    .comment-input-row{display:flex;gap:8px;margin-top:10px;}
+    .comment-input{
+      flex:1;padding:8px 12px;background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.1);border-radius:8px;
+      color:#fff;font-size:12px;font-family:'Noto Serif Bengali',serif;
+    }
+    .comment-input:focus{outline:none;border-color:rgba(201,162,39,0.4);}
+    .comment-submit{padding:8px 14px;background:var(--gold);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px;}
+    .anon-name-input{
+      padding:8px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+      border-radius:8px;color:#fff;font-size:12px;font-family:'Noto Serif Bengali',serif;
+      width:140px;
+    }
+
+    /* Write post (admin only) */
+    .write-post-wrap{
+      background:var(--card-bg);border:1px solid rgba(201,162,39,0.2);
+      border-radius:16px;padding:18px;margin-bottom:20px;display:none;
+    }
+    .write-post-wrap.visible{display:block;}
+    .write-post-wrap textarea{
+      width:100%;padding:10px 14px;background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.1);border-radius:8px;
+      color:#fff;font-size:13px;font-family:'Noto Serif Bengali',serif;
+      resize:vertical;min-height:80px;
+    }
+    .write-post-wrap textarea:focus{outline:none;border-color:rgba(201,162,39,0.4);}
+    .write-post-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+    .wp-btn{padding:8px 16px;border:1px solid rgba(255,255,255,0.1);border-radius:8px;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.7);cursor:pointer;font-size:12px;font-family:'Noto Serif Bengali',serif;}
+    .wp-btn.primary{background:linear-gradient(135deg,var(--gold),#A67C00);border:none;color:#fff;}
+
+    /* Facebook section header */
+    .fb-section-header{
+      background:rgba(24,119,242,0.1);border:1px solid rgba(24,119,242,0.2);
+      border-radius:10px;padding:12px 16px;margin-bottom:16px;
+      font-size:12px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:8px;
+    }
+
+    /* Load more */
+    .load-more-btn{
+      display:block;width:100%;padding:12px;margin-top:10px;
+      background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+      border-radius:10px;color:rgba(255,255,255,0.6);cursor:pointer;
+      font-size:13px;font-family:'Noto Serif Bengali',serif;transition:all 0.2s;
+    }
+    .load-more-btn:hover{background:rgba(255,255,255,0.08);color:#fff;}
+
+    @media(max-width:640px){
+      .timeline-content{padding:20px 3% 40px;}
+    }
+  </style>
+</head>
+<body>
+  <!-- NAV -->
+  <nav id="mainNav">
+    <a href="../index.html" class="logo">
+      <div class="logo-icon"><img src="../image/logo.png" alt="logo" onerror="this.parentElement.innerHTML='<span style=font-size:20px;font-weight:700;color:#C9A227>ব</span>'"/></div>
+      <div class="logo-text"><strong>বারাকাহ ফাইন্যান্স – Barakah Finance</strong><span>সুদমুক্ত লেনদেনে সমৃদ্ধি সবার</span></div>
+    </a>
+    <ul class="nav-links">
+      <li><a href="../index.html">হোম</a></li>
+      <li><a href="timeline.html" style="color:var(--gold-light);">টাইমলাইন ✓</a></li>
+      <li><a href="gallery.html">গ্যালারি</a></li>
+      <li><a href="learn-more.html">আরও জানুন</a></li>
+      <li id="nav-login-btn"><a onclick="window.location='../index.html'" class="nav-cta">লগইন</a></li>
+      <li style="display:flex;align-items:center;"><div class="dk-tog" id="dkTog" onclick="toggleDarkMode()"></div></li>
+    </ul>
+    <button class="hamburger" id="hamburger" onclick="document.getElementById('mobileMenuT').classList.toggle('active')"><span></span><span></span><span></span></button>
+  </nav>
+  <div class="nav-mobile" id="mobileMenuT">
+    <a href="../index.html">🏠 হোম</a>
+    <a href="gallery.html">🖼️ গ্যালারি</a>
+    <a href="learn-more.html">📚 আরও জানুন</a>
+  </div>
+
+  <!-- NOTICE BAR -->
+  <div class="notice-bar" style="position:sticky;top:80px;z-index:97;">
+    <div class="notice-label">📢 নোটিশ</div>
+    <div class="notice-scroll-wrap"><div id="notice-track">লোড হচ্ছে...</div></div>
+  </div>
+
+  <div class="timeline-page">
+    <div class="timeline-content">
+
+      <!-- Admin Write Post (shown only to admin) -->
+      <div class="write-post-wrap" id="writePostWrap">
+        <div style="font-size:13px;color:var(--gold);margin-bottom:10px;">✏️ নতুন পোস্ট লিখুন</div>
+        <textarea id="wp-text" placeholder="কিছু লিখুন..."></textarea>
+        <div class="write-post-actions">
+          <button class="wp-btn" onclick="addWpImage()">🖼️ ছবি</button>
+          <input type="url" id="wp-img-url" placeholder="ছবির URL" style="padding:8px 10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:12px;flex:1;display:none;">
+          <button class="wp-btn primary" onclick="publishPost()">📤 প্রকাশ করুন</button>
+        </div>
+      </div>
+
+      <!-- Facebook Page Embed (optional) -->
+      <div id="fbSection" style="display:none;">
+        <div class="fb-section-header">📘 ফেসবুক পেজ পোস্ট (অ্যাডমিন প্যানেল থেকে Facebook Page URL সেট করুন)</div>
+        <div id="fbEmbedContainer"></div>
+      </div>
+
+      <!-- Manual Posts Feed -->
+      <div id="postsFeed"></div>
+      <button class="load-more-btn" id="loadMoreBtn" onclick="loadMorePosts()" style="display:none;">আরও লোড করুন</button>
+
+    </div>
+  </div>
+
+  <script src="../js/db.js"></script>
+  <script src="../js/notice.js"></script>
+  <script>
+    function toggleDarkMode(){
+      document.body.classList.toggle('dark-mode');
+      const t=document.getElementById('dkTog');if(t)t.classList.toggle('on');
+      localStorage.setItem('bf_dark',document.body.classList.contains('dark-mode')?'1':'0');
+    }
+    if(localStorage.getItem('bf_dark')==='1'){document.body.classList.add('dark-mode');const t=document.getElementById('dkTog');if(t)t.classList.add('on');}
+
+    // ── Data helpers ──
+    function getPosts(){ return JSON.parse(localStorage.getItem('bf_posts')||'[]'); }
+    function savePosts(p){ localStorage.setItem('bf_posts',JSON.stringify(p)); }
+    function getSession(){ return DB?DB.getSession():null; }
+    function isAdmin(){ const s=getSession(); return s&&(s.role==='admin'||s.role==='super_admin'); }
+
+    // ── Page state ──
+    const POSTS_PER_PAGE=8;
+    let postsShown=0;
+
+    // ── Init ──
+    document.addEventListener('DOMContentLoaded',()=>{
+      if(isAdmin()) document.getElementById('writePostWrap').classList.add('visible');
+
+      // Facebook embed
+      const settings=DB?DB.getSettings():{};
+      if(settings.fbPageUrl){
+        document.getElementById('fbSection').style.display='block';
+        const encUrl=encodeURIComponent(settings.fbPageUrl);
+        document.getElementById('fbEmbedContainer').innerHTML=`
+          <iframe src="https://www.facebook.com/plugins/page.php?href=${encUrl}&tabs=timeline&width=680&height=500&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true&appId"
+          style="width:100%;max-width:680px;height:500px;border:none;overflow:hidden;border-radius:12px;"
+          scrolling="no" frameborder="0" allowfullscreen allow="autoplay;clipboard-write;encrypted-media;picture-in-picture;web-share"></iframe>`;
+      }
+
+      renderPosts();
+    });
+
+    // ── Render posts ──
+    function renderPosts(reset=false){
+      if(reset) postsShown=0;
+      const posts=getPosts().sort((a,b)=>new Date(b.date)-new Date(a.date));
+      const feed=document.getElementById('postsFeed');
+      const chunk=posts.slice(postsShown, postsShown+POSTS_PER_PAGE);
+
+      if(reset) feed.innerHTML='';
+      if(!posts.length && !postsShown){
+        feed.innerHTML='<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.3);font-size:13px;">এখনো কোনো পোস্ট নেই।</div>';
+        document.getElementById('loadMoreBtn').style.display='none';
+        return;
+      }
+
+      chunk.forEach(post=>{
+        feed.appendChild(createPostEl(post));
+        postsShown++;
+      });
+
+      document.getElementById('loadMoreBtn').style.display=(postsShown<posts.length)?'block':'none';
+    }
+
+    function loadMorePosts(){ renderPosts(false); }
+
+    // ── Create post element ──
+    const REACTIONS=['👍','❤️','😊','😮','😢','😡'];
+    function createPostEl(post){
+      const div=document.createElement('div');
+      div.className='post-card';
+      div.id='post-'+post.id;
+      const mySession=getSession();
+      const myReactions=JSON.parse(localStorage.getItem('bf_reactions_'+post.id)||'[]');
+      const allReactions=post.reactions||[];
+      const comments=post.comments||[];
+
+      // Count reactions per type
+      const rCounts={};
+      allReactions.forEach(r=>rCounts[r.type]=(rCounts[r.type]||0)+1);
+      const topReactions=REACTIONS.filter(r=>rCounts[r]>0).slice(0,3);
+
+      div.innerHTML=`
+        <div class="post-header">
+          <div class="post-avatar">ব</div>
+          <div class="post-meta">
+            <div class="post-author">বারাকাহ ফাইন্যান্স</div>
+            <div class="post-date">${formatDate(post.date)}</div>
+          </div>
+          <span class="post-type-badge">${post.type==='fb'?'📘 Facebook':'✍️ পোস্ট'}</span>
+        </div>
+        <div class="post-body">
+          <div class="post-text">${escHtml(post.text||'')}</div>
+          ${post.imgUrl?`<div class="post-img"><img src="${escHtml(post.imgUrl)}" alt="পোস্ট ছবি" loading="lazy" onerror="this.parentElement.style.display='none'"></div>`:''}
+          ${post.linkUrl?`<a class="post-link" href="${escHtml(post.linkUrl)}" target="_blank" rel="noopener">🔗 ${escHtml(post.linkText||post.linkUrl)}</a>`:''}
+        </div>
+        <div class="post-reactions">
+          <div style="display:flex;gap:2px;flex:1;flex-wrap:wrap;">
+            ${REACTIONS.map(r=>`<button class="react-btn${myReactions.includes(r)?'  reacted':''}" onclick="toggleReaction('${post.id}','${r}',this)">
+              <span class="react-emoji">${r}</span>
+              <span class="react-count" id="rc-${post.id}-${r.codePointAt(0)}">${rCounts[r]||''}</span>
+            </button>`).join('')}
+          </div>
+          ${topReactions.length?`<div style="font-size:11px;color:rgba(255,255,255,0.3);">${topReactions.join('')} ${allReactions.length}</div>`:''}
+        </div>
+        <div class="post-comments" id="comments-${post.id}">
+          ${comments.map(c=>`
+            <div class="comment-item">
+              <div class="comment-avatar">${(c.author||'?')[0]}</div>
+              <div class="comment-body">
+                <div class="comment-author">${escHtml(c.author)}</div>
+                <div class="comment-text">${escHtml(c.text)}</div>
+              </div>
+            </div>`).join('')}
+          <div class="comment-input-row">
+            ${mySession?'':`<input class="anon-name-input" id="anon-name-${post.id}" placeholder="আপনার নাম">`}
+            <input class="comment-input" id="comment-${post.id}" placeholder="মন্তব্য করুন..." onkeydown="if(event.key==='Enter')submitComment('${post.id}')">
+            <button class="comment-submit" onclick="submitComment('${post.id}')">পাঠান</button>
+          </div>
+        </div>`;
+      return div;
+    }
+
+    // ── Reactions ──
+    function toggleReaction(postId, emoji, btn){
+      const posts=getPosts();
+      const idx=posts.findIndex(p=>p.id===postId);
+      if(idx<0) return;
+      const session=getSession();
+      const storKey='bf_reactions_'+postId;
+      const myR=JSON.parse(localStorage.getItem(storKey)||'[]');
+      const emojiCode=emoji.codePointAt(0);
+
+      if(!posts[idx].reactions) posts[idx].reactions=[];
+      const already=myR.includes(emoji);
+
+      if(already){
+        // Remove
+        const i=posts[idx].reactions.findIndex(r=>r.userId===(session?.id||'anon_'+emoji)&&r.type===emoji);
+        if(i>=0) posts[idx].reactions.splice(i,1);
+        myR.splice(myR.indexOf(emoji),1);
+        btn.classList.remove('reacted');
+      } else {
+        posts[idx].reactions.push({userId:session?.id||'anon',type:emoji,date:new Date().toISOString()});
+        myR.push(emoji);
+        btn.classList.add('reacted');
+      }
+      localStorage.setItem(storKey,JSON.stringify(myR));
+      savePosts(posts);
+      const cnt=posts[idx].reactions.filter(r=>r.type===emoji).length;
+      const cntEl=document.getElementById(`rc-${postId}-${emojiCode}`);
+      if(cntEl) cntEl.textContent=cnt||'';
+    }
+
+    // ── Comments ──
+    function submitComment(postId){
+      const session=getSession();
+      const input=document.getElementById('comment-'+postId);
+      const text=input.value.trim();
+      if(!text) return;
+      let author='';
+      if(session){ author=session.name||session.username||'ব্যবহারকারী'; }
+      else {
+        const anonInput=document.getElementById('anon-name-'+postId);
+        author=anonInput?anonInput.value.trim():'অজ্ঞাত';
+        if(!author){ alert('আপনার নাম লিখুন।'); return; }
+      }
+      const posts=getPosts();
+      const idx=posts.findIndex(p=>p.id===postId);
+      if(idx<0) return;
+      if(!posts[idx].comments) posts[idx].comments=[];
+      const comment={id:'c-'+Date.now(),author,text,date:new Date().toISOString()};
+      posts[idx].comments.push(comment);
+      savePosts(posts);
+      input.value='';
+      // Append to DOM
+      const commentsEl=document.getElementById('comments-'+postId);
+      const inputRow=commentsEl.querySelector('.comment-input-row');
+      const newComment=document.createElement('div');
+      newComment.className='comment-item';
+      newComment.innerHTML=`<div class="comment-avatar">${author[0]}</div><div class="comment-body"><div class="comment-author">${escHtml(author)}</div><div class="comment-text">${escHtml(text)}</div></div>`;
+      commentsEl.insertBefore(newComment,inputRow);
+    }
+
+    // ── Write post (admin) ──
+    function addWpImage(){
+      const i=document.getElementById('wp-img-url');
+      i.style.display=i.style.display==='none'?'block':'none';
+    }
+    function publishPost(){
+      const text=document.getElementById('wp-text').value.trim();
+      const imgUrl=document.getElementById('wp-img-url').value.trim();
+      if(!text) return;
+      const posts=getPosts();
+      posts.unshift({id:'post-'+Date.now(),text,imgUrl:imgUrl||'',type:'manual',date:new Date().toISOString(),reactions:[],comments:[]});
+      savePosts(posts);
+      document.getElementById('wp-text').value='';
+      document.getElementById('wp-img-url').value='';
+      document.getElementById('wp-img-url').style.display='none';
+      renderPosts(true);
+    }
+
+    // ── Helpers ──
+    function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function formatDate(d){
+      try{
+        return new Date(d).toLocaleDateString('bn-BD',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});
+      }catch{return d;}
+    }
+  </script>
+</body>
+</html>

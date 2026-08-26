@@ -32,6 +32,15 @@ const badgesRoutes = require('./routes/badges');
 const applicationsRoutes = require('./routes/applications');
 const ledgerRoutes = require('./routes/ledger');
 const reportsRoutes = require('./routes/reports');
+// New routes
+const membersRoutes = require('./routes/members');
+const clientsRoutes = require('./routes/clients');
+const accountsRoutes = require('./routes/accounts');
+const projectsRoutes = require('./routes/projects');
+const committeeRoutes = require('./routes/committee');
+const smsRoutes = require('./routes/sms');
+const auditRoutes = require('./routes/audit');
+const charityRoutes = require('./routes/charity');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -44,6 +53,15 @@ app.use('/api/badges', badgesRoutes);
 app.use('/api/applications', applicationsRoutes);
 app.use('/api/ledger', ledgerRoutes);
 app.use('/api/reports', reportsRoutes);
+// New routes
+app.use('/api/members', membersRoutes);
+app.use('/api/clients', clientsRoutes);
+app.use('/api/accounts', accountsRoutes);
+app.use('/api/projects', projectsRoutes);
+app.use('/api/committee', committeeRoutes);
+app.use('/api/sms', smsRoutes);
+app.use('/api/audit', auditRoutes);
+app.use('/api/charity', charityRoutes);
 
 // ── Health check ──
 app.get('/api/health', (req, res) => {

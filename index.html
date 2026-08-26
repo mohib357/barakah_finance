@@ -26,23 +26,26 @@
 
   <!-- ══════ NAV ══════ -->
   <nav id="mainNav">
+    <!-- LEFT: Logo -->
     <a href="index.html" class="logo">
       <div class="logo-icon">
         <img src="image/logo.png" alt="logo"
           onerror="this.parentElement.innerHTML='<span style=font-size:22px;font-weight:700;color:#C9A227>ব</span>'" />
       </div>
       <div class="logo-text">
-        <strong>বারাকাহ ফাইন্যান্স</strong>
-        <span>Barakah Finance</span>
+        <strong>বারাকাহ ফাইন্যান্স – Barakah Finance</strong>
+        <span>সুদমুক্ত লেনদেনে সমৃদ্ধি সবার</span>
       </div>
     </a>
 
+    <!-- RIGHT: Nav items -->
     <ul class="nav-links" id="navLinks">
       <li><a onclick="smScroll('about')">আমাদের সম্পর্কে</a></li>
       <li><a onclick="smScroll('calculator')">ক্যালকুলেটর</a></li>
-      <li><a onclick="smScroll('members')">সদস্যবৃন্দ</a></li>
-      <li><a onclick="smScroll('panels')">প্যানেল</a></li>
+      <li><a href="pages/timeline.html" id="nav-timeline">টাইমলাইন</a></li>
+      <li><a href="pages/gallery.html" id="nav-gallery">গ্যালারি</a></li>
       <li><a href="form.html">আবেদন ফরম</a></li>
+
       <!-- Logged in user menu -->
       <li class="nav-user-wrap" id="nav-user-menu" style="display:none;">
         <button class="nav-user-btn">👤 <span id="nav-user-name">আমি</span> ▾</button>
@@ -55,11 +58,34 @@
       </li>
       <!-- Login button -->
       <li id="nav-login-btn">
-        <a onclick="openAuthModal('login')" class="nav-cta">লগইন করুন</a>
+        <a onclick="openAuthModal('login')" class="nav-cta">লগইন / সাইনআপ</a>
       </li>
-      <!-- Dark toggle (fixed) -->
+
+      <!-- Language switcher -->
+      <li style="display:flex;align-items:center;">
+        <div class="nav-lang-wrap">
+          <button class="nav-lang-btn" onclick="toggleLangMenu()" id="langBtn" title="ভাষা পরিবর্তন">
+            <span id="langFlag">🇧🇩</span> <span id="langCode">বাংলা</span> ▾
+          </button>
+          <div class="nav-lang-drop" id="langDrop">
+            <div onclick="setLang('bn')">🇧🇩 বাংলা</div>
+            <div onclick="setLang('en')">🇬🇧 English</div>
+            <div onclick="setLang('ar')">🇸🇦 العربية</div>
+          </div>
+        </div>
+      </li>
+
+      <!-- Dark mode toggle -->
       <li style="display:flex;align-items:center;">
         <div class="dk-tog" id="dkTog" onclick="toggleDarkMode()" title="ডার্ক/লাইট মোড"></div>
+      </li>
+
+      <!-- Visitor Counter -->
+      <li style="display:flex;align-items:center;">
+        <div class="nav-visitor" title="বর্তমান ভিজিটর">
+          <span class="visitor-dot"></span>
+          <span id="visitorCount">—</span>
+        </div>
       </li>
     </ul>
 
@@ -72,9 +98,11 @@
   <div class="nav-mobile" id="mobileMenu">
     <a onclick="smScroll('about');toggleMob()">আমাদের সম্পর্কে</a>
     <a onclick="smScroll('calculator');toggleMob()">ক্যালকুলেটর</a>
-    <a onclick="smScroll('members');toggleMob()">সদস্যবৃন্দ</a>
+    <a href="pages/timeline.html">📅 টাইমলাইন</a>
+    <a href="pages/gallery.html">🖼️ গ্যালারি</a>
     <a href="form.html">আবেদন ফরম</a>
     <a id="mnav-user" style="display:none;" href="pages/profile.html">📋 আমার প্রোফাইল</a>
+    <a id="mnav-dash" style="display:none;" href="pages/dashboard.html">📊 ড্যাশবোর্ড</a>
     <a id="mnav-login" onclick="openAuthModal('login');toggleMob()">🔑 লগইন / নিবন্ধন</a>
     <a href="admin/admin.html">🛡️ অ্যাডমিন প্যানেল</a>
   </div>
@@ -96,10 +124,10 @@
       <p class="slogan">ইসলামী অর্থনীতির আলোকে সমাজ থেকে সুদের অভিশাপ দূর করে<br>
         হালাল উপায়ে আর্থিক সহায়তা ও সমৃদ্ধি নিশ্চিত করা আমাদের অঙ্গীকার।</p>
       <div class="hero-actions">
-        <button class="btn-primary" onclick="location.href='form.html'">সদস্য হতে আবেদন করুন</button>
+        <button class="btn-primary" onclick="requireLoginThen('form.html')">📝 সদস্য হতে আবেদন করুন</button>
         <button class="btn-primary" style="background:linear-gradient(135deg,#C9A227,#A67C00);color:#0A2A1A;"
-          onclick="location.href='pages/shop.html'">🛒 পণ্য কিনুন</button>
-        <button class="btn-outline" onclick="smScroll('about')">আরও জানুন</button>
+          onclick="requireLoginThen('pages/shop.html')">🛒 কেনাকাটা করুন</button>
+        <button class="btn-outline" onclick="location.href='pages/learn-more.html'">📚 আরও জানুন</button>
       </div>
     </div>
     <div class="badges-section">
@@ -156,31 +184,117 @@
       <p class="section-sub">পণ্যের মূল্য দিন, স্বয়ংক্রিয়ভাবে ১০% লাভে কিস্তির পরিমাণ জানুন।</p>
     </div>
     <div class="calc-container reveal">
-      <div class="calc-row"><label class="calc-label">পণ্যের বাজারমূল্য (টাকা)</label><input type="number"
-          class="calc-input" id="productPrice" placeholder="যেমন: ৫০০০০" oninput="calculateInstallment()"></div>
-      <div class="calc-row"><label class="calc-label">যাতায়াত খরচ (টাকা)</label><input type="number" class="calc-input"
-          id="travelCost" value="0" oninput="calculateInstallment()"></div>
-      <button class="calc-btn" onclick="calculateInstallment()">হিসাব করুন</button>
-      <div class="calc-result" id="calcResult" style="display:none">
-        <div class="calc-grid">
-          <div class="calc-item">
-            <div class="val" id="totalPrice">-</div>
-            <div class="lbl">মোট বিক্রয়মূল্য (১০% লাভ)</div>
+      <!-- Calculator Mode Tabs -->
+      <div class="calc-mode-tabs">
+        <button class="calc-mode-btn active" id="calcMode1Btn" onclick="switchCalcMode(1)">
+          📊 পদ্ধতি-১: সম্পূর্ণ মূল্য ভিত্তিক
+        </button>
+        <button class="calc-mode-btn" id="calcMode2Btn" onclick="switchCalcMode(2)">
+          💳 পদ্ধতি-২: অর্থায়িত পরিমাণ ভিত্তিক
+        </button>
+      </div>
+
+      <!-- MODE 1: Full cost based -->
+      <div id="calc-mode-1">
+        <div class="calc-row"><label class="calc-label">পণ্যের বাজারমূল্য (টাকা)</label><input type="number"
+            class="calc-input" id="productPrice" placeholder="যেমন: ৫০০০০" oninput="calculateInstallment()"></div>
+        <div class="calc-row"><label class="calc-label">যাতায়াত খরচ (টাকা)</label><input type="number" class="calc-input"
+            id="travelCost" value="0" oninput="calculateInstallment()"></div>
+        <div class="calc-row"><label class="calc-label">কিস্তির সংখ্যা</label>
+          <select class="calc-input" id="installNum1" onchange="calculateInstallment()">
+            <option value="3">৩ কিস্তি</option>
+            <option value="6" selected>৬ কিস্তি</option>
+            <option value="9">৯ কিস্তি</option>
+            <option value="12">১২ কিস্তি</option>
+          </select>
+        </div>
+        <button class="calc-btn" onclick="calculateInstallment()">হিসাব করুন</button>
+        <div class="calc-result" id="calcResult" style="display:none">
+          <div class="calc-grid">
+            <div class="calc-item">
+              <div class="val" id="totalPrice">-</div>
+              <div class="lbl">মোট বিক্রয়মূল্য (১০% লাভ)</div>
+            </div>
+            <div class="calc-item">
+              <div class="val" id="downPayment">-</div>
+              <div class="lbl">১ম কিস্তি (ডাউনপেমেন্ট)</div>
+            </div>
+            <div class="calc-item">
+              <div class="val" id="monthlyInstall">-</div>
+              <div class="lbl">প্রতি মাসিক কিস্তি</div>
+            </div>
+            <div class="calc-item">
+              <div class="val" id="profit">-</div>
+              <div class="lbl">সংস্থার লাভ</div>
+            </div>
           </div>
-          <div class="calc-item">
-            <div class="val" id="downPayment">-</div>
-            <div class="lbl">১ম কিস্তি (ডাউনপেমেন্ট)</div>
-          </div>
-          <div class="calc-item">
-            <div class="val" id="monthlyInstall">-</div>
-            <div class="lbl">প্রতি মাসিক কিস্তি (× ৫)</div>
-          </div>
-          <div class="calc-item">
-            <div class="val" id="profit">-</div>
-            <div class="lbl">সংস্থার লাভ</div>
-          </div>
+          <div id="installSchedule1" style="margin-top:14px;"></div>
         </div>
       </div>
+
+      <!-- MODE 2: Financed amount based (down payment) -->
+      <div id="calc-mode-2" style="display:none;">
+        <div class="calc-note" style="background:rgba(201,162,39,.1);border:1px solid rgba(201,162,39,.3);border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;">
+          📌 <strong>শরিয়াহ পদ্ধতি:</strong> ডাউনপেমেন্ট বাদে শুধু অর্থায়িত অংশের উপর লাভ ধরা হয়।
+        </div>
+        <div class="calc-row"><label class="calc-label">পণ্যের ক্রয়মূল্য (টাকা) *</label><input type="number"
+            class="calc-input" id="m2-cost" placeholder="যেমন: ৩০০০০" oninput="calcMode2()"></div>
+        <div class="calc-row"><label class="calc-label">ডাউনপেমেন্ট (টাকা)</label><input type="number" class="calc-input"
+            id="m2-down" placeholder="যেমন: ১০০০০" oninput="calcMode2()"></div>
+        <div class="calc-row"><label class="calc-label">লাভের হার (%)</label><input type="number" class="calc-input"
+            id="m2-rate" value="10" min="0" max="100" oninput="calcMode2()"></div>
+        <div class="calc-row"><label class="calc-label">কিস্তির সংখ্যা</label>
+          <select class="calc-input" id="m2-installNum" onchange="calcMode2()">
+            <option value="3">৩ কিস্তি</option>
+            <option value="6" selected>৬ কিস্তি</option>
+            <option value="9">৯ কিস্তি</option>
+            <option value="12">১২ কিস্তি</option>
+          </select>
+        </div>
+        <button class="calc-btn" onclick="calcMode2()">হিসাব করুন</button>
+        <div class="calc-result" id="calcResult2" style="display:none;">
+          <div class="calc-grid">
+            <div class="calc-item"><div class="val" id="m2-financed">-</div><div class="lbl">অর্থায়িত পরিমাণ</div></div>
+            <div class="calc-item"><div class="val" id="m2-labh">-</div><div class="lbl">লাভ (অর্থায়নের উপর)</div></div>
+            <div class="calc-item"><div class="val" id="m2-total">-</div><div class="lbl">মোট বিক্রয়মূল্য</div></div>
+            <div class="calc-item"><div class="val" id="m2-remaining">-</div><div class="lbl">ডাউন বাদে বাকি</div></div>
+            <div class="calc-item"><div class="val" id="m2-perInstall">-</div><div class="lbl">মাসিক কিস্তি</div></div>
+            <div class="calc-item"><div class="val" id="m2-firstMonth">-</div><div class="lbl">ডাউন মাস বাদ (পরের মাস থেকে)</div></div>
+          </div>
+          <div id="installSchedule2" style="margin-top:14px;"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- ══════ REVIEW SECTION ══════ -->
+  <section class="reviews-section" id="reviews">
+    <div class="section-header reveal">
+      <span class="section-eyebrow">সদস্যদের মতামত</span>
+      <h2 class="section-title">তারা কী বলছেন?</h2>
+    </div>
+    <div class="reviews-track-wrap">
+      <div class="reviews-track" id="reviewsTrack"></div>
+    </div>
+    <div class="review-submit-wrap reveal">
+      <h3>আপনার মতামত দিন</h3>
+      <div id="review-login-prompt" style="display:none;">
+        <p>লগইন করুন অথবা নাম ও মোবাইল দিয়ে মতামত দিন।</p>
+        <div class="review-anon-form">
+          <input type="text" id="rv-anon-name" placeholder="আপনার নাম *" class="rv-input">
+          <input type="tel" id="rv-anon-phone" placeholder="মোবাইল নম্বর *" class="rv-input">
+        </div>
+      </div>
+      <textarea id="rv-text" class="rv-textarea" placeholder="আপনার অভিজ্ঞতা লিখুন..." rows="3"></textarea>
+      <div class="rv-stars" id="rvStars">
+        <span onclick="setReviewStar(1)" class="rv-star">★</span>
+        <span onclick="setReviewStar(2)" class="rv-star">★</span>
+        <span onclick="setReviewStar(3)" class="rv-star">★</span>
+        <span onclick="setReviewStar(4)" class="rv-star">★</span>
+        <span onclick="setReviewStar(5)" class="rv-star">★</span>
+      </div>
+      <button class="btn-primary" style="margin-top:10px;" onclick="submitReview()">মতামত জমা দিন</button>
+      <p class="rv-note">মতামতটি প্রকাশের আগে অ্যাডমিন অনুমোদন নেবে।</p>
+      <div id="rv-alert" class="alert" style="display:none;margin-top:8px;"></div>
     </div>
   </section>
 
@@ -337,23 +451,32 @@
           <div class="logo-text"><strong>বারাকাহ ফাইন্যান্স</strong><span>Barakah Finance</span></div>
         </div>
         <p>সুদমুক্ত লেনদেনে সমৃদ্ধি সবার।</p>
+        <div class="footer-social">
+          <a href="#" title="Facebook">📘</a>
+          <a href="#" title="WhatsApp">📱</a>
+          <a href="#" title="YouTube">▶️</a>
+        </div>
       </div>
       <div class="footer-col">
         <h5>দ্রুত লিঙ্ক</h5>
         <ul>
           <li><a onclick="smScroll('about')">আমাদের সম্পর্কে</a></li>
           <li><a onclick="smScroll('calculator')">ক্যালকুলেটর</a></li>
-          <li><a href="form.html">আবেদন করুন</a></li>
+          <li><a href="pages/learn-more.html">আরও জানুন</a></li>
+          <li><a href="pages/gallery.html">গ্যালারি</a></li>
+          <li><a href="pages/timeline.html">টাইমলাইন</a></li>
+          <li><a href="form.html">সদস্য আবেদন</a></li>
           <li><a href="admin/admin.html">অ্যাডমিন</a></li>
         </ul>
       </div>
       <div class="footer-col">
-        <h5>সেবাসমূহ</h5>
+        <h5>আমাদের সেবা</h5>
         <ul>
-          <li><a>কিস্তিতে পণ্য ক্রয়</a></li>
-          <li><a>করজে হাসানা</a></li>
-          <li><a>মাসিক সঞ্চয়</a></li>
-          <li><a>হালাল বিনিয়োগ</a></li>
+          <li><a href="pages/learn-more.html#installment">কিস্তিতে পণ্য ক্রয়</a></li>
+          <li><a href="pages/learn-more.html#qard">করজে হাসানা</a></li>
+          <li><a href="pages/learn-more.html#savings">মাসিক সঞ্চয়</a></li>
+          <li><a href="pages/learn-more.html#invest">হালাল বিনিয়োগ</a></li>
+          <li><a href="pages/learn-more.html#charity">চ্যারিটি সহযোগিতা</a></li>
         </ul>
       </div>
       <div class="footer-col">
@@ -362,11 +485,15 @@
           <li><a>সভাপতি: ০১৭৩৭১৩১০৯৫</a></li>
           <li><a>সম্পাদক: ০১৭১৭২৬৭০০৫</a></li>
           <li><a>কোষাধ্যক্ষ: ০১৬৪৮২৪৮০০৬</a></li>
+          <li><a href="mailto:info@barakahfinance.com">info@barakahfinance.com</a></li>
+          <li><a>আদিতমারী, লালমনিরহাট</a></li>
         </ul>
       </div>
     </div>
-    <div class="footer-bottom"><span>© ২০২৬ বারাকাহ ফাইন্যান্স। সর্বস্বত্ব সংরক্ষিত।</span><span>শরিয়াহ পরামর্শক:
-        মাওলানা আব্দুল হান্নান | মাও. ইমরান হোসাইন কাসেমী</span></div>
+    <div class="footer-bottom">
+      <span>© ২০২৬ বারাকাহ ফাইন্যান্স। সর্বস্বত্ব সংরক্ষিত।</span>
+      <span>শরিয়াহ পরামর্শক: মাওলানা আব্দুল হান্নান | মাও. ইমরান হোসাইন কাসেমী</span>
+    </div>
   </footer>
 
   <!-- ══════ AUTH MODAL ══════ -->
@@ -487,11 +614,11 @@
   <script src="js/main.js"></script>
   <script src="js/notice.js"></script>
   <script src="js/admin-settings.js"></script>
+  <script src="js/lang.js"></script>
 
   <!-- Initialization script for critical functions not yet in other files -->
   <script>
-    // Global helper functions that were missing or need to be defined early
-
+    // ══════ Global Helpers ══════
     function toggleDarkMode() {
       document.body.classList.toggle('dark-mode');
       const toggle = document.getElementById('dkTog');
@@ -503,11 +630,224 @@
       const loginTab = document.getElementById('atab-login');
       const signupTab = document.getElementById('atab-signup');
       if (tab === 'login') {
-        loginTab.classList.add('on');
-        signupTab.classList.remove('on');
+        loginTab.classList.add('on'); signupTab.classList.remove('on');
         document.getElementById('ap-login').classList.remove('hidden');
         document.getElementById('ap-signup').classList.add('hidden');
         document.getElementById('ap-otp').classList.add('hidden');
+        document.getElementById('ap-forgot').classList.add('hidden');
+      } else {
+        loginTab.classList.remove('on'); signupTab.classList.add('on');
+        document.getElementById('ap-login').classList.add('hidden');
+        document.getElementById('ap-signup').classList.remove('hidden');
+        document.getElementById('ap-otp').classList.add('hidden');
+        document.getElementById('ap-forgot').classList.add('hidden');
+      }
+    }
+
+    function setAuthPanel(panel) {
+      document.querySelectorAll('.auth-body').forEach(p => p.classList.add('hidden'));
+      document.getElementById(`ap-${panel}`).classList.remove('hidden');
+    }
+
+    function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
+    function openTermsModal() { document.getElementById('termsModal').classList.remove('hidden'); }
+    function closeTermsModal() { document.getElementById('termsModal').classList.add('hidden'); }
+    function acceptTerms() { document.getElementById('su-terms').checked = true; closeTermsModal(); }
+    function closeBadgeDetailModal() { document.getElementById('badgeDetailModal').classList.add('hidden'); }
+
+    function calculateInstallment() { if (window.calculate) window.calculate(); }
+    function switchFormTab(tabId) { if (window.switchTab) window.switchTab(null, tabId); }
+    function quickSubmitForm(type) { if (window.quickSubmit) window.quickSubmit(type); }
+    function previewInstallment() { if (window.pCalc) window.pCalc(); }
+
+    // ── Login-required navigation ──
+    function requireLoginThen(url) {
+      const session = DB ? DB.getSession() : null;
+      if (session) { location.href = url; }
+      else { openAuthModal('login'); sessionStorage.setItem('bf_redirect', url); }
+    }
+
+    // ── Calculator Mode Switch ──
+    function switchCalcMode(mode) {
+      document.getElementById('calc-mode-1').style.display = mode===1?'block':'none';
+      document.getElementById('calc-mode-2').style.display = mode===2?'block':'none';
+      document.getElementById('calcMode1Btn').classList.toggle('active', mode===1);
+      document.getElementById('calcMode2Btn').classList.toggle('active', mode===2);
+    }
+
+    // ── Calculator Mode 2: Financed Amount Based ──
+    function calcMode2() {
+      const cost = parseFloat(document.getElementById('m2-cost').value)||0;
+      const down = parseFloat(document.getElementById('m2-down').value)||0;
+      const rate = parseFloat(document.getElementById('m2-rate').value)||10;
+      const n    = parseInt(document.getElementById('m2-installNum').value)||6;
+      if(cost<=0){ document.getElementById('calcResult2').style.display='none'; return; }
+      const financed = cost - down;
+      const labh = financed * (rate/100);
+      const salePrice = cost + labh;
+      const remaining = salePrice - down;
+      const perInstall = Math.round(remaining / n);
+      // Last installment adjustment
+      const totalPaid = perInstall * n;
+      const lastAdj = remaining - perInstall*(n-1);
+
+      document.getElementById('calcResult2').style.display='block';
+      document.getElementById('m2-financed').textContent = '৳'+Math.round(financed).toLocaleString('bn');
+      document.getElementById('m2-labh').textContent = '৳'+Math.round(labh).toLocaleString('bn');
+      document.getElementById('m2-total').textContent = '৳'+Math.round(salePrice).toLocaleString('bn');
+      document.getElementById('m2-remaining').textContent = '৳'+Math.round(remaining).toLocaleString('bn');
+      document.getElementById('m2-perInstall').textContent = '৳'+perInstall.toLocaleString('bn');
+      document.getElementById('m2-firstMonth').textContent = 'ডাউনপেমেন্ট মাস বাদে পরের মাস থেকে শুরু';
+
+      // Installment schedule
+      let sch = '<div class="install-schedule"><h4>কিস্তি সময়সূচী</h4><table class="calc-table"><thead><tr><th>কিস্তি</th><th>পরিমাণ</th><th>মন্তব্য</th></tr></thead><tbody>';
+      for(let i=1;i<=n;i++){
+        const amt = i===n ? lastAdj : perInstall;
+        const note = i===1?'ডাউনপেমেন্টের পর ১ম মাস':(i===n?'শেষ কিস্তি (সমন্বয় সহ)':'');
+        sch += `<tr><td>${i}</td><td>৳${Math.round(amt).toLocaleString('bn')}</td><td style="font-size:11px;color:#888;">${note}</td></tr>`;
+      }
+      sch += '</tbody></table></div>';
+      document.getElementById('installSchedule2').innerHTML = sch;
+    }
+
+    // ── Review Star Rating ──
+    let currentStar = 5;
+    function setReviewStar(n) {
+      currentStar = n;
+      document.querySelectorAll('.rv-star').forEach((s,i)=>{
+        s.classList.toggle('active', i<n);
+      });
+    }
+
+    // ── Submit Review ──
+    function submitReview() {
+      const session = DB ? DB.getSession() : null;
+      const txt = document.getElementById('rv-text').value.trim();
+      const alert = document.getElementById('rv-alert');
+      if(!txt){ showRvAlert('মতামত লিখুন।','error'); return; }
+      let name = '', phone = '';
+      if(session){ name = session.name; phone = session.phone||''; }
+      else {
+        name = document.getElementById('rv-anon-name')?.value.trim()||'';
+        phone = document.getElementById('rv-anon-phone')?.value.trim()||'';
+        if(!name||!phone){ showRvAlert('নাম ও মোবাইল নম্বর দিন।','error'); return; }
+      }
+      const reviews = JSON.parse(localStorage.getItem('bf_reviews')||'[]');
+      reviews.push({ id:'rv-'+Date.now(), name, phone, text:txt, stars:currentStar, status:'pending', date:new Date().toISOString() });
+      localStorage.setItem('bf_reviews', JSON.stringify(reviews));
+      document.getElementById('rv-text').value='';
+      showRvAlert('মতামত জমা হয়েছে! অ্যাডমিন অনুমোদনের পর প্রকাশিত হবে।','success');
+    }
+
+    function showRvAlert(msg,type){
+      const el = document.getElementById('rv-alert');
+      el.style.display='block';
+      el.className='alert alert-'+(type==='error'?'error':'success');
+      el.textContent=msg;
+      setTimeout(()=>el.style.display='none',4000);
+    }
+
+    // Show review login prompt if not logged in
+    function initReviewSection() {
+      const session = DB ? DB.getSession() : null;
+      const prompt = document.getElementById('review-login-prompt');
+      if(prompt) prompt.style.display = session ? 'none' : 'block';
+      loadPublicReviews();
+    }
+
+    function loadPublicReviews() {
+      const track = document.getElementById('reviewsTrack');
+      if(!track) return;
+      const reviews = JSON.parse(localStorage.getItem('bf_reviews')||'[]').filter(r=>r.status==='approved');
+      if(!reviews.length){
+        track.innerHTML='<div class="rv-card rv-empty">এখনো কোনো মতামত নেই। প্রথম মতামত দিন!</div>';
+        return;
+      }
+      track.innerHTML = reviews.map(r=>`
+        <div class="rv-card">
+          <div class="rv-card-stars">${'★'.repeat(r.stars||5)}</div>
+          <div class="rv-card-text">"${r.text}"</div>
+          <div class="rv-card-name">— ${r.name}</div>
+          <div class="rv-card-date">${new Date(r.date).toLocaleDateString('bn-BD')}</div>
+        </div>`).join('');
+      // Pause on hover
+      track.addEventListener('mouseenter',()=>track.style.animationPlayState='paused');
+      track.addEventListener('mouseleave',()=>track.style.animationPlayState='running');
+    }
+
+    // ── Language Switcher ──
+    function toggleLangMenu() {
+      const drop = document.getElementById('langDrop');
+      if(drop) drop.classList.toggle('open');
+    }
+    // Close lang drop on outside click
+    document.addEventListener('click', e=>{
+      const wrap = document.querySelector('.nav-lang-wrap');
+      if(wrap && !wrap.contains(e.target)) {
+        const drop = document.getElementById('langDrop');
+        if(drop) drop.classList.remove('open');
+      }
+    });
+    function setLang(code) {
+      localStorage.setItem('bf_lang', code);
+      const flags = {bn:'🇧🇩',en:'🇬🇧',ar:'🇸🇦'};
+      const names = {bn:'বাংলা',en:'English',ar:'عربي'};
+      document.getElementById('langFlag').textContent = flags[code]||'🌐';
+      document.getElementById('langCode').textContent = names[code]||code;
+      document.getElementById('langDrop').classList.remove('open');
+      if(window.applyLang) window.applyLang(code);
+    }
+
+    // ── Visitor Counter (demo: random active visitors) ──
+    function initVisitorCounter() {
+      const el = document.getElementById('visitorCount');
+      if(!el) return;
+      // Track page views in localStorage
+      const key = 'bf_visits_today';
+      const dateKey = new Date().toDateString();
+      const stored = JSON.parse(localStorage.getItem(key)||'{}');
+      if(stored.date !== dateKey) { stored.date=dateKey; stored.count=0; }
+      stored.count++;
+      localStorage.setItem(key, JSON.stringify(stored));
+      // Show simulated real-time count (demo)
+      let base = 12 + Math.floor(stored.count/3);
+      el.textContent = base;
+      // Fluctuate every 10 seconds
+      setInterval(()=>{
+        const delta = Math.floor(Math.random()*3)-1;
+        base = Math.max(5, base+delta);
+        el.textContent = base;
+      }, 10000);
+    }
+
+    // ── Init on load ──
+    if (localStorage.getItem('bf_dark') === '1') {
+      document.body.classList.add('dark-mode');
+      const dk = document.getElementById('dkTog');
+      if (dk) dk.classList.add('on');
+    }
+
+    // Restore language
+    (function initLang(){
+      const saved = localStorage.getItem('bf_lang')||'bn';
+      const flags = {bn:'🇧🇩',en:'🇬🇧',ar:'🇸🇦'};
+      const names = {bn:'বাংলা',en:'English',ar:'عربي'};
+      const fl = document.getElementById('langFlag');
+      const lc = document.getElementById('langCode');
+      if(fl) fl.textContent = flags[saved]||'🌐';
+      if(lc) lc.textContent = names[saved]||saved;
+    })();
+
+    document.addEventListener('DOMContentLoaded', ()=>{
+      initVisitorCounter();
+      initReviewSection();
+      setReviewStar(5);
+      // Redirect after login if there's a pending redirect
+      const session = DB ? DB.getSession() : null;
+      const redir = sessionStorage.getItem('bf_redirect');
+      if(session && redir){ sessionStorage.removeItem('bf_redirect'); location.href=redir; }
+    });
+  </script>
         document.getElementById('ap-forgot').classList.add('hidden');
       } else {
         loginTab.classList.remove('on');
