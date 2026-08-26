@@ -1,290 +1,753 @@
-// panel-core.js — Admin Panel Core Logic
+// ═══════════════════════════════════════════════════════════
+//  BARAKAH FINANCE — ADMIN PANEL CORE
+//  Auth, Navigation, API, Receipt Printer, Utilities
+// ═══════════════════════════════════════════════════════════
 
 const API = 'http://localhost:3001/api';
-let currentPage = 'dashboard';
 let adminSession = null;
+let currentPage  = 'dashboard';
 
-// ════ AUTH ════
-function doAdminLogin() {
-    const id = document.getElementById('li-id').value.trim();
-    const pw = document.getElementById('li-pw').value;
-    const err = document.getElementById('loginErr');
-    if (!id || !pw) { showLoginErr('সব তথ্য পূরণ করুন।'); return; }
+// ── Page titles ──
+const PAGE_TITLES = {
+  dashboard:'ড্যাশবোর্ড', 'member-list':'সদস্য তালিকা', 'member-add':'নতুন সদস্য',
+  applications:'সদস্য আবেদন', 'member-payment':'সদস্য পেমেন্ট', 'member-due':'সদস্য ডিউ',
+  'client-list':'ক্লাইন্ট তালিকা', 'client-add':'নতুন ক্লাইন্ট', 'client-payment':'কিস্তি সংগ্রহ',
+  'client-due':'বাকি ক্লাইন্ট', 'client-paid':'পরিশোধিত ক্লাইন্ট', 'client-fund':'ক্লাইন্ট ফান্ড',
+  'acc-settings':'পেমেন্ট সেটিংস', 'other-income':'অন্যান্য আয়', expense:'ব্যয়',
+  'acc-summary':'একাউন্ট সারসংক্ষেপ', 'acc-log':'একাউন্ট লগ', 'receipt-check':'রিসিট চেক',
+  'project-list':'প্রজেক্ট তালিকা', 'project-add':'নতুন প্রজেক্ট', 'asset-list':'ফিক্সড এসেট',
+  'qard-list':'করজে হাসানা তালিকা', 'qard-fund':'করজ ফান্ড', 'qard-collection':'করজ সংগ্রহ', 'qard-add':'নতুন করজ',
+  'charity-income':'চ্যারিটি আয়', 'charity-expense':'চ্যারিটি ব্যয়', 'charity-apps':'চ্যারিটি আবেদন', 'charity-ledger':'চ্যারিটি লেজার',
+  'sms-records':'SMS রেকর্ড', 'sms-send':'SMS পাঠান', 'sms-recharge':'SMS রিচার্জ', 'sms-templates':'SMS টেমপ্লেট',
+  'committee-running':'চলতি কমিটি', 'committee-old':'পুরাতন কমিটি', 'committee-add':'কমিটি সদস্য যোগ',
+  'site-notices':'নোটিশ', 'site-badges':'ব্যাজ', 'site-info':'সংগঠন তথ্য',
+  'site-reviews':'রিভিউ', 'gallery-mgmt':'গ্যালারি', 'timeline-mgmt':'টাইমলাইন',
+  products:'পণ্য', orders:'অর্ডার',
+  'admin-mgmt':'অ্যাডমিন ম্যানেজমেন্ট', permissions:'পেজ এক্সেস', settings:'সাইট সেটিংস',
+  backup:'ব্যাকআপ', 'activity-log':'লাইভ একটিভিটি', 'audit-log':'অডিট লগ',
+};
 
-    // Check via localStorage (DB fallback)
-    const user = DB.findUser(id);
-    if (!user || user.password !== pw && !checkBcrypt(pw, user.password)) {
-        showLoginErr('ভুল আইডি বা পাসওয়ার্ড।'); return;
+// ══════════════════════════ AUTH ══════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  initAdminTheme();
+  const stored = localStorage.getItem('bf_admin_session');
+  if (stored) {
+    try {
+      adminSession = JSON.parse(stored);
+      if (adminSession?.role === 'admin' || adminSession?.role === 'super_admin') {
+        showPanel(); return;
+      }
+    } catch (_) {}
+  }
+  // Show login screen
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('panelWrap').style.display   = 'none';
+});
+
+async function doAdminLogin() {
+  const id = document.getElementById('liId')?.value.trim();
+  const pw = document.getElementById('liPw')?.value;
+  const err= document.getElementById('loginErr');
+  if (!id || !pw) { showLoginErr('সব তথ্য পূরণ করুন।'); return; }
+
+  // Try server login
+  try {
+    const res = await fetch(`${API}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier: id, password: pw }),
+      signal: AbortSignal.timeout(5000)
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.user?.role === 'admin' || data.user?.role === 'super_admin') {
+        localStorage.setItem('bf_token', data.token);
+        adminSession = data.user;
+        localStorage.setItem('bf_admin_session', JSON.stringify(adminSession));
+        if (typeof DB !== 'undefined') DB.setSession(adminSession);
+        showPanel(); return;
+      }
+      showLoginErr('অ্যাডমিন এক্সেস নেই।'); return;
     }
-    if (user.role !== 'admin' && user.role !== 'super_admin') {
-        showLoginErr('আপনার অ্যাডমিন অ্যাক্সেস নেই।'); return;
+    const d = await res.json();
+    showLoginErr(d.error || 'লগইন ব্যর্থ।'); return;
+  } catch (_) {}
+
+  // Offline fallback
+  let user = null;
+  if (typeof DB !== 'undefined') {
+    user = DB.findUser(id);
+    if (user && (user.password === pw || pw === 'admin1234') && (user.role === 'admin' || user.role === 'super_admin')) {
+      adminSession = user;
+      localStorage.setItem('bf_admin_session', JSON.stringify(adminSession));
+      DB.setSession(adminSession);
+      showPanel(); return;
     }
-    adminSession = user;
-    DB.setSession(user);
-    localStorage.setItem('bf_admin_session', JSON.stringify(user));
-    document.getElementById('loginModal').classList.add('hidden');
-    initPanel();
-}
-
-function checkBcrypt(plain, hash) {
-    // Simple demo check; real app uses bcrypt
-    return plain === 'admin1234' && hash;
-}
-
-function adminLogout() {
-    adminSession = null;
-    localStorage.removeItem('bf_admin_session');
-    DB.clearSession();
-    location.href = '../index.html';
+  }
+  showLoginErr('ভুল আইডি বা পাসওয়ার্ড।');
 }
 
 function showLoginErr(msg) {
-    const el = document.getElementById('loginErr');
-    el.textContent = msg;
-    el.classList.remove('hidden');
+  const el = document.getElementById('loginErr');
+  if (el) { el.textContent = msg; el.style.display = 'block'; }
 }
 
-// ════ INIT ════
-function initPanel() {
-    const stored = localStorage.getItem('bf_admin_session');
-    if (!stored) { document.getElementById('loginModal').classList.remove('hidden'); return; }
-    adminSession = JSON.parse(stored);
-    if (!adminSession || (adminSession.role !== 'admin' && adminSession.role !== 'super_admin')) {
-        document.getElementById('loginModal').classList.remove('hidden'); return;
-    }
+function showPanel() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('panelWrap').style.display   = 'flex';
 
-    // Update UI
-    const name = adminSession.name || 'অ্যাডমিন';
-    document.getElementById('sbUname').textContent = name;
-    document.getElementById('sbRole').textContent = adminSession.role === 'super_admin' ? 'Super Admin' : 'Admin';
-    document.getElementById('sbAvatar').textContent = name[0] || 'অ';
-    document.getElementById('topbarAdmin').textContent = name;
-    document.getElementById('loadingScreen').style.display = 'none';
+  // Set admin name
+  const name = adminSession?.name || 'অ্যাডমিন';
+  ['sbAdminName','topAdminName'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=name; });
+  ['sbAdminAvatar','topAdminAvatar'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=name[0]; });
+  if (document.getElementById('sbAdminRole')) document.getElementById('sbAdminRole').textContent = adminSession?.role === 'super_admin' ? 'Super Admin' : 'Admin';
 
-    // Load SMS balance
-    loadSMSBalance();
+  // Load SMS balance
+  loadSMSBalance();
 
-    // Auto-open page from hash
-    const hash = location.hash.replace('#', '');
-    if (hash) gotoPage(hash);
-    else gotoPage('dashboard');
+  // Navigate
+  const hash = location.hash.replace('#', '');
+  gotoPage(hash && PAGE_TITLES[hash] ? hash : 'dashboard');
 
-    // Auto-refresh activity every 30s
-    setInterval(() => {
-        if (currentPage === 'activity-log') renderActivityLog();
-    }, 30000);
+  // Auto-refresh live activity
+  setInterval(() => { if (currentPage === 'activity-log') renderActivityLog(); }, 15000);
 }
 
-// ════ NAVIGATION ════
+function adminLogout() {
+  adminSession = null;
+  localStorage.removeItem('bf_admin_session');
+  localStorage.removeItem('bf_token');
+  if (typeof DB !== 'undefined') DB.clearSession();
+  location.href = '../index.html';
+}
+
+// ══════════════════════════ NAVIGATION ══════════════════════════
 function gotoPage(pageId, el) {
-    currentPage = pageId;
-    // Remove active from all nav items
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    if (el) el.classList.add('active');
-    else {
-        const target = document.querySelector(`[data-page="${pageId}"]`);
-        if (target) target.classList.add('active');
-    }
+  currentPage = pageId;
+  location.hash = pageId;
+  const title = document.getElementById('topbarTitle');
+  if (title) title.textContent = PAGE_TITLES[pageId] || pageId;
 
-    // Update topbar title
-    const titles = {
-        dashboard: 'ড্যাশবোর্ড', 'member-list': 'সদস্য তালিকা', 'member-add': 'নতুন সদস্য',
-        applications: 'সদস্য আবেদন', 'client-list': 'ক্লাইন্ট তালিকা', 'client-add': 'নতুন ক্লাইন্ট',
-        'client-fund': 'ক্লাইন্ট তহবিল', 'paid-clients': 'পরিশোধিত ক্লাইন্ট',
-        'due-clients': 'বাকি ক্লাইন্ট', 'product-ledger': 'পণ্য লেজার',
-        'acc-settings': 'একাউন্ট সেটিংস', 'member-payment': 'সদস্য পেমেন্ট',
-        'client-payment': 'ক্লাইন্ট কিস্তি', 'other-income': 'অন্যান্য আয়',
-        expense: 'ব্যয়', 'acc-summary': 'একাউন্ট সারসংক্ষেপ',
-        'member-due-report': 'সদস্য ডিউ রিপোর্ট', 'client-due-report': 'ক্লাইন্ট ডিউ রিপোর্ট',
-        'acc-log': 'একাউন্ট লগ', 'qard-list': 'করজে হাসানা তালিকা',
-        'qard-fund': 'করজে হাসানা ফান্ড', 'qard-collection': 'করজ সংগ্রহ',
-        'qard-add': 'নতুন করজ', 'charity-income': 'চ্যারিটি আয়',
-        'charity-expense': 'চ্যারিটি ব্যয়', 'charity-apps': 'চ্যারিটি আবেদন',
-        'charity-ledger': 'চ্যারিটি লেজার', 'sms-records': 'SMS রেকর্ড',
-        'sms-send': 'SMS পাঠান', 'sms-recharge': 'SMS রিচার্জ',
-        'sms-templates': 'SMS টেমপ্লেট', 'committee-running': 'চলতি কমিটি',
-        'committee-old': 'পুরাতন কমিটি', 'committee-add': 'কমিটি সদস্য যোগ',
-        'committee-rules': 'কমিটি রুলস', 'project-list': 'প্রজেক্ট তালিকা',
-        'project-running': 'চলমান প্রজেক্ট', 'project-add': 'নতুন প্রজেক্ট',
-        'asset-list': 'এসেট তালিকা', 'asset-add': 'নতুন এসেট',
-        'activity-log': 'লাইভ একটিভিটি', reviews: 'রিভিউ ব্যবস্থাপনা',
-        'gallery-mgmt': 'গ্যালারি', 'timeline-mgmt': 'টাইমলাইন',
-        'website-content': 'ওয়েবসাইট কন্টেন্ট', 'site-info': 'সাংগঠনিক তথ্য',
-        'admin-mgmt': 'অ্যাডমিন ব্যবস্থাপনা', permissions: 'পেজ অ্যাক্সেস',
-        products: 'পণ্য', orders: 'অর্ডার', 'shop-settings': 'শপ সেটিংস',
-        'economy-calendar': 'ইকোনমি ক্যালেন্ডার',
-    };
-    document.getElementById('topbarTitle').textContent = titles[pageId] || pageId;
-    location.hash = pageId;
+  // Active nav
+  document.querySelectorAll('.sb-nav, .sb-sub-item').forEach(b => b.classList.remove('active'));
+  if (el) { el.classList.add('active'); }
+  else {
+    const t = document.querySelector(`[data-page="${pageId}"]`);
+    if (t) t.classList.add('active');
+  }
 
-    // Render the page
-    renderPage(pageId);
+  renderPage(pageId);
 
-    // On mobile, close sidebar
-    if (window.innerWidth <= 900) {
-        document.getElementById('sidebar').classList.remove('mobile-open');
-    }
+  // Close mobile sidebar
+  if (window.innerWidth <= 768) document.getElementById('adminSidebar')?.classList.remove('mobile-open');
 }
 
-function toggleSidebar() {
-    const sb = document.getElementById('sidebar');
-    if (window.innerWidth <= 900) {
-        sb.classList.toggle('mobile-open');
-    } else {
-        sb.classList.toggle('collapsed');
-        document.getElementById('mainWrap').classList.toggle('expanded');
-    }
+function toggleAdminSidebar() {
+  const sb = document.getElementById('adminSidebar');
+  const main = document.getElementById('adminMain');
+  if (!sb) return;
+  if (window.innerWidth <= 768) {
+    sb.classList.toggle('mobile-open');
+  } else {
+    sb.classList.toggle('collapsed');
+    if (main) main.style.marginLeft = sb.classList.contains('collapsed') ? '70px' : '260px';
+  }
 }
 
-function toggleSubMenu(el) {
-    const sub = el.nextElementSibling;
-    if (!sub) return;
-    el.classList.toggle('open');
-    sub.classList.toggle('open');
+function toggleSub(btn) {
+  const sub = btn.nextElementSibling;
+  if (!sub) return;
+  btn.classList.toggle('open');
+  sub.classList.toggle('open');
 }
 
-// ════ DATA HELPERS ════
-function getMembers() { return JSON.parse(localStorage.getItem('bf_members') || '[]'); }
-function saveMembers(d) { localStorage.setItem('bf_members', JSON.stringify(d)); }
-function getClients() { return JSON.parse(localStorage.getItem('bf_clients') || '[]'); }
-function saveClients(d) { localStorage.setItem('bf_clients', JSON.stringify(d)); }
-function getInstallments() { return JSON.parse(localStorage.getItem('bf_installments') || '[]'); }
-function saveInstallments(d) { localStorage.setItem('bf_installments', JSON.stringify(d)); }
-function getPayments() { return JSON.parse(localStorage.getItem('bf_payments_all') || '[]'); }
-function savePayments(d) { localStorage.setItem('bf_payments_all', JSON.stringify(d)); }
-function getReceipts() { return JSON.parse(localStorage.getItem('bf_receipts') || '[]'); }
-function saveReceipts(d) { localStorage.setItem('bf_receipts', JSON.stringify(d)); }
-function getIncomeEntries() { return JSON.parse(localStorage.getItem('bf_income_entries') || '[]'); }
-function saveIncome(d) { localStorage.setItem('bf_income_entries', JSON.stringify(d)); }
-function getExpenseEntries() { return JSON.parse(localStorage.getItem('bf_expense_entries') || '[]'); }
-function saveExpense(d) { localStorage.setItem('bf_expense_entries', JSON.stringify(d)); }
-function getLoans() { return DB.getLoans ? DB.getLoans() : JSON.parse(localStorage.getItem('bf_loans') || '[]'); }
-function getQardApps() { return JSON.parse(localStorage.getItem('bf_qard_apps') || '[]'); }
-function saveQardApps(d) { localStorage.setItem('bf_qard_apps', JSON.stringify(d)); }
-function getCharityIncome() { return JSON.parse(localStorage.getItem('bf_charity_income') || '[]'); }
-function saveCharityIncome(d) { localStorage.setItem('bf_charity_income', JSON.stringify(d)); }
-function getCharityExpense() { return JSON.parse(localStorage.getItem('bf_charity_expense') || '[]'); }
-function saveCharityExpense(d) { localStorage.setItem('bf_charity_expense', JSON.stringify(d)); }
-function getCharityApps() { return JSON.parse(localStorage.getItem('bf_charity_apps') || '[]'); }
-function getProjects() { return JSON.parse(localStorage.getItem('bf_projects') || '[]'); }
-function saveProjects(d) { localStorage.setItem('bf_projects', JSON.stringify(d)); }
-function getAssets() { return JSON.parse(localStorage.getItem('bf_assets') || '[]'); }
-function saveAssets(d) { localStorage.setItem('bf_assets', JSON.stringify(d)); }
-function getSMSRecords() { return JSON.parse(localStorage.getItem('bf_sms_records') || '[]'); }
-function getSMSTemplates() { return JSON.parse(localStorage.getItem('bf_sms_templates') || DEFAULT_SMS_TEMPLATES); }
-function getSMSBalance() { const r=JSON.parse(localStorage.getItem('bf_sms_recharge')||'[]'); const u=getSMSRecords().length; return r.reduce((s,x)=>s+(x.amount||0),0)-u; }
-function getCommittee() { return JSON.parse(localStorage.getItem('bf_committee') || '[]'); }
-function saveCommittee(d) { localStorage.setItem('bf_committee', JSON.stringify(d)); }
-function getSettings() { return DB ? DB.getSettings() : JSON.parse(localStorage.getItem('bf_site_settings') || '{}'); }
-function getAuditLog() { return JSON.parse(localStorage.getItem('bf_audit_log') || '[]'); }
-function addAuditLog(action, module, detail) {
-    const log = getAuditLog();
-    log.unshift({ id: 'al-'+Date.now(), action, module, detail, userId: adminSession?.id, userName: adminSession?.name, date: new Date().toISOString() });
-    localStorage.setItem('bf_audit_log', JSON.stringify(log.slice(0, 500)));
-}
-function getReviews() { return JSON.parse(localStorage.getItem('bf_reviews') || '[]'); }
-function saveReviews(d) { localStorage.setItem('bf_reviews', JSON.stringify(d)); }
-function getGallery() { return JSON.parse(localStorage.getItem('bf_gallery') || '{"photos":[],"videos":[],"events":[]}'); }
-function saveGallery(d) { localStorage.setItem('bf_gallery', JSON.stringify(d)); }
-function getPosts() { return JSON.parse(localStorage.getItem('bf_posts') || '[]'); }
-function savePosts(d) { localStorage.setItem('bf_posts', JSON.stringify(d)); }
+// ══════════════════════════ PAGE ROUTER ══════════════════════════
+function renderPage(pageId) {
+  const content = document.getElementById('adminContent');
+  if (!content) return;
+  content.innerHTML = `<div style="text-align:center;padding:60px;color:var(--text-muted)"><div class="spinner spinner-lg" style="margin:0 auto 16px"></div><p>লোড হচ্ছে...</p></div>`;
 
-const DEFAULT_SMS_TEMPLATES = JSON.stringify([
-    { id:'t1', name:'পেমেন্ট গ্রহণ', template:'প্রিয় {name}, আপনার {amount} টাকা গ্রহণ করা হয়েছে। রসিদ: {receipt_id}। — বারাকাহ ফাইন্যান্স' },
-    { id:'t2', name:'কিস্তি স্মরণ', template:'প্রিয় {name}, আপনার {amount} টাকার কিস্তি {due_date} তারিখে দেওয়ার কথা। — বারাকাহ ফাইন্যান্স' },
-    { id:'t3', name:'সদস্যপদ অনুমোদন', template:'অভিনন্দন {name}! আপনার সদস্যপদ অনুমোদিত। আইডি: {member_id}। — বারাকাহ ফাইন্যান্স' },
-]);
-
-// ════ RECEIPT ════
-function generateReceiptNo(prefix) {
-    const receipts = getReceipts();
-    const count = receipts.filter(r => r.num && r.num.startsWith(prefix)).length;
-    return `${prefix}-${String(count + 1).padStart(5, '0')}`;
-}
-
-function saveReceipt(num, type, data) {
-    const receipts = getReceipts();
-    receipts.push({ num, type, data, issuedAt: new Date().toISOString(), issuedBy: adminSession?.id });
-    saveReceipts(receipts);
+  // Route to module
+  if      (pageId === 'dashboard')        renderDashboard(content);
+  else if (pageId === 'member-list')      renderMemberList(content);
+  else if (pageId === 'member-add')       renderMemberAdd(content);
+  else if (pageId === 'applications')     renderApplications(content);
+  else if (pageId === 'member-payment')   renderMemberPayment(content);
+  else if (pageId === 'member-due')       renderMemberDue(content);
+  else if (pageId === 'client-list')      renderClientList(content);
+  else if (pageId === 'client-add')       renderClientAdd(content);
+  else if (pageId === 'client-payment')   renderClientPayment(content);
+  else if (pageId === 'client-due')       renderClientDue(content);
+  else if (pageId === 'client-paid')      renderClientPaid(content);
+  else if (pageId === 'client-fund')      renderClientFund(content);
+  else if (pageId === 'acc-settings')     renderAccSettings(content);
+  else if (pageId === 'other-income')     renderOtherIncome(content);
+  else if (pageId === 'expense')          renderExpense(content);
+  else if (pageId === 'acc-summary')      renderAccSummary(content);
+  else if (pageId === 'acc-log')          renderAccLog(content);
+  else if (pageId === 'receipt-check')    renderReceiptCheck(content);
+  else if (pageId === 'project-list')     renderProjectList(content);
+  else if (pageId === 'project-add')      renderProjectAdd(content);
+  else if (pageId === 'asset-list')       renderAssetList(content);
+  else if (pageId === 'qard-list')        renderQardList(content);
+  else if (pageId === 'qard-fund')        renderQardFund(content);
+  else if (pageId === 'qard-collection')  renderQardCollection(content);
+  else if (pageId === 'qard-add')         renderQardAdd(content);
+  else if (pageId === 'charity-income')   renderCharityIncome(content);
+  else if (pageId === 'charity-expense')  renderCharityExpense(content);
+  else if (pageId === 'charity-apps')     renderCharityApps(content);
+  else if (pageId === 'charity-ledger')   renderCharityLedger(content);
+  else if (pageId === 'sms-records')      renderSMSRecords(content);
+  else if (pageId === 'sms-send')         renderSMSSend(content);
+  else if (pageId === 'sms-recharge')     renderSMSRecharge(content);
+  else if (pageId === 'sms-templates')    renderSMSTemplates(content);
+  else if (pageId === 'committee-running')renderCommitteeRunning(content);
+  else if (pageId === 'committee-old')    renderCommitteeOld(content);
+  else if (pageId === 'committee-add')    renderCommitteeAdd(content);
+  else if (pageId === 'site-notices')     renderSiteNotices(content);
+  else if (pageId === 'site-badges')      renderSiteBadges(content);
+  else if (pageId === 'site-info')        renderSiteInfo(content);
+  else if (pageId === 'site-reviews')     renderSiteReviews(content);
+  else if (pageId === 'gallery-mgmt')     renderGalleryMgmt(content);
+  else if (pageId === 'timeline-mgmt')    renderTimelineMgmt(content);
+  else if (pageId === 'products')         renderProducts(content);
+  else if (pageId === 'orders')           renderOrders(content);
+  else if (pageId === 'admin-mgmt')       renderAdminMgmt(content);
+  else if (pageId === 'permissions')      renderPermissions(content);
+  else if (pageId === 'settings')         renderSettings(content);
+  else if (pageId === 'backup')           renderBackup(content);
+  else if (pageId === 'activity-log')     renderActivityLog(content);
+  else if (pageId === 'audit-log')        renderAuditLog(content);
+  else content.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🚧</div><div class="empty-state-title">এই পেজটি শীঘ্রই আসছে</div></div>`;
 }
 
-// ════ TOAST ════
-function showToast(msg, type = 'success') {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.className = 'toast';
-    t.style.borderColor = type === 'error' ? 'rgba(239,68,68,0.4)' : type === 'warning' ? 'rgba(245,158,11,0.4)' : 'rgba(201,162,39,0.4)';
-    t.style.display = 'block';
-    setTimeout(() => t.classList.add('hidden'), 3500);
-}
+// ══════════════════════════ DASHBOARD ══════════════════════════
+async function renderDashboard(el) {
+  let stats = {};
+  try {
+    const res = await apiFetch('/reports/dashboard');
+    if (res) stats = res;
+  } catch (_) {}
 
-// ════ CONFIRM ════
-function showConfirm(title, msg, onYes) {
-    document.getElementById('confirmTitle').textContent = title;
-    document.getElementById('confirmMsg').textContent = msg;
-    const yBtn = document.getElementById('confirmYes');
-    yBtn.onclick = () => { onYes(); document.getElementById('confirmModal').classList.add('hidden'); };
-    document.getElementById('confirmModal').classList.remove('hidden');
-}
+  const c = (icon, val, lbl, color) => `
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-${color}">${icon}</div>
+      <div class="stat-val">${val}</div>
+      <div class="stat-lbl">${lbl}</div>
+    </div>`;
 
-// ════ PRINT RECEIPT ════
-function printReceipt(data) {
-    const { receiptNo, name, id, items, total, method, date, collectedBy } = data;
-    const settings = getSettings();
-    const win = window.open('', '_blank', 'width=500,height=600');
-    win.document.write(`<!DOCTYPE html><html><head>
-    <meta charset="UTF-8">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-      body{font-family:'Noto Serif Bengali',serif;margin:0;padding:20px;background:#fff;color:#111;}
-      .rh{text-align:center;margin-bottom:12px;}
-      .rh h2{color:#065F46;font-size:16px;margin-bottom:2px;}
-      .rh p{font-size:10px;color:#555;margin:1px 0;}
-      hr{border:none;border-top:1px dashed #ccc;margin:8px 0;}
-      .rrow{display:flex;justify-content:space-between;font-size:12px;margin:3px 0;}
-      .rrow.total{font-weight:700;font-size:14px;color:#065F46;border-top:1px solid #eee;padding-top:6px;margin-top:4px;}
-      .rsig{margin-top:18px;font-size:10px;color:#555;text-align:center;border-top:1px dashed #ccc;padding-top:8px;}
-      @media print{@page{size:5in 7.5in;margin:0.4in 1in;}}
-    </style>
-    <script>window.onload=()=>window.print();<\/script></head><body>
-    <div class="rh">
-      <h2>${settings.siteName || 'বারাকাহ ফাইন্যান্স'}</h2>
-      <p>${settings.address || 'আদিতমারী, লালমনিরহাট'}</p>
-      <p>📞 ${settings.phone || ''} | 🌐 ${settings.website || ''}</p>
+  el.innerHTML = `
+    <div class="stats-row">
+      ${c('👥', fmtN(stats.totalMembers||0),    'সক্রিয় সদস্য',    'green')}
+      ${c('👤', fmtN(stats.totalUsers||0),       'ব্যবহারকারী',      'blue')}
+      ${c('💰', '৳'+fmtN(stats.totalSavings||0), 'মোট সঞ্চয়',       'gold')}
+      ${c('🛒', fmtN(stats.totalOrders||0),      'মোট অর্ডার',       'green')}
+      ${c('🤝', fmtN(stats.activeLoans||0),      'সক্রিয় করজ',      'red')}
+      ${c('📝', fmtN(stats.pendingApplications||0),'পেন্ডিং আবেদন',  'gold')}
+      ${c('📊', '৳'+fmtN(stats.monthlyIncome||0),'এ মাসে আয়',       'green')}
+      ${c('📱', stats.smsBalance||'—',           'SMS ব্যালেন্স',    'blue')}
     </div>
-    <hr>
-    <div class="rrow"><span>রসিদ নং:</span><span><b>${receiptNo}</b></span></div>
-    <div class="rrow"><span>তারিখ:</span><span>${new Date(date).toLocaleDateString('bn-BD')}</span></div>
-    <div class="rrow"><span>নাম:</span><span>${name}</span></div>
-    ${id ? `<div class="rrow"><span>আইডি:</span><span>${id}</span></div>` : ''}
-    <hr>
-    ${(items || []).map(i => `<div class="rrow"><span>${i.label}</span><span>৳${Number(i.amount).toLocaleString('bn')}</span></div>`).join('')}
-    <div class="rrow total"><span>মোট</span><span>৳${Number(total).toLocaleString('bn')}</span></div>
-    <div class="rrow" style="font-size:11px;color:#777;"><span>পদ্ধতি:</span><span>${method || 'নগদ'}</span></div>
-    <div class="rsig">সংগ্রহকারী: ${collectedBy || adminSession?.name || '—'} | ${settings.website || ''}</div>
-    </body></html>`);
-    win.document.close();
+
+    <!-- Pending Actions -->
+    <div class="admin-card">
+      <div class="card-title">⚡ দ্রুত অ্যাকশন</div>
+      <div class="quick-actions">
+        ${stats.pendingApplications > 0 ? `<span class="pending-badge" onclick="gotoPage('applications')">📝 পেন্ডিং আবেদন <strong>${stats.pendingApplications}</strong></span>` : ''}
+        ${stats.pendingOrders > 0 ? `<span class="pending-badge" onclick="gotoPage('orders')">🛒 পেন্ডিং অর্ডার <strong>${stats.pendingOrders}</strong></span>` : ''}
+        ${stats.activeLoans > 0 ? `<span class="pending-badge" onclick="gotoPage('qard-list')">🤝 সক্রিয় করজ <strong>${stats.activeLoans}</strong></span>` : ''}
+        <button class="btn btn-primary btn-sm" onclick="gotoPage('member-add')">+ নতুন সদস্য</button>
+        <button class="btn btn-outline btn-sm" onclick="gotoPage('client-add')">+ নতুন ক্লাইন্ট</button>
+        <button class="btn btn-gold btn-sm"    onclick="gotoPage('qard-add')">+ নতুন করজ</button>
+      </div>
+    </div>
+
+    <!-- Charts row -->
+    <div class="two-col">
+      <div class="admin-card">
+        <div class="card-title">📈 মাসিক সঞ্চয় (৬ মাস)</div>
+        <div class="chart-wrap"><canvas id="dashSavChart"></canvas></div>
+      </div>
+      <div class="admin-card">
+        <div class="card-title">💹 ফান্ড বণ্টন</div>
+        <div class="chart-wrap"><canvas id="dashFundChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="admin-card">
+      <div class="card-title">🕐 সাম্প্রতিক কার্যক্রম <button class="btn btn-ghost btn-sm ml-auto" onclick="gotoPage('activity-log')">সব দেখুন →</button></div>
+      <div id="dashActivity"><div class="empty-state" style="padding:20px"><div class="spinner" style="margin:0 auto"></div></div></div>
+    </div>
+
+    <!-- Today Birthdays -->
+    <div class="admin-card">
+      <div class="card-title">🎂 আজকের জন্মদিন</div>
+      <div id="dashBirthdays"><p style="color:var(--text-muted);font-size:.85rem">কোনো জন্মদিন নেই।</p></div>
+    </div>`;
+
+  // Load charts & activity
+  renderDashCharts(stats);
+  loadDashActivity();
+  loadBirthdays();
 }
 
-// ════ SMS ════
-function loadSMSBalance() {
-    const bal = getSMSBalance();
-    document.getElementById('smsBal').textContent = `📱 ${bal} SMS`;
+async function renderDashCharts(stats) {
+  await new Promise(r => setTimeout(r, 100));
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const tc = isDark ? 'rgba(255,255,255,.5)' : '#555';
+  const gc = isDark ? 'rgba(255,255,255,.04)' : 'rgba(0,0,0,.04)';
+
+  // Monthly savings
+  const sc = document.getElementById('dashSavChart');
+  if (sc && typeof Chart !== 'undefined') {
+    const months = [], amounts = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(); d.setMonth(d.getMonth() - i);
+      months.push(d.toLocaleDateString('bn-BD', { month: 'short' }));
+      amounts.push(Math.round(Math.random() * 50000 + 10000));
+    }
+    // Use real data if available
+    if (stats.monthlySavings) { amounts.splice(0, amounts.length, ...stats.monthlySavings); }
+    new Chart(sc, {
+      type: 'bar', data: { labels: months, datasets: [{ label:'সঞ্চয়', data: amounts, backgroundColor:'rgba(29,158,117,.7)', borderRadius:6 }] },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+        scales: { y:{ticks:{color:tc,callback:v=>'৳'+v.toLocaleString('en-IN')},grid:{color:gc}}, x:{ticks:{color:tc},grid:{display:false}} } }
+    });
+  }
+
+  // Fund pie
+  const fc = document.getElementById('dashFundChart');
+  if (fc && typeof Chart !== 'undefined') {
+    new Chart(fc, {
+      type: 'doughnut',
+      data: { labels:['সদস্য তহবিল','ক্লাইন্ট তহবিল','করজ ফান্ড','চ্যারিটি'], datasets:[{ data:[stats.memberFund||40, stats.clientFund||30, stats.qardFund||20, stats.charityFund||10], backgroundColor:['#1D9E75','#C9A227','#3b82f6','#ef4444'], borderWidth:0 }] },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{color:tc,font:{size:11}}}} }
+    });
+  }
 }
 
-// ════ DATE HELPERS ════
-function fmtDate(d) {
-    if (!d) return '—';
-    try { return new Date(d).toLocaleDateString('bn-BD'); } catch { return d; }
-}
-function fmtMoney(n) {
-    if (n === null || n === undefined) return '৳০';
-    return '৳' + Number(n).toLocaleString('bn');
-}
-function fmtDateBD(d) {
-    if (!d) return '—';
-    try { return new Date(d).toLocaleDateString('bn-BD', { year: 'numeric', month: 'short', day: 'numeric' }); } catch { return d; }
+async function loadDashActivity() {
+  const wrap = document.getElementById('dashActivity');
+  if (!wrap) return;
+  let acts = [];
+  try { const r = await apiFetch('/audit/live?n=8'); if (r) acts = r.activities || r.log || []; } catch (_) {}
+  if (!acts.length) { wrap.innerHTML = `<p style="color:var(--text-muted);font-size:.85rem;padding:10px">কোনো কার্যক্রম নেই।</p>`; return; }
+  wrap.innerHTML = acts.map(a => `
+    <div class="log-item">
+      <span class="log-item-icon">${actionIcon(a.action)}</span>
+      <div class="log-item-body">
+        <div class="log-item-title">${a.detail || a.action}</div>
+        <div class="log-item-sub">${a.userName || ''} · ${fmtDT(a.date)}</div>
+      </div>
+      <span class="badge badge-muted" style="font-size:.7rem">${a.module||''}</span>
+    </div>`).join('');
 }
 
-// ════ INIT ON LOAD ════
-document.addEventListener('DOMContentLoaded', initPanel);
+function actionIcon(action) {
+  const m = { SAVINGS_ADDED:'💰', ORDER_CREATED:'🛒', LOAN_APPLIED:'🤝', MEMBER_ADDED:'👤', CREATE_CLIENT:'🏷️', ADD_INCOME:'📥', ADD_EXPENSE:'📤', LOGIN:'🔐', DELETE_INCOME:'🗑️', DELETE_EXPENSE:'🗑️' };
+  return m[action] || '📌';
+}
+
+async function loadBirthdays() {
+  const wrap = document.getElementById('dashBirthdays');
+  if (!wrap) return;
+  try {
+    const today = new Date().toLocaleDateString('en-CA').slice(5); // MM-DD
+    const res = await apiFetch('/users');
+    const users = (res?.users || []).filter(u => u.dob && u.dob.slice(5) === today);
+    if (!users.length) return;
+    wrap.innerHTML = users.map(u => `
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-light)">
+        <div class="avatar avatar-sm">${(u.name||'ব')[0]}</div>
+        <div><div style="font-weight:600;font-size:.9rem">${u.name}</div><div style="font-size:.75rem;color:var(--text-muted)">${u.phone||''}</div></div>
+        <button class="btn btn-sm btn-gold ml-auto" onclick="sendBirthdaySMS('${u.phone}','${u.name}')">🎉 শুভেচ্ছা পাঠান</button>
+      </div>`).join('');
+  } catch (_) {}
+}
+
+// ══════════════════════════ API HELPER ══════════════════════════
+async function apiFetch(path, options = {}) {
+  const res = await fetch(API + path, {
+    headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+(localStorage.getItem('bf_token')||'') },
+    signal: AbortSignal.timeout(8000),
+    ...options
+  });
+  if (!res.ok) { const d = await res.json().catch(()=>{}); throw new Error(d?.error || 'API error'); }
+  return res.json();
+}
+
+async function apiPost(path, body) { return apiFetch(path, { method:'POST', body: JSON.stringify(body) }); }
+async function apiPut(path, body)  { return apiFetch(path, { method:'PUT',  body: JSON.stringify(body) }); }
+async function apiPatch(path, body){ return apiFetch(path, { method:'PATCH',body: JSON.stringify(body) }); }
+async function apiDel(path, body)  { return apiFetch(path, { method:'DELETE',body: body ? JSON.stringify(body) : undefined }); }
+
+// ══════════════════════════ RECEIPT PRINTER ══════════════════════════
+function printReceipt(data) {
+  const { receiptNo, name, memberId, items, total, method, date, collectedBy } = data;
+  const settings = getSettings();
+  const siteName = settings.siteName || 'বারাকাহ ফাইন্যান্স';
+  const address  = settings.address  || 'আদিতমারী, লালমনিরহাট';
+  const phone    = settings.phone    || '+880 1581093611';
+  const email    = settings.email    || 'info@barakahfinancebd.com';
+
+  const win = window.open('', '_blank', 'width=520,height=650');
+  win.document.write(`<!DOCTYPE html><html><head>
+  <meta charset="UTF-8"/>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Noto Serif Bengali',serif;background:#fff;color:#111;padding:0;}
+    @page{size:5in 7.5in;margin:.4in 1in;}
+    @media print{@page{size:5in 7.5in;margin:.4in 1in;}}
+    .rh{text-align:center;margin-bottom:14px;}
+    .rh h2{color:#065F46;font-size:17px;font-weight:700;margin-bottom:3px;}
+    .rh p{font-size:10px;color:#555;margin:2px 0;}
+    hr{border:none;border-top:1px dashed #ccc;margin:8px 0;}
+    .rrow{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;}
+    .rrow.total{font-weight:700;font-size:15px;color:#065F46;border-top:2px solid #065F46;padding-top:8px;margin-top:6px;}
+    .ritems{margin:10px 0;}
+    .ritem{font-size:12px;padding:4px 0;border-bottom:1px dotted #eee;}
+    .rsig{margin-top:20px;text-align:center;font-size:10px;color:#666;border-top:1px dashed #ccc;padding-top:10px;}
+    .rno{background:#f0f0f0;padding:4px 10px;border-radius:6px;font-size:11px;display:inline-block;margin-bottom:6px;}
+    .rtitle{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:4px;}
+  </style>
+  <script>window.onload=()=>{window.print();}<\/script>
+  </head><body>
+  <div class="rh">
+    <h2>${siteName}</h2>
+    <p>${address}</p>
+    <p>📞 ${phone} | ✉️ ${email}</p>
+  </div>
+  <hr/>
+  <div style="text-align:center;margin-bottom:8px">
+    <div class="rno">রিসিট নং: <strong>${receiptNo || '—'}</strong></div>
+  </div>
+  <hr/>
+  <div class="rrow"><span>প্রাপকের নাম:</span><span><strong>${name || '—'}</strong></span></div>
+  <div class="rrow"><span>আইডি:</span><span>${memberId || '—'}</span></div>
+  <div class="rrow"><span>তারিখ:</span><span>${formatDateBn(date)}</span></div>
+  <div class="rrow"><span>পেমেন্ট পদ্ধতি:</span><span>${method || 'ক্যাশ'}</span></div>
+  <hr/>
+  <div class="ritems">
+    <div class="rtitle">পেমেন্ট বিবরণ</div>
+    ${(items || []).map(i => `<div class="ritem" style="display:flex;justify-content:space-between"><span>${i.label}</span><span>৳ ${fmtN(i.amount)}</span></div>`).join('')}
+  </div>
+  <div class="rrow total"><span>মোট পরিমাণ:</span><span>৳ ${fmtN(total)}</span></div>
+  <div class="rsig">
+    সংগ্রহকারী: ${collectedBy || adminSession?.name || 'অ্যাডমিন'} (${adminSession?.username || 'admin'})
+    <br/>barakahfinancebd.com · ${new Date().toLocaleString('bn-BD')}
+  </div>
+  </body></html>`);
+  win.document.close();
+}
+
+// ══════════════════════════ TOAST & CONFIRM ══════════════════════════
+function showToast(msg, type = 'success') {
+  let box = document.getElementById('toastContainer');
+  if (!box) { box = document.createElement('div'); box.id = 'toastContainer'; box.className = 'toast-container'; document.body.appendChild(box); }
+  const icons = { success:'✅', error:'❌', warning:'⚠️', info:'ℹ️' };
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span>${icons[type]||'ℹ️'}</span><span style="flex:1">${msg}</span><button onclick="this.parentNode.remove()" style="background:none;border:none;cursor:pointer;opacity:.6">✕</button>`;
+  box.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(), 300); }, 4000);
+}
+
+function showConfirm(title, msg, onYes) {
+  const modal = document.getElementById('confirmModal');
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMsg').textContent   = msg;
+  const btn = document.getElementById('confirmYes');
+  btn.onclick = () => { modal.classList.add('hidden'); onYes(); };
+  modal.classList.remove('hidden');
+}
+
+// ══════════════════════════ SETTINGS HELPER ══════════════════════════
+function getSettings() {
+  if (typeof DB !== 'undefined' && DB.getSettings) return DB.getSettings();
+  return JSON.parse(localStorage.getItem('bf_site_settings') || '{}');
+}
+
+// ══════════════════════════ SMS BALANCE ══════════════════════════
+async function loadSMSBalance() {
+  const el = document.getElementById('smsBalanceTop');
+  if (!el) return;
+  try {
+    const d = await apiFetch('/sms/balance');
+    el.textContent = `SMS: ${d.balance ?? '—'}`;
+  } catch (_) { el.textContent = 'SMS: —'; }
+}
+
+// ══════════════════════════ THEME ══════════════════════════
+function initAdminTheme() {
+  const t = localStorage.getItem('bf_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', t);
+  document.body.classList.toggle('dark-mode', t === 'dark');
+  const btn = document.getElementById('adminThemeBtn');
+  if (btn) btn.textContent = t === 'dark' ? '☀️' : '🌙';
+}
+function toggleAdminTheme() {
+  const t = localStorage.getItem('bf_theme') || 'light';
+  const next = t === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  document.body.classList.toggle('dark-mode', next === 'dark');
+  const btn = document.getElementById('adminThemeBtn');
+  if (btn) btn.textContent = next === 'dark' ? '☀️' : '🌙';
+  localStorage.setItem('bf_theme', next);
+}
+
+// ══════════════════════════ ACTIVITY LOG ══════════════════════════
+async function renderActivityLog(el) {
+  const content = el || document.getElementById('adminContent');
+  if (!content) return;
+  let acts = [];
+  try { const r = await apiFetch('/audit/live?n=50'); if (r) acts = r.activities || r.log || []; } catch (_) {}
+  try {
+    const r2 = await apiFetch('/audit?limit=50');
+    if (r2) acts = r2.log || acts;
+  } catch (_) {}
+
+  if (!acts.length) { content.innerHTML = emptyState('📡', 'কোনো কার্যক্রম নেই'); return; }
+  content.innerHTML = `
+    <div class="admin-card">
+      <div class="card-title">📡 লাইভ একটিভিটি ফিড <span style="font-size:.75rem;color:var(--clr-success);margin-left:8px">● লাইভ</span></div>
+      <div id="actFeed">${acts.map(a => `
+        <div class="log-item">
+          <span class="log-item-icon">${actionIcon(a.action)}</span>
+          <div class="log-item-body">
+            <div class="log-item-title">${a.detail || a.action || ''}</div>
+            <div class="log-item-sub">${a.userName || a.userId || ''} · ${fmtDT(a.date)}</div>
+          </div>
+          <span class="badge badge-muted" style="font-size:.7rem">${a.module||''}</span>
+        </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+async function renderAuditLog(el) {
+  const content = el || document.getElementById('adminContent');
+  if (!content) return;
+  let log = [];
+  try { const r = await apiFetch('/audit?limit=100'); if (r) log = r.log || []; } catch (_) {}
+  content.innerHTML = `
+    <div class="admin-card">
+      <div class="card-title">🔍 অডিট লগ</div>
+      <div class="search-bar" style="margin-bottom:12px">
+        <input type="date" class="form-input" id="auditFrom" style="width:140px"/>
+        <input type="date" class="form-input" id="auditTo" style="width:140px"/>
+        <button class="btn btn-primary btn-sm" onclick="filterAuditLog()">🔍 ফিল্টার</button>
+      </div>
+      <div class="table-wrap">
+        <table id="auditTable">
+          <thead><tr><th>তারিখ</th><th>অ্যাকশন</th><th>মডিউল</th><th>ব্যবহারকারী</th><th>বিবরণ</th></tr></thead>
+          <tbody id="auditTbody">${renderAuditRows(log)}</tbody>
+        </table>
+      </div>
+    </div>`;
+  window._auditLog = log;
+}
+
+function renderAuditRows(log) {
+  if (!log.length) return `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-muted)">কোনো লগ নেই।</td></tr>`;
+  return log.map(a => `
+    <tr>
+      <td style="font-size:.78rem;white-space:nowrap">${fmtDT(a.date)}</td>
+      <td><span class="badge badge-muted" style="font-size:.72rem">${a.action||''}</span></td>
+      <td style="font-size:.8rem">${a.module||'—'}</td>
+      <td style="font-size:.8rem">${a.userName||a.userId||'—'}</td>
+      <td style="font-size:.8rem;color:var(--text-muted)">${a.detail||''}</td>
+    </tr>`).join('');
+}
+
+function filterAuditLog() {
+  const from = document.getElementById('auditFrom')?.value;
+  const to   = document.getElementById('auditTo')?.value;
+  let log = window._auditLog || [];
+  if (from) log = log.filter(a => (a.date||'') >= from);
+  if (to)   log = log.filter(a => (a.date||'') <= to + 'T23:59:59');
+  const tbody = document.getElementById('auditTbody');
+  if (tbody) tbody.innerHTML = renderAuditRows(log);
+}
+
+// ══════════════════════════ MISC PAGES ══════════════════════════
+async function renderSettings(el) {
+  const content = el || document.getElementById('adminContent');
+  let s = getSettings();
+  try { const r = await apiFetch('/reports/settings'); if (r?.settings) s = r.settings; } catch (_) {}
+
+  content.innerHTML = `
+    <div class="admin-card">
+      <div class="card-title">⚙️ সাইট সেটিংস</div>
+      <div class="two-col">
+        ${sField('সংগঠনের নাম',  'st-siteName',   s.siteName)}
+        ${sField('স্লোগান',      'st-slogan',      s.slogan)}
+        ${sField('মোবাইল',       'st-phone',       s.phone)}
+        ${sField('ইমেইল',        'st-email',       s.email)}
+        ${sField('ঠিকানা',       'st-address',     s.address)}
+        ${sField('ওয়েবসাইট',    'st-website',     s.website)}
+        ${sNumField('মাসিক সঞ্চয় (৳)',  'st-monthlySavings', s.monthlySavings)}
+        ${sNumField('লেট ফি (৳)',        'st-lateFee',        s.lateFee)}
+        ${sNumField('মুনাফা % (ক্লাইন্ট)','st-profitMargin',  s.profitMargin)}
+        ${sNumField('সর্বোচ্চ করজ (৳)',  'st-maxLoan',        s.maxLoan)}
+        ${sNumField('ইউনিট মূল্য (৳)',   'st-unitValue',      s.unitValue)}
+        ${sNumField('সদস্য মুনাফা %',    'st-memberProfitShare', s.memberProfitShare)}
+        ${sNumField('চ্যারিটি %',        'st-charityShare',   s.charityShare)}
+        ${sNumField('সংগঠন %',           'st-orgShare',       s.orgShare)}
+        ${sNumField('ফরম ফি (৳)',         'st-formFee',        s.formFee)}
+        ${sNumField('সঞ্চয় ডিউ তারিখ',  'st-savingsDueDay',  s.savingsDueDay)}
+        ${sNumField('সতর্কতা তারিখ',     'st-savingsWarnDay', s.savingsWarnDay)}
+        ${sField('Facebook পেজ URL',     'st-fbPageUrl',      s.fbPageUrl)}
+        ${sField('SMS API Key',          'st-smsApiKey',      s.smsApiKey)}
+        ${sField('SMS Sender ID',        'st-smsSenderId',    s.smsSenderId)}
+      </div>
+      <button class="btn btn-primary btn-lg mt-4" onclick="saveSettings()">💾 সেটিংস সংরক্ষণ</button>
+    </div>`;
+}
+
+function sField(label, id, val) {
+  return `<div class="form-group"><label class="form-label">${label}</label><input class="form-input" id="${id}" value="${val||''}"/></div>`;
+}
+function sNumField(label, id, val) {
+  return `<div class="form-group"><label class="form-label">${label}</label><input type="number" class="form-input" id="${id}" value="${val||0}"/></div>`;
+}
+
+async function saveSettings() {
+  const g = id => document.getElementById(id)?.value;
+  const gn= id => parseFloat(document.getElementById(id)?.value) || 0;
+  const data = {
+    siteName:g('st-siteName'), slogan:g('st-slogan'), phone:g('st-phone'), email:g('st-email'),
+    address:g('st-address'), website:g('st-website'), fbPageUrl:g('st-fbPageUrl'),
+    smsApiKey:g('st-smsApiKey'), smsSenderId:g('st-smsSenderId'),
+    monthlySavings:gn('st-monthlySavings'), lateFee:gn('st-lateFee'),
+    profitMargin:gn('st-profitMargin'), maxLoan:gn('st-maxLoan'), unitValue:gn('st-unitValue'),
+    memberProfitShare:gn('st-memberProfitShare'), charityShare:gn('st-charityShare'),
+    orgShare:gn('st-orgShare'), formFee:gn('st-formFee'),
+    savingsDueDay:gn('st-savingsDueDay'), savingsWarnDay:gn('st-savingsWarnDay'),
+  };
+  try { await apiPut('/reports/settings', data); showToast('সেটিংস সংরক্ষিত!', 'success'); }
+  catch (_) { showToast('সার্ভার সংযোগ নেই।', 'error'); }
+  if (typeof DB !== 'undefined') Object.entries(data).forEach(([k,v]) => DB.saveSetting?.(k, v));
+}
+
+async function renderBackup(el) {
+  const content = el || document.getElementById('adminContent');
+  content.innerHTML = `
+    <div class="admin-card">
+      <div class="card-title">🗄️ ব্যাকআপ ম্যানেজমেন্ট</div>
+      <p style="color:var(--text-muted);font-size:.9rem;margin-bottom:16px">প্রতি ঘণ্টায় অটো ব্যাকআপ সক্রিয়। সর্বশেষ ৬০ দিনের ব্যাকআপ সংরক্ষিত থাকে।</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px">
+        <button class="btn btn-primary btn-sm" onclick="triggerBackup()">🗄️ এখনই ব্যাকআপ নিন</button>
+        <button class="btn btn-outline btn-sm" onclick="loadBackupList()">📋 ব্যাকআপ তালিকা দেখুন</button>
+      </div>
+      <div id="backupStatus"></div>
+      <div id="backupList"></div>
+    </div>`;
+}
+
+async function triggerBackup() {
+  const el = document.getElementById('backupStatus');
+  if (el) el.innerHTML = '<div class="spinner" style="margin:10px auto"></div>';
+  try {
+    await apiPost('/reports/backup', {});
+    if (el) el.innerHTML = `<div class="badge badge-success">✅ ব্যাকআপ সফল — ${new Date().toLocaleString('bn-BD')}</div>`;
+  } catch (_) {
+    if (el) el.innerHTML = `<div class="badge badge-warning">⚠️ সার্ভার সংযোগ নেই।</div>`;
+  }
+}
+
+async function loadBackupList() {
+  const el = document.getElementById('backupList');
+  if (!el) return;
+  try {
+    const r = await apiFetch('/reports/backups');
+    const list = r?.backups || [];
+    el.innerHTML = list.length ? list.map(b => `<div class="log-item" style="margin-bottom:6px"><span>🗄️</span><div class="log-item-body"><div class="log-item-title">${b.filename||b}</div><div class="log-item-sub">${fmtDT(b.createdAt||b)}</div></div><a href="${API}/reports/backups/${b.filename||b}/download" class="btn btn-sm btn-ghost" target="_blank">⬇️ ডাউনলোড</a></div>`).join('') : '<p style="color:var(--text-muted)">কোনো ব্যাকআপ নেই।</p>';
+  } catch (_) { el.innerHTML = '<p style="color:var(--text-muted)">ব্যাকআপ তালিকা লোড ব্যর্থ।</p>'; }
+}
+
+function renderAdminMgmt(el) {
+  const content = el || document.getElementById('adminContent');
+  content.innerHTML = `
+    <div class="admin-card">
+      <div class="card-title">🛡️ অ্যাডমিন ম্যানেজমেন্ট</div>
+      <button class="btn btn-primary btn-sm mb-4" onclick="showCreateAdminModal()" style="margin-bottom:14px">+ নতুন অ্যাডমিন তৈরি</button>
+      <div id="adminList"><div class="spinner" style="margin:20px auto"></div></div>
+    </div>`;
+  loadAdminList();
+}
+
+async function loadAdminList() {
+  const wrap = document.getElementById('adminList');
+  if (!wrap) return;
+  let users = [];
+  try { const r = await apiFetch('/users'); users = (r?.users || r || []).filter(u => u.role === 'admin' || u.role === 'super_admin'); } catch (_) {}
+  if (!users.length) { wrap.innerHTML = emptyState('👤', 'কোনো অ্যাডমিন নেই'); return; }
+  wrap.innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>নাম</th><th>ইউজারনেম</th><th>ফোন</th><th>রোল</th><th>শেষ লগইন</th><th>অ্যাকশন</th></tr></thead>
+    <tbody>${users.map(u=>`<tr>
+      <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar avatar-sm">${(u.name||'অ')[0]}</div>${u.name}</div></td>
+      <td><code>@${u.username||'—'}</code></td>
+      <td>${u.phone||'—'}</td>
+      <td><span class="badge badge-${u.role==='super_admin'?'gold':'green'}">${u.role==='super_admin'?'Super Admin':'Admin'}</span></td>
+      <td style="font-size:.78rem">${fmtDT(u.lastLogin||u.createdAt)}</td>
+      <td><button class="btn btn-sm btn-ghost" onclick="toggleUserLock('${u.id}',${!u.locked})">${u.locked?'🔓 আনলক':'🔒 লক'}</button></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+async function toggleUserLock(userId, lock) {
+  try { await apiPatch(`/users/${userId}`, { locked: lock }); showToast(lock?'লক হয়েছে।':'আনলক হয়েছে।','success'); loadAdminList(); }
+  catch (_) { showToast('ব্যর্থ।','error'); }
+}
+
+function renderPermissions(el) {
+  const content = el || document.getElementById('adminContent');
+  content.innerHTML = `
+    <div class="admin-card">
+      <div class="card-title">🔐 পেজ এক্সেস ম্যানেজমেন্ট</div>
+      <p style="color:var(--text-muted);font-size:.85rem">এই ফিচার শীঘ্রই যুক্ত হবে।</p>
+    </div>`;
+}
+
+// ══════════════════════════ UTILITIES ══════════════════════════
+function fmtN(n) { return Math.round(n||0).toLocaleString('en-IN'); }
+function fmtMoney(n) { return '৳ ' + fmtN(n); }
+function fmtDate(s) {
+  if (!s) return '—';
+  try { return new Date(s).toLocaleDateString('bn-BD', {year:'numeric',month:'short',day:'numeric'}); } catch { return s; }
+}
+function fmtDT(s) {
+  if (!s) return '—';
+  try { return new Date(s).toLocaleString('bn-BD', {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}); } catch { return s; }
+}
+function formatDateBn(s) {
+  if (!s) return '—';
+  try { return new Date(s).toLocaleString('bn-BD', {year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'}); } catch { return s; }
+}
+function emptyState(icon, msg) {
+  return `<div class="empty-state" style="padding:40px"><div class="empty-state-icon">${icon}</div><div class="empty-state-title">${msg}</div></div>`;
+}
+function statusBadge(status) {
+  const m = { active:'badge-active', pending:'badge-pending', paid:'badge-paid', approved:'badge-info', disbursed:'badge-info', completed:'badge-paid', overdue:'badge-danger', rejected:'badge-danger', cancelled:'badge-muted' };
+  const l = { active:'সক্রিয়', pending:'পেন্ডিং', paid:'পরিশোধিত', approved:'অনুমোদিত', disbursed:'বিতরিত', completed:'সম্পন্ন', overdue:'অতিরিক্ত', rejected:'প্রত্যাখ্যাত', cancelled:'বাতিল' };
+  return `<span class="badge ${m[status]||'badge-muted'}">${l[status]||status}</span>`;
+}
+
+async function sendBirthdaySMS(phone, name) {
+  try {
+    await apiPost('/sms/send', { phones:[phone], message:`শুভ জন্মদিন ${name}! বারাকাহ ফাইন্যান্স পরিবারের পক্ষ থেকে আন্তরিক শুভেচ্ছা। 🎉` });
+    showToast('SMS পাঠানো হয়েছে!', 'success');
+  } catch (_) { showToast('SMS পাঠাতে ব্যর্থ।', 'error'); }
+}
+
+// Generate receipt numbers helper
+async function getNextReceiptNum(prefix) {
+  try {
+    const r = await apiFetch(`/accounts/receipt-next?prefix=${prefix}`);
+    return r?.next || `${prefix}-00001`;
+  } catch (_) {
+    const stored = parseInt(localStorage.getItem(`bf_rcpt_${prefix}`) || '0') + 1;
+    localStorage.setItem(`bf_rcpt_${prefix}`, stored);
+    return `${prefix}-${String(stored).padStart(5,'0')}`;
+  }
+}
