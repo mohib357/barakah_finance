@@ -52,29 +52,32 @@
       <div class="sb-name" id="sbName">লোড হচ্ছে...</div>
       <div class="sb-role" id="sbRole"></div>
       <div class="sb-complete">
-        <div class="sb-complete-label"><span>প্রোফাইল সম্পূর্ণতা</span><span id="sbPct">০%</span></div>
+        <div class="sb-complete-label"><span data-i18n="dash.profile.complete">প্রোফাইল সম্পূর্ণতা</span><span id="sbPct">০%</span></div>
         <div class="progress"><div class="progress-fill" id="sbPctFill" style="width:0%"></div></div>
       </div>
     </div>
 
     <!-- Nav -->
     <div class="sb-section-label">মূল মেনু</div>
-    <button class="sb-nav-item active" onclick="showPanel('overview',this)">📊 ওভারভিউ</button>
-    <button class="sb-nav-item" onclick="showPanel('profile',this)">👤 প্রোফাইল</button>
-    <button class="sb-nav-item" onclick="showPanel('orders',this)">🛒 আমার অর্ডার</button>
-    <button class="sb-nav-item" onclick="showPanel('notifications',this)">🔔 বিজ্ঞপ্তি</button>
+    <button class="sb-nav-item active" onclick="showPanel('overview',this)" data-i18n="dash.overview">📊 ওভারভিউ</button>
+    <button class="sb-nav-item" onclick="showPanel('profile',this)" data-i18n="dash.profile">👤 প্রোফাইল</button>
+    <button class="sb-nav-item" onclick="showPanel('orders',this)" data-i18n="dash.orders">🛒 আমার অর্ডার</button>
+    <button class="sb-nav-item" onclick="showPanel('notifications',this)" data-i18n="dash.notifications">🔔 বিজ্ঞপ্তি</button>
 
     <div class="sb-section-label" id="memberNavLabel" style="display:none">সদস্য সেবা</div>
-    <button class="sb-nav-item" id="navSavings" onclick="showPanel('savings',this)" style="display:none">💰 সঞ্চয় বিবরণ</button>
-    <button class="sb-nav-item" id="navLoans" onclick="showPanel('loans',this)" style="display:none">🤝 করজে হাসানা</button>
-    <button class="sb-nav-item" id="navLedger" onclick="showPanel('ledger',this)" style="display:none">📋 লেজার</button>
+    <button class="sb-nav-item" id="navSavings" onclick="showPanel('savings',this)" style="display:none" data-i18n="dash.savings">💰 সঞ্চয় বিবরণ</button>
+    <button class="sb-nav-item" id="navLoans" onclick="showPanel('loans',this)" style="display:none" data-i18n="dash.loans">🤝 করজে হাসানা</button>
+    <button class="sb-nav-item" id="navLedger" onclick="showPanel('ledger',this)" style="display:none" data-i18n="dash.ledger">📋 লেজার</button>
+    <button class="sb-nav-item" id="navWithdrawal" onclick="showPanel('withdrawal',this)" style="display:none" data-i18n="dash.withdrawal">💸 উত্তোলন আবেদন</button>
+    <button class="sb-nav-item" id="navProfit" onclick="showPanel('profit',this)" style="display:none" data-i18n="dash.profit">📈 মুনাফা বিবরণ</button>
+    <button class="sb-nav-item" id="navKyc" onclick="showPanel('kyc',this)" style="display:none" data-i18n="dash.kyc">🪪 KYC অবস্থা</button>
 
     <div class="sb-section-label" id="adminNavLabel" style="display:none">অ্যাডমিন</div>
-    <a class="sb-nav-item" id="navAdminPanel" href="../admin/panel.html" style="display:none">🛡️ অ্যাডমিন প্যানেল</a>
-    <button class="sb-nav-item" id="navAllUsers" onclick="showPanel('allUsers',this)" style="display:none">👥 সকল ব্যবহারকারী</button>
+    <a class="sb-nav-item" id="navAdminPanel" href="../admin/panel.html" style="display:none" data-i18n="dash.admin.panel">🛡️ অ্যাডমিন প্যানেল</a>
+    <button class="sb-nav-item" id="navAllUsers" onclick="showPanel('allUsers',this)" style="display:none" data-i18n="dash.all.users">👥 সকল ব্যবহারকারী</button>
 
     <div style="flex:1"></div>
-    <button class="sb-nav-item" style="color:var(--clr-danger)" onclick="doLogout()">🚪 লগআউট</button>
+    <button class="sb-nav-item" style="color:var(--clr-danger)" onclick="doLogout()" data-i18n="nav.logout">🚪 লগআউট</button>
   </aside>
 
   <!-- Main Content -->

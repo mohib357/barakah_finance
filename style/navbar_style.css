@@ -654,3 +654,102 @@ body.dark-mode .nav-dropdown hr {
     color: rgba(255,255,255,0.5);
     letter-spacing: 0.3px;
 }
+
+/* ════════ AUTH ACCOUNT DROPDOWN (Login / Sign Up — separate options) ════════ */
+.nav-login-wrap {
+    position: relative;
+}
+
+.nav-auth-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #C9A227, #A67C00);
+    border: none;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Noto Serif Bengali', serif;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 4px 15px rgba(201, 162, 39, 0.3);
+    transition: all 0.25s;
+    line-height: 1;
+}
+
+.nav-auth-btn:hover {
+    background: linear-gradient(135deg, #D9B237, #B88D00);
+    box-shadow: 0 6px 20px rgba(201, 162, 39, 0.4);
+    transform: translateY(-1px);
+}
+
+.nav-auth-btn[aria-expanded="true"] {
+    box-shadow: 0 2px 8px rgba(201, 162, 39, 0.3);
+    transform: none;
+}
+
+#navAuthCaret {
+    transition: transform 0.2s;
+}
+.nav-auth-btn[aria-expanded="true"] #navAuthCaret,
+.nav-login-wrap.open #navAuthCaret {
+    transform: rotate(180deg);
+}
+
+.nav-auth-drop {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    background: rgba(6, 24, 12, 0.97);
+    border: 1px solid rgba(201, 162, 39, 0.35);
+    border-radius: 12px;
+    min-width: 180px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    z-index: 1200;
+    display: none;
+    animation: dropIn 0.18s ease forwards;
+}
+
+.nav-auth-drop.open {
+    display: block;
+}
+
+@keyframes dropIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.nav-auth-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 11px 16px;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 13px;
+    font-family: 'Noto Serif Bengali', serif;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s, color 0.15s;
+    line-height: 1.4;
+}
+
+.nav-auth-item:hover {
+    background: rgba(201, 162, 39, 0.18);
+    color: #F5D061;
+}
+
+.nav-auth-item:first-child {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* Hide mobile signup when logged in */
+#mnav-signup { display: none; }
+
+/* Show mobile signup when not logged in (via JS toggle) */
+#mnav-signup.show { display: block; }

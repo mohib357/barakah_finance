@@ -40,25 +40,39 @@
 
     <!-- RIGHT: Nav items -->
     <ul class="nav-links" id="navLinks">
-      <li><a onclick="smScroll('about')">আমাদের সম্পর্কে</a></li>
-      <li><a onclick="smScroll('calculator')">ক্যালকুলেটর</a></li>
-      <li><a href="pages/timeline.html" id="nav-timeline">টাইমলাইন</a></li>
-      <li><a href="pages/gallery.html" id="nav-gallery">গ্যালারি</a></li>
-      <li><a href="form.html">আবেদন ফরম</a></li>
+      <li><a onclick="smScroll('about')" data-i18n="nav.about">আমাদের সম্পর্কে</a></li>
+      <li><a onclick="smScroll('calculator')" data-i18n="nav.calculator">ক্যালকুলেটর</a></li>
+      <li><a href="pages/timeline.html" id="nav-timeline" data-i18n="nav.timeline">টাইমলাইন</a></li>
+      <li><a href="pages/gallery.html" id="nav-gallery" data-i18n="nav.gallery">গ্যালারি</a></li>
+      <li><a href="form.html" data-i18n="nav.apply">আবেদন ফরম</a></li>
 
       <!-- Logged in user menu -->
       <li class="nav-user-wrap" id="nav-user-menu" style="display:none;">
         <button class="nav-user-btn">👤 <span id="nav-user-name">আমি</span> ▾</button>
         <div class="nav-dropdown">
-          <a href="pages/profile.html">📋 প্রোফাইল</a>
-          <a href="pages/dashboard.html">📊 ড্যাশবোর্ড</a>
+          <a href="pages/profile.html" data-i18n="nav.profile">📋 প্রোফাইল</a>
+          <a href="pages/dashboard.html" data-i18n="nav.dashboard">📊 ড্যাশবোর্ড</a>
           <hr />
-          <button onclick="doLogout()">🚪 লগআউট</button>
+          <button onclick="doLogout()" data-i18n="nav.logout">🚪 লগআউট</button>
         </div>
       </li>
-      <!-- Login button -->
-      <li id="nav-login-btn">
-        <a onclick="openAuthModal('login')" class="nav-cta">লগইন / সাইনআপ</a>
+      <!-- Login / Signup dropdown (Website.txt: must be separate options, NOT combined wrap) -->
+      <li class="nav-login-wrap" id="nav-login-btn">
+        <button class="nav-auth-btn" onclick="toggleAuthMenu(event)" aria-haspopup="true" aria-expanded="false" id="navAuthBtn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          <span data-i18n="nav.account">অ্যাকাউন্ট</span>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="flex-shrink:0" id="navAuthCaret"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="nav-auth-drop" id="navAuthDrop" role="menu">
+          <button class="nav-auth-item" onclick="openAuthModal('login');closeAuthMenu()" role="menuitem">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+            <span data-i18n="nav.login">লগইন করুন</span>
+          </button>
+          <button class="nav-auth-item" onclick="openAuthModal('signup');closeAuthMenu()" role="menuitem">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+            <span data-i18n="nav.signup">নিবন্ধন করুন</span>
+          </button>
+        </div>
       </li>
 
       <!-- Language switcher -->
@@ -96,15 +110,17 @@
 
   <!-- Mobile Menu -->
   <div class="nav-mobile" id="mobileMenu">
-    <a onclick="smScroll('about');toggleMob()">আমাদের সম্পর্কে</a>
-    <a onclick="smScroll('calculator');toggleMob()">ক্যালকুলেটর</a>
-    <a href="pages/timeline.html">📅 টাইমলাইন</a>
-    <a href="pages/gallery.html">🖼️ গ্যালারি</a>
-    <a href="form.html">আবেদন ফরম</a>
-    <a id="mnav-user" style="display:none;" href="pages/profile.html">📋 আমার প্রোফাইল</a>
-    <a id="mnav-dash" style="display:none;" href="pages/dashboard.html">📊 ড্যাশবোর্ড</a>
-    <a id="mnav-login" onclick="openAuthModal('login');toggleMob()">🔑 লগইন / নিবন্ধন</a>
-    <a href="admin/panel.html">🛡️ অ্যাডমিন প্যানেল</a>
+    <a onclick="smScroll('about');toggleMob()" data-i18n="nav.about">আমাদের সম্পর্কে</a>
+    <a onclick="smScroll('calculator');toggleMob()" data-i18n="nav.calculator">ক্যালকুলেটর</a>
+    <a href="pages/timeline.html" data-i18n="nav.timeline">📅 টাইমলাইন</a>
+    <a href="pages/gallery.html" data-i18n="nav.gallery">🖼️ গ্যালারি</a>
+    <a href="form.html" data-i18n="nav.apply">আবেদন ফরম</a>
+    <a id="mnav-user" style="display:none;" href="pages/profile.html" data-i18n="nav.profile">📋 আমার প্রোফাইল</a>
+    <a id="mnav-dash" style="display:none;" href="pages/dashboard.html" data-i18n="nav.dashboard">📊 ড্যাশবোর্ড</a>
+    <!-- Mobile login/signup — separate items, never combined -->
+    <a id="mnav-login" onclick="openAuthModal('login');toggleMob()" data-i18n="nav.login">🔑 লগইন করুন</a>
+    <a id="mnav-signup" onclick="openAuthModal('signup');toggleMob()" data-i18n="nav.signup">📝 নিবন্ধন করুন</a>
+    <a href="admin/panel.html" data-i18n="nav.admin">🛡️ অ্যাডমিন প্যানেল</a>
   </div>
 
   <!-- ══════ NOTICE BAR (Fixed: animation will be applied by JS) ══════ -->
@@ -119,15 +135,15 @@
   <section class="hero" id="home">
     <div class="hero-pattern"></div>
     <div class="hero-content reveal">
-      <div class="hero-badge">🕌 শরিয়াহসম্মত আর্থিক প্রতিষ্ঠান</div>
-      <h1>সুদমুক্ত লেনদেনে<br><em>সমৃদ্ধি সবার</em></h1>
-      <p class="slogan">ইসলামী অর্থনীতির আলোকে সমাজ থেকে সুদের অভিশাপ দূর করে<br>
+      <div class="hero-badge" data-i18n="hero.badge">🕌 শরিয়াহসম্মত আর্থিক প্রতিষ্ঠান</div>
+      <h1 data-i18n="hero.title">সুদমুক্ত লেনদেনে<br><em>সমৃদ্ধি সবার</em></h1>
+      <p class="slogan" data-i18n="hero.subtitle">ইসলামী অর্থনীতির আলোকে সমাজ থেকে সুদের অভিশাপ দূর করে<br>
         হালাল উপায়ে আর্থিক সহায়তা ও সমৃদ্ধি নিশ্চিত করা আমাদের অঙ্গীকার।</p>
       <div class="hero-actions">
-        <button class="btn-primary" onclick="requireLoginThen('form.html')">📝 সদস্য হতে আবেদন করুন</button>
+        <button class="btn-primary" onclick="requireLoginThen('form.html')" data-i18n="hero.btn.member">📝 সদস্য হতে আবেদন করুন</button>
         <button class="btn-primary" style="background:linear-gradient(135deg,#C9A227,#A67C00);color:#0A2A1A;"
-          onclick="requireLoginThen('pages/shop.html')">🛒 কেনাকাটা করুন</button>
-        <button class="btn-outline" onclick="location.href='pages/learn-more.html'">📚 আরও জানুন</button>
+          onclick="requireLoginThen('pages/shop.html')" data-i18n="hero.btn.shop">🛒 কেনাকাটা করুন</button>
+        <button class="btn-outline" onclick="location.href='pages/learn-more.html'" data-i18n="hero.btn.learn">📚 আরও জানুন</button>
       </div>
     </div>
     <div class="badges-section">
@@ -138,30 +154,30 @@
   <!-- ══════ ABOUT ══════ -->
   <section class="features" id="about">
     <div class="section-header reveal">
-      <span class="section-eyebrow">আমাদের লক্ষ্য ও উদ্দেশ্য</span>
-      <h2 class="section-title">কেন বারাকাহ ফাইন্যান্স?</h2>
-      <p class="section-sub">শরিয়াহ মোতাবেক পরিচালিত এই প্রতিষ্ঠান আপনার আর্থিক প্রয়োজন পূরণ করবে সম্পূর্ণ হালাল পথে।
+      <span class="section-eyebrow" data-i18n="about.eyebrow">আমাদের লক্ষ্য ও উদ্দেশ্য</span>
+      <h2 class="section-title" data-i18n="about.title">কেন বারাকাহ ফাইন্যান্স?</h2>
+      <p class="section-sub" data-i18n="about.subtitle">শরিয়াহ মোতাবেক পরিচালিত এই প্রতিষ্ঠান আপনার আর্থিক প্রয়োজন পূরণ করবে সম্পূর্ণ হালাল পথে।
       </p>
     </div>
     <div class="features-grid">
       <div class="feature-card reveal">
         <div class="feature-icon">🕌</div>
-        <h3>সুদমুক্ত অর্থনীতি</h3>
-        <p>শরিয়াহসম্মত ও হালাল উপায়ে সকল আর্থিক লেনদেন নিশ্চিত করা।</p>
+        <h3 data-i18n="feature.shariah">সুদমুক্ত অর্থনীতি</h3>
+        <p data-i18n="feature.shariah.desc">শরিয়াহসম্মত ও হালাল উপায়ে সকল আর্থিক লেনদেন নিশ্চিত করা।</p>
       </div>
       <div class="feature-card reveal">
         <div class="feature-icon">🤝</div>
-        <h3>করজে হাসানা</h3>
-        <p>আপদকালীন প্রয়োজনে বিনা সুদে সর্বোচ্চ ১৫,০০০ টাকা পর্যন্ত করজে হাসানা।</p>
+        <h3 data-i18n="feature.qard">করজে হাসানা</h3>
+        <p data-i18n="feature.qard.desc">আপদকালীন প্রয়োজনে বিনা সুদে সর্বোচ্চ ১৫,০০০ টাকা পর্যন্ত করজে হাসানা।</p>
       </div>
       <div class="feature-card reveal">
         <div class="feature-icon">📦</div>
-        <h3>সহজ কিস্তি সুবিধা</h3>
-        <p>মাত্র ১০% লাভে ৬ কিস্তিতে যেকোনো পণ্য ক্রয়ের সুবিধা।</p>
+        <h3 data-i18n="feature.installment">সহজ কিস্তি সুবিধা</h3>
+        <p data-i18n="feature.installment.desc">মাত্র ১০% লাভে ৬ কিস্তিতে যেকোনো পণ্য ক্রয়ের সুবিধা।</p>
       </div>
       <div class="feature-card reveal">
         <div class="feature-icon">💰</div>
-        <h3>সঞ্চয় ও বিনিয়োগ</h3>
+        <h3 data-i18n="feature.savings">সঞ্চয় ও বিনিয়োগ</h3>
         <p>মাসিক মাত্র ২,০০০ টাকা সঞ্চয়ে হালাল বিনিয়োগের সুযোগ।</p>
       </div>
       <div class="feature-card reveal">
@@ -846,6 +862,48 @@
       const session = DB ? DB.getSession() : null;
       const redir = sessionStorage.getItem('bf_redirect');
       if(session && redir){ sessionStorage.removeItem('bf_redirect'); location.href=redir; }
+
+      // Hide mobile signup/login when already logged in
+      const mLogin = document.getElementById('mnav-login');
+      const mSignup = document.getElementById('mnav-signup');
+      if(session) {
+        if(mLogin) mLogin.style.display='none';
+        if(mSignup) mSignup.style.display='none';
+      } else {
+        if(mSignup) mSignup.classList.add('show');
+      }
+    });
+
+    // ── Auth Account Dropdown toggle ──
+    function toggleAuthMenu(e) {
+      e.stopPropagation();
+      const drop = document.getElementById('navAuthDrop');
+      const btn  = document.getElementById('navAuthBtn');
+      const wrap = btn?.closest('.nav-login-wrap');
+      const isOpen = drop.classList.contains('open');
+      closeAuthMenu();
+      if (!isOpen) {
+        drop.classList.add('open');
+        if (btn) btn.setAttribute('aria-expanded', 'true');
+        if (wrap) wrap.classList.add('open');
+      }
+    }
+    function closeAuthMenu() {
+      const drop = document.getElementById('navAuthDrop');
+      const btn  = document.getElementById('navAuthBtn');
+      const wrap = btn?.closest('.nav-login-wrap');
+      if (drop) drop.classList.remove('open');
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+      if (wrap) wrap.classList.remove('open');
+    }
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+      const wrap = document.querySelector('.nav-login-wrap');
+      if (wrap && !wrap.contains(e.target)) closeAuthMenu();
+    });
+    // Close dropdown on Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeAuthMenu();
     });
   </script>
         document.getElementById('ap-forgot').classList.add('hidden');

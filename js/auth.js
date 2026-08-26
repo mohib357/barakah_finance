@@ -98,13 +98,42 @@ function clearAAlerts() {
 }
 
 // ════════ LOGIN ════════
-function doLogin() {
+async function doLogin() {
     const idEl = document.getElementById('li-id');
     const pwEl = document.getElementById('li-pw');
     if (!idEl || !pwEl) return;
     const id = idEl.value.trim();
     const pw = pwEl.value;
     if (!id || !pw) return aAlert('সকল তথ্য পূরণ করুন।', 'err', 'login');
+
+    aAlert('লগইন হচ্ছে...', 'ok', 'login');
+
+    // ── Try server API first ──
+    const API_BASE = 'http://localhost:3001/api';
+    try {
+        const res = await fetch(`${API_BASE}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ identifier: id, password: pw }),
+            signal: AbortSignal.timeout(4000)
+        });
+        if (res.ok) {
+            const data = await res.json();
+            const u = data.user;
+            if (data.token) localStorage.setItem('bf_token', data.token);
+            DB.setSession(u);
+            const remEl = document.getElementById('li-rem');
+            if (remEl && remEl.checked) localStorage.setItem('bf_remember', u.id);
+            onLoginOk(u);
+            return;
+        }
+        const err = await res.json();
+        return aAlert(err.error || 'লগইন ব্যর্থ হয়েছে।', 'err', 'login');
+    } catch (e) {
+        // Server offline — fallback to local DB
+    }
+
+    // ── Offline fallback ──
     const u = DB.findUser(id);
     if (!u) return aAlert('ব্যবহারকারী খুঁজে পাওয়া যায়নি।', 'err', 'login');
     if (u.password !== pw) return aAlert('পাসওয়ার্ড ভুল!', 'err', 'login');
@@ -116,7 +145,7 @@ function doLogin() {
 }
 
 // ════════ SIGNUP ════════
-function doSignup() {
+async function doSignup() {
     const name = document.getElementById('su-name')?.value.trim();
     const phone = document.getElementById('su-phone')?.value.replace(/\D/g, '');
     const uname = document.getElementById('su-uname')?.value.trim();
@@ -133,25 +162,63 @@ function doSignup() {
     if (!/[a-zA-Z]/.test(pw) || !/[0-9]/.test(pw)) return aAlert('পাসওয়ার্ডে অক্ষর ও সংখ্যা উভয়ই থাকতে হবে।', 'err', 'signup');
     if (pw !== pw2) return aAlert('পাসওয়ার্ড মিলছে না।', 'err', 'signup');
     if (!terms) return aAlert('শর্তাবলীতে সম্মতি দিন।', 'err', 'signup');
+    if (phone.length < 10) return aAlert('সঠিক মোবাইল নম্বর দিন।', 'err', 'signup');
+
+    aAlert('OTP পাঠানো হচ্ছে...', 'ok', 'signup');
+
+    const API_BASE = 'http://localhost:3001/api';
+    try {
+        // Check username availability via API
+        const unameRes = await fetch(`${API_BASE}/auth/check-username/${uname}`, { signal: AbortSignal.timeout(3000) });
+        if (unameRes.ok) {
+            const ud = await unameRes.json();
+            if (!ud.available) return aAlert('এই ইউজারনেম নেওয়া হয়েছে।', 'err', 'signup');
+        }
+
+        const res = await fetch(`${API_BASE}/auth/signup`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, surname: sname, dob, username: uname, phone, email, password: pw, referral: refVal }),
+            signal: AbortSignal.timeout(8000)
+        });
+        const data = await res.json();
+        if (!res.ok) return aAlert(data.error || 'নিবন্ধন ব্যর্থ।', 'err', 'signup');
+
+        _otpPhone = phone;
+        // Store pending user for OTP verification
+        _pendingUser = { name: name + (sname ? ' ' + sname : ''), phone, username: uname, role: 'user', verified: false };
+
+        const dispEl = document.getElementById('otp-phone-display');
+        const valEl = document.getElementById('otp-val');
+        if (dispEl) dispEl.textContent = phone;
+        if (valEl) valEl.value = '';
+        startOtpTimer();
+        setPanel('otp');
+
+        const msg = data.smsSent
+            ? 'আপনার মোবাইলে OTP পাঠানো হয়েছে।'
+            : (data.demo_otp ? `ডেমো OTP: ${data.demo_otp}` : 'OTP পাঠানো হয়েছে।');
+        aAlert(msg, 'ok', 'otp');
+        return;
+    } catch (e) {
+        // Server offline — fallback to local DB
+    }
+
+    // ── Offline fallback ──
     if (!DB.checkUsername(uname)) return aAlert('এই ইউজারনেম নেওয়া হয়েছে।', 'err', 'signup');
     if (DB.findUser(phone)) return aAlert('এই নম্বরে ইতিমধ্যে অ্যাকাউন্ট আছে।', 'err', 'signup');
-    if (phone.length < 10) return aAlert('সঠিক মোবাইল নম্বর দিন।', 'err', 'signup');
 
     _pendingUser = {
         id: DB.genID('USR'),
         name: name + (sname ? ' ' + sname : ''),
-        surname: sname,
-        dob, phone,
+        surname: sname, dob, phone,
         email: email || null,
-        username: uname,
-        password: pw,
+        username: uname, password: pw,
         referral: refVal || null,
-        role: 'user',
-        verified: false,
+        role: 'user', verified: false,
         profileComplete: 40,
         createdAt: new Date().toISOString(),
-        memberID: null,
-        avatar: null,
+        memberID: null, avatar: null,
     };
 
     const otp = Math.floor(100000 + Math.random() * 900000);
@@ -165,7 +232,7 @@ function doSignup() {
     if (valEl) valEl.value = '';
     startOtpTimer();
     setPanel('otp');
-    aAlert('OTP পাঠানো হয়েছে (ডেমো: কনসোলে দেখুন)', 'ok', 'otp');
+    aAlert('OTP পাঠানো হয়েছে (অফলাইন ডেমো: কনসোলে দেখুন)', 'ok', 'otp');
 }
 
 // ════════ OTP ════════
@@ -184,10 +251,38 @@ function startOtpTimer(s) {
     }, 1000);
 }
 
-function verifyOtp() {
+async function verifyOtp() {
     const code = document.getElementById('otp-val')?.value.trim();
     if (!code) return aAlert('OTP লিখুন।', 'err', 'otp');
+
+    aAlert('যাচাই হচ্ছে...', 'ok', 'otp');
+
+    const API_BASE = 'http://localhost:3001/api';
+    try {
+        const res = await fetch(`${API_BASE}/auth/verify-otp`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone: _otpPhone, otp: code }),
+            signal: AbortSignal.timeout(5000)
+        });
+        if (res.ok) {
+            const data = await res.json();
+            const u = data.user;
+            if (data.token) localStorage.setItem('bf_token', data.token);
+            DB.setSession(u);
+            clearInterval(_otpInterval);
+            onLoginOk(u);
+            return;
+        }
+        const err = await res.json();
+        return aAlert(err.error || 'OTP যাচাই ব্যর্থ।', 'err', 'otp');
+    } catch (e) {
+        // Offline fallback
+    }
+
+    // Offline fallback
     if (!DB.verifyOTP(_otpPhone, code)) return aAlert('OTP ভুল অথবা মেয়াদ শেষ।', 'err', 'otp');
+    if (!_pendingUser) return aAlert('সেশন তথ্য পাওয়া যায়নি।', 'err', 'otp');
     _pendingUser.verified = true;
     DB.addUser(_pendingUser);
     DB.setSession(_pendingUser);
@@ -195,8 +290,26 @@ function verifyOtp() {
     onLoginOk(_pendingUser);
 }
 
-function resendOtp() {
+async function resendOtp() {
     if (!_otpPhone) return;
+    aAlert('পাঠানো হচ্ছে...', 'ok', 'otp');
+    const API_BASE = 'http://localhost:3001/api';
+    try {
+        const res = await fetch(`${API_BASE}/auth/resend-otp`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone: _otpPhone }),
+            signal: AbortSignal.timeout(5000)
+        });
+        if (res.ok) {
+            const data = await res.json();
+            startOtpTimer();
+            const msg = data.demo_otp ? `ডেমো OTP: ${data.demo_otp}` : 'OTP পুনরায় পাঠানো হয়েছে।';
+            aAlert(msg, 'ok', 'otp');
+            return;
+        }
+    } catch (e) {}
+    // Offline fallback
     const otp = Math.floor(100000 + Math.random() * 900000);
     DB.setOTP(_otpPhone, otp);
     console.log('[DEMO OTP RESEND]', _otpPhone, '→', otp);
@@ -277,25 +390,60 @@ function onLoginOk(u) {
     closeAuth();
     updateNavUI(u);
     showToastG('স্বাগতম ' + u.name + '! 🎉', '#065F46');
-    if (u.role === 'admin') {
-        setTimeout(function () { location.href = 'admin/admin.html'; }, 700);
+
+    // ── Role-based routing (Website.txt requirement: unified login → role-based redirect) ──
+    const role = u.role || 'user';
+
+    // Check if there is a pending redirect (e.g. user clicked a protected link before login)
+    const pendingRedirect = sessionStorage.getItem('bf_redirect');
+    if (pendingRedirect) {
+        sessionStorage.removeItem('bf_redirect');
+        setTimeout(function () { location.href = pendingRedirect; }, 700);
+        return;
+    }
+
+    // Determine current page path to construct correct relative paths
+    const currentPath = location.pathname;
+    const isAtRoot = currentPath === '/' || currentPath.endsWith('index.html') || currentPath === '/index.html';
+    const isInPages = currentPath.includes('/pages/');
+    const isInAdmin = currentPath.includes('/admin/');
+
+    if (role === 'admin' || role === 'super_admin') {
+        // Admin → main admin panel (not legacy admin.html)
+        const adminPath = isAtRoot ? 'admin/panel.html' : (isInPages ? '../admin/panel.html' : 'panel.html');
+        setTimeout(function () { location.href = adminPath; }, 700);
+    } else if (role === 'member') {
+        // Member → user dashboard
+        const dashPath = isAtRoot ? 'pages/dashboard.html' : (isInAdmin ? '../pages/dashboard.html' : 'dashboard.html');
+        setTimeout(function () { location.href = dashPath; }, 700);
     } else {
+        // Regular user — stay on current page and update badge section
         if (typeof updateBadgeSection === 'function') updateBadgeSection();
+        // If on index.html, show a gentle prompt to complete profile
+        if (isAtRoot) {
+            setTimeout(function () {
+                showToastG('প্রোফাইল সম্পূর্ণ করুন →', '#065F46');
+            }, 1500);
+        }
     }
 }
 
 function updateNavUI(u) {
-    const loginBtn = document.getElementById('nav-login-btn');
+    const loginWrap = document.getElementById('nav-login-btn');
     const userMenu = document.getElementById('nav-user-menu');
     const userName = document.getElementById('nav-user-name');
     const mLogin = document.getElementById('mnav-login');
+    const mSignup = document.getElementById('mnav-signup');
     const mUser = document.getElementById('mnav-user');
+    const mDash = document.getElementById('mnav-dash');
 
-    if (loginBtn) loginBtn.classList.add('hidden');
+    if (loginWrap) loginWrap.style.display = 'none';
     if (userMenu) userMenu.style.display = '';
     if (userName) userName.textContent = u.name;
-    if (mLogin) mLogin.classList.add('hidden');
-    if (mUser) mUser.classList.remove('hidden');
+    if (mLogin) mLogin.style.display = 'none';
+    if (mSignup) mSignup.style.display = 'none';
+    if (mUser) mUser.style.display = '';
+    if (mDash) mDash.style.display = '';
 }
 
 function doLogout() {
