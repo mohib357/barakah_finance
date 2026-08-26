@@ -54,6 +54,10 @@ function renderPage(pageId) {
         case 'orders': renderOrdersMgmt(content); break;
         case 'shop-settings': renderShopSettings(content); break;
         case 'economy-calendar': renderEconomyCalendar(content); break;
+        case 'profit-distribution': renderProfitDistribution(content); break;
+        case 'withdrawals': renderWithdrawals(content); break;
+        case 'fund-transfers': renderFundTransfers(content); break;
+        case 'profit-history': renderProfitHistory(content); break;
         default: content.innerHTML = `<div class="card"><div class="card-title">⚠️ পেজ পাওয়া যায়নি: ${pageId}</div></div>`;
     }
 }
@@ -471,34 +475,97 @@ function saveSiteInfo() {
 
 // ════ REVIEWS ════
 function renderReviews(el) {
-    const reviews = getReviews().sort((a, b) => new Date(b.date) - new Date(a.date));
+// ════ REVIEWS ════
+async function renderReviews(el) {
+    el.innerHTML = '<div class="spinner" style="margin:30px auto"></div>';
+    let reviews = [], stats = {};
+    try {
+        const r = await apiFetch('/reviews');
+        reviews = r?.reviews || [];
+        stats = r?.stats || {};
+    } catch (_) {
+        reviews = getReviews ? getReviews() : [];
+    }
+    reviews = reviews.sort((a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date));
+
+    const statusFilter = ['', 'pending', 'approved', 'rejected', 'hidden'];
+    const statusLabels = { '':'সব', pending:'পেন্ডিং', approved:'প্রকাশিত', rejected:'প্রত্যাখ্যাত', hidden:'লুকানো' };
+    window._reviewsData = reviews;
+
     el.innerHTML = `
-    <div class="card">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-val">${stats.total||reviews.length}</div><div class="stat-lbl">মোট</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:#f59e0b">${stats.pending||reviews.filter(r=>r.status==='pending').length}</div><div class="stat-lbl">পেন্ডিং</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:#10b981">${stats.approved||reviews.filter(r=>r.status==='approved').length}</div><div class="stat-lbl">প্রকাশিত</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:#ef4444">${stats.rejected||reviews.filter(r=>r.status==='rejected').length}</div><div class="stat-lbl">প্রত্যাখ্যাত</div></div>
+    </div>
+    <div class="admin-card">
       <div class="card-title">⭐ রিভিউ ব্যবস্থাপনা</div>
-      <div class="table-wrap"><table>
-        <thead><tr><th>নাম</th><th>রেটিং</th><th>মতামত</th><th>তারিখ</th><th>স্ট্যাটাস</th><th>অ্যাকশন</th></tr></thead>
-        <tbody>${reviews.map(r => `
-          <tr>
-            <td>${r.name}</td>
-            <td>${'★'.repeat(r.stars || 5)}</td>
-            <td>${(r.text || '').substring(0, 60)}...</td>
-            <td>${fmtDate(r.date)}</td>
-            <td><span class="status-badge ${r.status === 'approved' ? 'badge-approved' : 'badge-pending'}">${r.status === 'approved' ? 'প্রকাশিত' : 'পেন্ডিং'}</span></td>
-            <td>
-              ${r.status !== 'approved' ? `<button class="btn-sm btn-success" onclick="updateReviewStatus('${r.id}','approved')">✅ প্রকাশ</button>` : ''}
-              <button class="btn-sm btn-danger" onclick="updateReviewStatus('${r.id}','rejected')">🗑️</button>
-            </td>
-          </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,0.3);">কোনো রিভিউ নেই।</td></tr>'}
-        </tbody></table></div>
+      <div class="search-bar" style="margin-bottom:12px">
+        <select class="filter-select" id="rvStatus" onchange="filterReviews()">
+          ${statusFilter.map(s=>`<option value="${s}">${statusLabels[s]}</option>`).join('')}
+        </select>
+        <input class="search-input" id="rvSearch" placeholder="নাম বা বিষয়..." oninput="filterReviews()">
+      </div>
+      <div class="table-wrap">
+        <table><thead>
+          <tr><th>নাম</th><th>রেটিং</th><th>মতামত</th><th>তারিখ</th><th>স্ট্যাটাস</th><th>অ্যাকশন</th></tr>
+        </thead><tbody id="reviewsTbody">${renderReviewRows(reviews)}</tbody></table>
+      </div>
     </div>`;
 }
 
-function updateReviewStatus(id, status) {
-    const reviews = getReviews();
-    const idx = reviews.findIndex(r => r.id === id);
-    if (idx >= 0) { reviews[idx].status = status; saveReviews(reviews); }
-    showToast(status === 'approved' ? 'প্রকাশিত হয়েছে।' : 'মুছে ফেলা হয়েছে।');
-    renderPage('reviews');
+function renderReviewRows(reviews) {
+    if (!reviews.length) return '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:20px">কোনো রিভিউ নেই।</td></tr>';
+    const statusBadge = { approved:'badge-active', pending:'badge-pending', rejected:'badge-danger', hidden:'badge-gold' };
+    const statusLabel = { approved:'প্রকাশিত', pending:'পেন্ডিং', rejected:'প্রত্যাখ্যাত', hidden:'লুকানো' };
+    return reviews.map(r => `<tr>
+      <td>${r.name||'অনামী'}</td>
+      <td>${'★'.repeat(r.rating||r.stars||5)}${'☆'.repeat(5-(r.rating||r.stars||5))}</td>
+      <td style="font-size:.82rem;color:var(--text-muted);max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(r.content||r.text||'').substring(0,80)}</td>
+      <td style="font-size:.78rem">${fmtDate(r.createdAt||r.date)}</td>
+      <td><span class="badge ${statusBadge[r.status]||'badge-pending'}">${statusLabel[r.status]||r.status}</span></td>
+      <td style="display:flex;gap:4px;flex-wrap:wrap">
+        ${r.status!=='approved'?`<button class="btn btn-sm btn-ghost" style="color:#10b981" onclick="updateReviewStatus('${r.id}','approved')">✅</button>`:''}
+        ${r.status!=='hidden'?`<button class="btn btn-sm btn-ghost" onclick="updateReviewStatus('${r.id}','hidden')">🙈</button>`:''}
+        ${r.status!=='rejected'?`<button class="btn btn-sm btn-ghost" style="color:#ef4444" onclick="updateReviewStatus('${r.id}','rejected')">❌</button>`:''}
+        <button class="btn btn-sm btn-ghost" style="color:#ef4444" onclick="deleteReview('${r.id}')">🗑️</button>
+      </td>
+    </tr>`).join('');
+}
+
+function filterReviews() {
+    const q = (document.getElementById('rvSearch')?.value||'').toLowerCase();
+    const s = document.getElementById('rvStatus')?.value||'';
+    const filtered = (window._reviewsData||[]).filter(r =>
+        (!s || r.status===s) &&
+        (!q || (r.name||'').toLowerCase().includes(q) || (r.content||r.text||'').toLowerCase().includes(q))
+    );
+    const tbody = document.getElementById('reviewsTbody');
+    if (tbody) tbody.innerHTML = renderReviewRows(filtered);
+}
+
+async function updateReviewStatus(id, status) {
+    try {
+        await apiPatch(`/reviews/${id}`, { status });
+        showToast(status==='approved'?'প্রকাশিত হয়েছে।':status==='hidden'?'লুকানো হয়েছে।':'প্রত্যাখ্যাত হয়েছে।', 'success');
+        renderReviews(document.getElementById('adminContent'));
+    } catch (_) {
+        // localStorage fallback
+        const reviews = getReviews ? getReviews() : [];
+        const idx = reviews.findIndex(r => r.id === id);
+        if (idx>=0) { reviews[idx].status = status; if (typeof saveReviews === 'function') saveReviews(reviews); }
+        renderReviews(document.getElementById('adminContent'));
+    }
+}
+
+async function deleteReview(id) {
+    if (!confirm('রিভিউ মুছে ফেলতে চান?')) return;
+    try {
+        await apiDelete(`/reviews/${id}`);
+        showToast('রিভিউ মুছে ফেলা হয়েছে।', 'success');
+    } catch (_) {}
+    renderReviews(document.getElementById('adminContent'));
 }
 
 // ════ SHOP SETTINGS ════
@@ -531,12 +598,7 @@ function renderAdminMgmt(el) {
 }
 
 // ════ PERMISSIONS ════
-function renderPermissions(el) {
-    el.innerHTML = `<div class="card"><div class="card-title">🔐 পেজ অ্যাক্সেস ব্যবস্থাপনা</div>
-    <p style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:16px;">ব্যবহারকারী অনুযায়ী প্যানেলের বিভিন্ন অংশে অ্যাক্সেস নিয়ন্ত্রণ করুন।</p>
-    <div class="alert alert-info">🚧 এই ফিচারটি শীঘ্রই আসছে। বর্তমানে role-based access (admin/member/user) কার্যকর আছে।</div>
-    </div>`;
-}
+// (Delegated to panel-core.js renderPermissions which has full API implementation)
 
 // ════ ECONOMY CALENDAR ════
 function renderEconomyCalendar(el) {
