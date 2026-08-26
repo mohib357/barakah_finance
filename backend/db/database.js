@@ -70,9 +70,9 @@ db.defaults({
         maxGuarantors: 3,    // max clients one member can guarantee
         withdrawalNoticeDays: 30,
         fbPageUrl: '',
-        smsApiKey: '',
-        smsApiUrl: '',
-        smsSenderId: '',
+        smsApiKey: 'PEORenxMbnajRYOPGnsD',
+        smsApiUrl: 'http://bulksmsbd.net/api/smsapi',
+        smsSenderId: '8809617611021',
         twoFAEnabled: false,
         backupEnabled: true,
         backupIntervalHours: 1,
