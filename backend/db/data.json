@@ -329,5 +329,7 @@
     "backupRetentionDays": 60
   },
   "otp_store": [],
-  "username_history": []
+  "username_history": [],
+  "profit_distributions": [],
+  "withdrawal_requests": []
 }

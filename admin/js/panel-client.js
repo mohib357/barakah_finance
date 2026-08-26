@@ -1,14 +1,24 @@
-// panel-client.js — ক্লাইন্ট মডিউল
+// panel-client.js — ক্লাইন্ট মডিউল (API-connected)
 
-function renderClientList(el) {
-    const clients = getClients();
-    const installments = getInstallments();
-    const enriched = clients.map(c => {
-        const inst = installments.filter(i => i.clientId === c.id);
-        const paid = inst.filter(i => i.status === 'paid').reduce((s,i) => s+(i.paidAmount||0), 0);
-        return { ...c, totalPaid: paid, remaining: (c.totalPayable||0) - paid };
-    });
-    el.innerHTML = `
+async function renderClientList(el) {
+    el.innerHTML = '<div class="spinner" style="margin:30px auto"></div>';
+    let clients = [], stats = {};
+    try {
+        const r = await apiFetch('/clients');
+        clients = r?.clients || [];
+        stats = r?.stats || {};
+    } catch (_) {
+        // localStorage fallback
+        const rawClients = getClients ? getClients() : [];
+        const installments = getInstallments ? getInstallments() : [];
+        clients = rawClients.map(c => {
+            const inst = installments.filter(i => i.clientId === c.id);
+            const paid = inst.filter(i => i.status === 'paid').reduce((s,i) => s+(i.paidAmount||0), 0);
+            return { ...c, totalPaid: paid, remaining: (c.totalPayable||0) - paid };
+        });
+    }
+    const enriched = clients;
+    window._clientsData = enriched;
     <div class="stats-row">
       <div class="stat-card"><div class="stat-val">${clients.length}</div><div class="stat-lbl">মোট</div></div>
       <div class="stat-card"><div class="stat-val" style="color:#10b981;">${clients.filter(c=>c.status==='active').length}</div><div class="stat-lbl">সক্রিয়</div></div>
