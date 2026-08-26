@@ -1,464 +1,487 @@
-// panel-member.js — সদস্য মডিউল
+// ═══════════════════════════════════════════════════════════
+//  BARAKAH FINANCE — ADMIN MEMBER MODULE
+// ═══════════════════════════════════════════════════════════
 
-function renderMemberList(el) {
-    const members = getMembers();
-    const users = DB.getUsers();
-    el.innerHTML = `
+// ── Member List ──
+async function renderMemberList(el) {
+  const content = el || document.getElementById('adminContent');
+  let members = [], users = [];
+  try {
+    const [mr, ur] = await Promise.allSettled([apiFetch('/members'), apiFetch('/users')]);
+    if (mr.status === 'fulfilled') members = mr.value?.members || [];
+    if (ur.status === 'fulfilled') users   = ur.value?.users   || [];
+  } catch (_) {}
+  if (!members.length && typeof DB !== 'undefined') members = JSON.parse(localStorage.getItem('bf_members') || '[]');
+
+  const enriched = members.map(m => {
+    const u = users.find(x => x.id === m.userId) || {};
+    return { ...m, name: u.name || m.name || '—', phone: u.phone || m.phone || '—', email: u.email || '' };
+  });
+  window._membersData = enriched;
+
+  content.innerHTML = `
     <div class="stats-row">
-      <div class="stat-card"><div class="stat-val">${members.length}</div><div class="stat-lbl">মোট</div></div>
-      <div class="stat-card"><div class="stat-val" style="color:#10b981;">${members.filter(m=>m.status==='active').length}</div><div class="stat-lbl">সক্রিয়</div></div>
-      <div class="stat-card"><div class="stat-val" style="color:#f59e0b;">${members.filter(m=>m.status==='pending').length}</div><div class="stat-lbl">পেন্ডিং</div></div>
+      <div class="stat-card"><div class="stat-icon stat-icon-green">👥</div><div class="stat-val">${members.length}</div><div class="stat-lbl">মোট সদস্য</div></div>
+      <div class="stat-card"><div class="stat-icon stat-icon-blue">✅</div><div class="stat-val">${members.filter(m=>m.status==='active').length}</div><div class="stat-lbl">সক্রিয়</div></div>
+      <div class="stat-card"><div class="stat-icon stat-icon-gold">⏳</div><div class="stat-val">${members.filter(m=>m.status==='pending').length}</div><div class="stat-lbl">পেন্ডিং</div></div>
     </div>
-    <div class="card">
+    <div class="admin-card">
       <div class="card-title">👥 সদস্য তালিকা
-        <button class="btn-primary btn-sm" style="margin-left:auto;" onclick="gotoPage('member-add')">+ নতুন সদস্য</button>
+        <button class="btn btn-primary btn-sm ml-auto" onclick="gotoPage('member-add')">+ নতুন সদস্য</button>
       </div>
       <div class="search-bar">
-        <input class="search-input" id="mlSearch" placeholder="নাম, আইডি, মোবাইল..." oninput="filterMemberTable()">
-        <select class="filter-select" id="mlStatus" onchange="filterMemberTable()">
-          <option value="">সব স্ট্যাটাস</option>
-          <option value="active">সক্রিয়</option>
-          <option value="pending">পেন্ডিং</option>
+        <div class="search-input-wrap" style="flex:1"><span class="search-icon">🔍</span>
+          <input class="search-input" id="mlSearch" placeholder="নাম, আইডি, মোবাইল..." oninput="filterMemberList()"/>
+        </div>
+        <select class="filter-select" id="mlStatus" onchange="filterMemberList()">
+          <option value="">সব</option><option value="active">সক্রিয়</option><option value="pending">পেন্ডিং</option>
         </select>
-        <button class="btn-secondary btn-sm" onclick="exportMembersCSV()">📥 CSV</button>
+        <select class="filter-select" id="mlType" onchange="filterMemberList()">
+          <option value="">সব ধরন</option><option value="monthly_savings">মাসিক</option><option value="onetime">এককালীন</option><option value="project">প্রজেক্ট</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" onclick="exportMembersCSV()">📥 CSV</button>
       </div>
       <div class="table-wrap">
-        <table id="memberTable">
-          <thead><tr><th>ছবি</th><th>আইডি</th><th>নাম</th><th>মোবাইল</th><th>বিনিয়োগ ধরন</th><th>মোট জমা</th><th>ইউনিট</th><th>যোগদান</th><th>স্ট্যাটাস</th><th>অ্যাকশন</th></tr></thead>
-          <tbody id="memberTbody"></tbody>
-        </table>
+        <table><thead>
+          <tr><th>ছবি</th><th>আইডি</th><th>নাম</th><th>মোবাইল</th><th>ধরন</th><th>মোট জমা</th><th>ইউনিট</th><th>যোগদান</th><th>স্ট্যাটাস</th><th>অ্যাকশন</th></tr>
+        </thead><tbody id="memberTbody"></tbody></table>
       </div>
     </div>`;
-    window._membersData = members.map(m => {
-        const user = users.find(u => u.id === m.userId) || {};
-        const savings = (DB.getSavings ? DB.getSavings() : []).filter(s => s.userId === m.userId);
-        const totalDeposit = savings.reduce((s, v) => s + (v.amount || 0), 0);
-        const unitValue = (getSettings().unitValue || 2000);
-        const units = (totalDeposit / unitValue).toFixed(2);
-        return { ...m, name: user.name || m.name || '—', phone: user.phone || m.phone, totalDeposit, units };
-    });
-    renderMemberRows(window._membersData);
+
+  renderMemberRows(enriched);
 }
 
 function renderMemberRows(data) {
-    const tbody = document.getElementById('memberTbody');
-    if (!tbody) return;
-    tbody.innerHTML = data.map(m => `
-      <tr>
-        <td><div style="width:32px;height:32px;border-radius:50%;background:#1D9E75;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;">${(m.name||'ব')[0]}</div></td>
-        <td><code style="font-size:11px;">${m.memberID || '—'}</code></td>
-        <td>${m.name}</td>
-        <td>${m.phone || '—'}</td>
-        <td><span style="font-size:11px;">${m.investType === 'monthly_savings' ? 'মাসিক সঞ্চয়' : m.investType === 'onetime' ? 'এককালীন' : 'প্রজেক্ট'}</span></td>
-        <td>${fmtMoney(m.totalDeposit)}</td>
-        <td>${m.units}</td>
-        <td>${fmtDate(m.joinDate)}</td>
-        <td><span class="status-badge ${m.status === 'active' ? 'badge-active' : 'badge-pending'}">${m.status === 'active' ? 'সক্রিয়' : 'পেন্ডিং'}</span></td>
-        <td>
-          <button class="btn-sm btn-secondary" onclick="viewMember('${m.id}')">👁️</button>
-          <button class="btn-sm btn-secondary" onclick="gotoPage('member-payment');setTimeout(()=>prefillMemberPayment('${m.memberID}'),400)">💵</button>
-        </td>
-      </tr>`).join('') || '<tr><td colspan="10" style="text-align:center;color:rgba(255,255,255,0.3);padding:20px;">কোনো সদস্য নেই।</td></tr>';
+  const tbody = document.getElementById('memberTbody');
+  if (!tbody) return;
+  const invLabels = { monthly_savings:'মাসিক সঞ্চয়', onetime:'এককালীন', project:'প্রজেক্ট' };
+  const unitVal = getSettings().unitValue || 2000;
+
+  tbody.innerHTML = data.map(m => {
+    const savings = (typeof DB !== 'undefined') ? (DB.getSavings?.() || []).filter(s=>s.userId===m.userId) : [];
+    const total   = savings.reduce((a,s)=>a+(s.amount||0),0);
+    const units   = (total/unitVal).toFixed(2);
+    return `<tr>
+      <td><div class="avatar avatar-sm" style="background:${randomAdminColor(m.name)}">${(m.name||'ব')[0]}</div></td>
+      <td><code style="font-size:.78rem">${m.memberID||'—'}</code></td>
+      <td style="font-weight:600">${m.name}</td>
+      <td>${m.phone||'—'}</td>
+      <td><span style="font-size:.78rem">${invLabels[m.investType]||m.investType||'—'}</span></td>
+      <td style="font-weight:700">${fmtMoney(total)}</td>
+      <td>${units}</td>
+      <td style="font-size:.78rem">${fmtDate(m.joinDate||m.createdAt)}</td>
+      <td>${statusBadge(m.status)}</td>
+      <td>
+        <button class="btn btn-sm btn-ghost" onclick="viewMemberModal('${m.id}')">👁️</button>
+        <button class="btn btn-sm btn-primary" onclick="gotoPage('member-payment');setTimeout(()=>prefillMemberPayment('${m.memberID}'),500)">💵</button>
+        <button class="btn btn-sm btn-ghost" onclick="editMember('${m.id}')">✏️</button>
+      </td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--text-muted)">কোনো সদস্য নেই।</td></tr>`;
 }
 
-function filterMemberTable() {
-    const q = (document.getElementById('mlSearch')?.value || '').toLowerCase();
-    const s = document.getElementById('mlStatus')?.value || '';
-    const filtered = (window._membersData || []).filter(m =>
-        (!q || (m.name || '').toLowerCase().includes(q) || (m.memberID || '').toLowerCase().includes(q) || (m.phone || '').includes(q)) &&
-        (!s || m.status === s)
-    );
-    renderMemberRows(filtered);
-}
-
-function viewMember(id) {
-    const m = (window._membersData || []).find(x => x.id === id);
-    if (!m) return;
-    const savings = (DB.getSavings ? DB.getSavings() : []).filter(s => s.userId === m.userId);
-    const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
-    modal.innerHTML = `
-    <div class="modal">
-      <div class="modal-head"><h3>👤 সদস্য প্রোফাইল</h3><button onclick="this.closest('.modal-overlay').remove()">✕</button></div>
-      <div class="modal-body">
-        <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
-          <div style="width:60px;height:60px;border-radius:50%;background:#1D9E75;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;">${(m.name||'ব')[0]}</div>
-          <div><div style="font-size:17px;font-weight:700;color:#fff;">${m.name}</div>
-          <div style="font-size:12px;color:var(--gold);">${m.memberID || '—'}</div></div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;margin-bottom:16px;">
-          <div><b>মোবাইল:</b> ${m.phone || '—'}</div>
-          <div><b>যোগদান:</b> ${fmtDate(m.joinDate)}</div>
-          <div><b>বিনিয়োগ ধরন:</b> ${m.investType || '—'}</div>
-          <div><b>স্ট্যাটাস:</b> ${m.status}</div>
-          <div><b>মোট জমা:</b> ${fmtMoney(m.totalDeposit)}</div>
-          <div><b>ইউনিট:</b> ${m.units}</div>
-          <div><b>নমিনির নাম:</b> ${m.nomineeName || '—'}</div>
-          <div><b>নমিনি মোবাইল:</b> ${m.nomineePhone || '—'}</div>
-        </div>
-        <div><b>সঞ্চয় ইতিহাস:</b>
-          <div class="table-wrap" style="max-height:150px;overflow-y:auto;margin-top:8px;">
-            <table><thead><tr><th>মাস</th><th>পরিমাণ</th><th>লেট ফি</th><th>তারিখ</th></tr></thead>
-            <tbody>${savings.map(s => `<tr><td>${s.month||'—'}</td><td>${fmtMoney(s.amount)}</td><td>${fmtMoney(s.lateFee||0)}</td><td>${fmtDate(s.date)}</td></tr>`).join('') || '<tr><td colspan="4" style="color:rgba(255,255,255,0.3);">কোনো সঞ্চয় নেই।</td></tr>'}</tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer"><button class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">বন্ধ</button></div>
-    </div>`;
-    document.body.appendChild(modal);
+function filterMemberList() {
+  const q = (document.getElementById('mlSearch')?.value||'').toLowerCase();
+  const s = document.getElementById('mlStatus')?.value||'';
+  const t = document.getElementById('mlType')?.value||'';
+  const filtered = (window._membersData||[]).filter(m =>
+    (!q || (m.name||'').toLowerCase().includes(q) || (m.memberID||'').toLowerCase().includes(q) || (m.phone||'').includes(q)) &&
+    (!s || m.status === s) &&
+    (!t || m.investType === t)
+  );
+  renderMemberRows(filtered);
 }
 
 function exportMembersCSV() {
-    const data = window._membersData || [];
-    const rows = [['আইডি','নাম','মোবাইল','বিনিয়োগ','মোট জমা','ইউনিট','যোগদান','স্ট্যাটাস']];
-    data.forEach(m => rows.push([m.memberID||'',m.name||'',m.phone||'',m.investType||'',m.totalDeposit||0,m.units||0,m.joinDate||'',m.status||'']));
-    const csv = rows.map(r => r.map(c=>`"${c}"`).join(',')).join('\n');
-    const blob = new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href=url; a.download='members.csv'; a.click();
+  const data = window._membersData || [];
+  const rows = [['আইডি','নাম','মোবাইল','বিনিয়োগ ধরন','মোট জমা','ইউনিট','যোগদান','স্ট্যাটাস']];
+  data.forEach(m => rows.push([m.memberID||'',m.name||'',m.phone||'',m.investType||'','','',m.joinDate||'',m.status||'']));
+  const csv = rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv'}));
+  a.download = 'members.csv'; a.click();
 }
 
-// ════ ADD NEW MEMBER ════
-function renderMemberAdd(el) {
-    const users = DB.getUsers().filter(u => !u.memberID);
-    const projects = getProjects();
-    const settings = getSettings();
-    const lastMemberID = getMembers().length ? getMembers()[getMembers().length - 1].memberID : '000000';
-
-    el.innerHTML = `
-    <div class="card">
-      <div class="card-title">➕ নতুন সদস্য যোগ করুন</div>
-      <div class="form-row">
-        <div class="form-group"><label>সদস্য আইডি * <small style="color:rgba(255,255,255,0.4);">(সর্বশেষ: ${lastMemberID})</small></label>
-          <input class="form-input" id="ma-id" placeholder="000001" oninput="checkMemberID(this.value)" value="${nextMemberID()}">
-          <div id="ma-id-hint" style="font-size:11px;margin-top:3px;"></div>
+function viewMemberModal(id) {
+  const m = (window._membersData||[]).find(x=>x.id===id);
+  if (!m) return;
+  const savings = (typeof DB!=='undefined') ? (DB.getSavings?.()|| []).filter(s=>s.userId===m.userId) : [];
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal modal-lg">
+      <div class="modal-head"><h3>👤 সদস্য প্রোফাইল</h3><button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button></div>
+      <div class="modal-body">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
+          <div class="avatar avatar-lg" style="background:${randomAdminColor(m.name)}">${(m.name||'ব')[0]}</div>
+          <div>
+            <div style="font-size:1.2rem;font-weight:700;color:var(--text-primary)">${m.name}</div>
+            <code style="color:var(--clr-gold-500)">${m.memberID||'—'}</code>
+          </div>
         </div>
-        <div class="form-group"><label>বিদ্যমান ব্যবহারকারী সিলেক্ট করুন</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:.88rem;margin-bottom:16px">
+          ${pRow('মোবাইল',m.phone)} ${pRow('যোগদান',fmtDate(m.joinDate||m.createdAt))}
+          ${pRow('বিনিয়োগ ধরন',m.investType||'—')} ${pRow('স্ট্যাটাস',m.status||'—')}
+          ${pRow('নমিনি',m.nomineeName||'—')} ${pRow('নমিনি মোবাইল',m.nomineePhone||'—')}
+        </div>
+        <h4 style="margin-bottom:8px">সঞ্চয় ইতিহাস</h4>
+        <div class="table-wrap" style="max-height:200px;overflow-y:auto">
+          <table><thead><tr><th>মাস</th><th>পরিমাণ</th><th>লেট ফি</th><th>তারিখ</th></tr></thead>
+          <tbody>${savings.map(s=>`<tr><td>${s.month||'—'}</td><td>${fmtMoney(s.amount)}</td><td>${s.lateFee?fmtMoney(s.lateFee):'—'}</td><td>${fmtDate(s.date||s.createdAt)}</td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:12px">কোনো সঞ্চয় নেই</td></tr>'}</tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost btn-sm" onclick="this.closest('.modal-overlay').remove()">বন্ধ</button>
+        <button class="btn btn-primary btn-sm" onclick="gotoPage('member-payment');setTimeout(()=>prefillMemberPayment('${m.memberID}'),400);this.closest('.modal-overlay').remove()">💵 পেমেন্ট</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+function pRow(l,v) { return `<div style="padding:8px;background:var(--bg-surface-2);border-radius:8px"><div style="font-size:.72rem;color:var(--text-muted);margin-bottom:2px">${l}</div><div style="font-weight:600">${v||'—'}</div></div>`; }
+
+function editMember(id) { showToast('এডিট পেনেলটি শীঘ্রই আসছে।', 'info'); }
+
+// ── Add New Member ──
+async function renderMemberAdd(el) {
+  const content = el || document.getElementById('adminContent');
+  let users = [], projects = [];
+  try {
+    const [ur, pr] = await Promise.allSettled([apiFetch('/users'), apiFetch('/projects')]);
+    if (ur.status === 'fulfilled') users    = (ur.value?.users||[]).filter(u=>!u.memberID);
+    if (pr.status === 'fulfilled') projects = pr.value?.projects||[];
+  } catch (_) {}
+
+  const members  = JSON.parse(localStorage.getItem('bf_members')||'[]');
+  const lastID   = members.length ? members[members.length-1].memberID : '000000';
+  const nextID   = String(parseInt(lastID||0)+1).padStart(6,'0');
+
+  content.innerHTML = `
+    <div class="admin-card">
+      <div class="card-title">➕ নতুন সদস্য যোগ করুন</div>
+      <div class="two-col">
+        <div class="form-group"><label class="form-label">সদস্য আইডি <span class="req">*</span> <small style="color:var(--text-muted)">(সর্বশেষ: ${lastID})</small></label>
+          <input class="form-input" id="ma-id" value="${nextID}" oninput="checkMemberID(this.value)"/>
+          <p class="form-hint" id="ma-id-hint"></p>
+        </div>
+        <div class="form-group"><label class="form-label">বিদ্যমান ব্যবহারকারী</label>
           <select class="form-select" id="ma-user" onchange="fillMemberFromUser()">
-            <option value="">— নতুন যোগ করুন —</option>
-            ${users.map(u => `<option value="${u.id}">${u.name} (${u.phone || '—'})</option>`).join('')}
+            <option value="">— নতুন তৈরি করুন —</option>
+            ${users.map(u=>`<option value="${u.id}">${u.name} (${u.phone||'—'})</option>`).join('')}
           </select>
         </div>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>নাম *</label><input class="form-input" id="ma-name" placeholder="পূর্ণ নাম"></div>
-        <div class="form-group"><label>মোবাইল *</label><input class="form-input" id="ma-phone" placeholder="01XXXXXXXXX"></div>
+      <div class="two-col">
+        <div class="form-group"><label class="form-label">নাম <span class="req">*</span></label><input class="form-input" id="ma-name" placeholder="পূর্ণ নাম"/></div>
+        <div class="form-group"><label class="form-label">মোবাইল <span class="req">*</span></label><input class="form-input" id="ma-phone" placeholder="01XXXXXXXXX"/></div>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>পিতার নাম</label><input class="form-input" id="ma-fname"></div>
-        <div class="form-group"><label>ঠিকানা</label><input class="form-input" id="ma-addr"></div>
+      <div class="two-col">
+        <div class="form-group"><label class="form-label">পিতার নাম</label><input class="form-input" id="ma-father"/></div>
+        <div class="form-group"><label class="form-label">যোগদানের তারিখ</label><input type="date" class="form-input" id="ma-joinDate" value="${new Date().toISOString().split('T')[0]}"/></div>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>লিঙ্গ</label><select class="form-select" id="ma-gender"><option value="male">পুরুষ</option><option value="female">মহিলা</option></select></div>
-        <div class="form-group"><label>যোগদানের তারিখ *</label><input class="form-input" type="date" id="ma-join" value="${new Date().toISOString().split('T')[0]}"></div>
+      <div class="two-col">
+        <div class="form-group"><label class="form-label">নমিনির নাম <span class="req">*</span></label><input class="form-input" id="ma-nomName"/></div>
+        <div class="form-group"><label class="form-label">নমিনি মোবাইল</label><input class="form-input" id="ma-nomPhone"/></div>
       </div>
-
-      <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:16px;margin:14px 0;">
-        <div style="font-size:13px;color:var(--gold);margin-bottom:12px;">💰 বিনিয়োগ তথ্য</div>
-        <div class="form-group"><label>বিনিয়োগের ধরন *</label>
-          <select class="form-select" id="ma-invest-type" onchange="toggleInvestFields()">
-            <option value="monthly_savings">মাসিক সঞ্চয় (প্রতি মাসে)</option>
+      <div class="two-col">
+        <div class="form-group"><label class="form-label">নমিনি সম্পর্ক</label>
+          <select class="form-select" id="ma-nomRel"><option>স্বামী</option><option>স্ত্রী</option><option>পিতা</option><option>মাতা</option><option>পুত্র</option><option>কন্যা</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">বিনিয়োগের ধরন <span class="req">*</span></label>
+          <select class="form-select" id="ma-invType" onchange="toggleInvFields()">
+            <option value="monthly_savings">মাসিক সঞ্চয়</option>
             <option value="onetime">এককালীন বিনিয়োগ</option>
             <option value="project">প্রজেক্ট বিনিয়োগ</option>
           </select>
         </div>
-        <div id="ma-onetime-field" style="display:none;">
-          <div class="form-group"><label>এককালীন পরিমাণ (৳)</label><input class="form-input" type="number" id="ma-invest-amount" oninput="updateInvestPreview()"></div>
+      </div>
+      <div id="ma-monthly-fields">
+        <div class="form-group"><label class="form-label">শুরুর মাস</label><input type="month" class="form-input" id="ma-startMonth" value="${new Date().toISOString().slice(0,7)}"/></div>
+      </div>
+      <div id="ma-onetime-fields" style="display:none">
+        <div class="two-col">
+          <div class="form-group"><label class="form-label">বিনিয়োগের পরিমাণ (৳)</label><input type="number" class="form-input" id="ma-amount" placeholder="২০০০"/></div>
+          <div class="form-group"><label class="form-label">ফরম ফি (৳)</label><input type="number" class="form-input" id="ma-formFee" value="${getSettings().formFee||100}" readonly/></div>
         </div>
-        <div id="ma-project-field" style="display:none;">
-          <div class="form-group"><label>প্রজেক্ট সিলেক্ট করুন</label>
-            <select class="form-select" id="ma-project">${projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('') || '<option>কোনো প্রজেক্ট নেই</option>'}</select>
-          </div>
-          <div class="form-group"><label>বিনিয়োগের পরিমাণ (৳)</label><input class="form-input" type="number" id="ma-project-amount" oninput="updateInvestPreview()"></div>
-        </div>
-        <div class="calc-preview" id="investPreview" style="display:none;"></div>
-        <div class="form-row" style="margin-top:10px;">
-          <div class="form-group"><label>ফরম ফি (৳)</label><input class="form-input" type="number" id="ma-form-fee" value="${settings.formFee || 100}"></div>
-          <div class="form-group"><label>পেমেন্ট মেথড</label>
-            <select class="form-select" id="ma-pay-method">
-              <option value="cash">নগদ</option>
-              <option value="bkash">বিকাশ</option>
-              <option value="bank">ব্যাংক</option>
+      </div>
+      <div id="ma-project-fields" style="display:none">
+        <div class="two-col">
+          <div class="form-group"><label class="form-label">প্রজেক্ট</label>
+            <select class="form-select" id="ma-project">
+              <option value="">— বেছে নিন —</option>
+              ${projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}
             </select>
           </div>
+          <div class="form-group"><label class="form-label">পরিমাণ (৳)</label><input type="number" class="form-input" id="ma-projAmount" placeholder="৫০০০"/></div>
         </div>
       </div>
-
-      <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:16px;margin:14px 0;">
-        <div style="font-size:13px;color:var(--gold);margin-bottom:12px;">👤 নমিনির তথ্য</div>
-        <div class="form-row">
-          <div class="form-group"><label>নমিনির নাম *</label><input class="form-input" id="ma-nom-name"></div>
-          <div class="form-group"><label>সম্পর্ক *</label><input class="form-input" id="ma-nom-rel" placeholder="স্ত্রী, পুত্র, পিতা..."></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>নমিনির মোবাইল *</label><input class="form-input" id="ma-nom-phone"></div>
-          <div class="form-group"><label>নমিনির ঠিকানা</label><input class="form-input" id="ma-nom-addr"></div>
-        </div>
+      <div class="nav-btns" style="padding-top:16px;border-top:1px solid var(--border-light)">
+        <button class="btn btn-ghost" onclick="gotoPage('member-list')">বাতিল</button>
+        <button class="btn btn-primary btn-lg" onclick="saveMember()">✅ সদস্য সংরক্ষণ করুন</button>
       </div>
-
-      <div style="display:flex;gap:10px;">
-        <button class="btn-primary" onclick="saveMember()">💾 সদস্য সেভ করুন</button>
-        <button class="btn-secondary" onclick="gotoPage('member-list')">বাতিল</button>
-      </div>
-      <div id="ma-alert" class="alert" style="display:none;margin-top:12px;"></div>
     </div>`;
 }
 
-function nextMemberID() {
-    const members = getMembers();
-    if (!members.length) return '000001';
-    const nums = members.map(m => parseInt(m.memberID) || 0);
-    return String(Math.max(...nums) + 1).padStart(6, '0');
+function toggleInvFields() {
+  const t = document.getElementById('ma-invType')?.value;
+  document.getElementById('ma-monthly-fields').style.display = t === 'monthly_savings' ? '' : 'none';
+  document.getElementById('ma-onetime-fields').style.display = t === 'onetime' ? '' : 'none';
+  document.getElementById('ma-project-fields').style.display = t === 'project' ? '' : 'none';
 }
 
-function checkMemberID(val) {
-    const hint = document.getElementById('ma-id-hint');
-    if (!val) { hint.textContent = ''; return; }
-    const exists = getMembers().find(m => m.memberID === val);
-    hint.style.color = exists ? '#ef4444' : '#10b981';
-    hint.textContent = exists ? '❌ এই আইডি ইতিমধ্যে ব্যবহৃত।' : '✅ এভেইলেবল।';
+async function checkMemberID(val) {
+  const hint = document.getElementById('ma-id-hint');
+  if (!val) { if (hint) hint.textContent = ''; return; }
+  try {
+    const r = await apiFetch(`/members/check-id/${val}`);
+    if (hint) hint.innerHTML = r?.available ? '✅ উপলব্ধ' : '❌ এই আইডি ব্যবহৃত';
+  } catch (_) {
+    const members = JSON.parse(localStorage.getItem('bf_members')||'[]');
+    const taken = members.some(m=>m.memberID===val);
+    if (hint) hint.innerHTML = taken ? '❌ এই আইডি ব্যবহৃত' : '✅ উপলব্ধ';
+  }
 }
 
 function fillMemberFromUser() {
-    const uid = document.getElementById('ma-user').value;
-    if (!uid) return;
-    const user = DB.getUsers().find(u => u.id === uid);
-    if (!user) return;
-    document.getElementById('ma-name').value = user.name || '';
-    document.getElementById('ma-phone').value = user.phone || '';
-    document.getElementById('ma-addr').value = user.address || '';
+  const uid = document.getElementById('ma-user')?.value;
+  if (!uid) return;
+  const users = typeof DB !== 'undefined' ? DB.getUsers() : [];
+  const u = users.find(x=>x.id===uid);
+  if (!u) return;
+  const set = (id,v)=>{ const el=document.getElementById(id); if(el&&v) el.value=v; };
+  set('ma-name', u.name); set('ma-phone', u.phone); set('ma-father', u.fatherName||'');
 }
 
-function toggleInvestFields() {
-    const type = document.getElementById('ma-invest-type').value;
-    document.getElementById('ma-onetime-field').style.display = type === 'onetime' ? 'block' : 'none';
-    document.getElementById('ma-project-field').style.display = type === 'project' ? 'block' : 'none';
-    updateInvestPreview();
+async function saveMember() {
+  const id   = document.getElementById('ma-id')?.value.trim();
+  const name = document.getElementById('ma-name')?.value.trim();
+  const phone= document.getElementById('ma-phone')?.value.trim();
+  const nom  = document.getElementById('ma-nomName')?.value.trim();
+  if (!id||!name||!phone||!nom) { showToast('বাধ্যতামূলক তথ্য পূরণ করুন।','error'); return; }
+
+  const member = {
+    memberID:    id,
+    userId:      document.getElementById('ma-user')?.value || null,
+    name, phone,
+    fatherName:  document.getElementById('ma-father')?.value,
+    joinDate:    document.getElementById('ma-joinDate')?.value,
+    nomineeName: nom,
+    nomineePhone:document.getElementById('ma-nomPhone')?.value,
+    nomineeRelation: document.getElementById('ma-nomRel')?.value,
+    investType:  document.getElementById('ma-invType')?.value,
+    startMonth:  document.getElementById('ma-startMonth')?.value,
+    amount:      parseFloat(document.getElementById('ma-amount')?.value)||0,
+    projectId:   document.getElementById('ma-project')?.value,
+    status: 'active',
+    createdAt: new Date().toISOString(),
+    createdBy: adminSession?.id,
+  };
+
+  try {
+    await apiPost('/members', member);
+    showToast('সদস্য সংরক্ষিত হয়েছে!', 'success');
+    gotoPage('member-list'); return;
+  } catch (_) {}
+
+  // Offline
+  const members = JSON.parse(localStorage.getItem('bf_members')||'[]');
+  members.push({ id: 'M-'+Date.now(), ...member });
+  localStorage.setItem('bf_members', JSON.stringify(members));
+  showToast('সদস্য সংরক্ষিত (অফলাইন)।', 'success');
+  gotoPage('member-list');
 }
 
-function updateInvestPreview() {
-    const type = document.getElementById('ma-invest-type').value;
-    const settings = getSettings();
-    const unitValue = settings.unitValue || 2000;
-    const prev = document.getElementById('investPreview');
-    let amount = 0;
-    if (type === 'onetime') amount = parseFloat(document.getElementById('ma-invest-amount')?.value) || 0;
-    else if (type === 'project') amount = parseFloat(document.getElementById('ma-project-amount')?.value) || 0;
-    else amount = settings.monthlySavings || 2000;
-
-    if (amount > 0) {
-        const units = (amount / unitValue).toFixed(2);
-        prev.style.display = 'block';
-        prev.innerHTML = `<div style="display:flex;gap:20px;flex-wrap:wrap;">
-          <div><div class="cv">${fmtMoney(amount)}</div><div style="font-size:11px;color:rgba(255,255,255,0.4);">বিনিয়োগের পরিমাণ</div></div>
-          <div><div class="cv">${units}</div><div style="font-size:11px;color:rgba(255,255,255,0.4);">ইউনিট</div></div>
-        </div>`;
-    } else {
-        prev.style.display = 'none';
-    }
-}
-
-function saveMember() {
-    const alert = document.getElementById('ma-alert');
-    const memberID = document.getElementById('ma-id').value.trim();
-    const name = document.getElementById('ma-name').value.trim();
-    const phone = document.getElementById('ma-phone').value.trim();
-    const nomName = document.getElementById('ma-nom-name').value.trim();
-    const nomRel = document.getElementById('ma-nom-rel').value.trim();
-    const nomPhone = document.getElementById('ma-nom-phone').value.trim();
-
-    if (!memberID || !name || !phone || !nomName || !nomRel || !nomPhone) {
-        alert.style.display = 'block'; alert.className = 'alert alert-error';
-        alert.textContent = 'সব বাধ্যতামূলক তথ্য পূরণ করুন।'; return;
-    }
-    if (getMembers().find(m => m.memberID === memberID)) {
-        alert.style.display = 'block'; alert.className = 'alert alert-error';
-        alert.textContent = 'এই আইডি ইতিমধ্যে ব্যবহৃত।'; return;
-    }
-
-    const uid = document.getElementById('ma-user').value;
-    const investType = document.getElementById('ma-invest-type').value;
-    const member = {
-        id: 'M-' + Date.now(),
-        userId: uid || null,
-        memberID, name, phone,
-        fatherName: document.getElementById('ma-fname').value,
-        address: document.getElementById('ma-addr').value,
-        gender: document.getElementById('ma-gender').value,
-        joinDate: document.getElementById('ma-join').value,
-        investType,
-        investAmount: parseFloat(document.getElementById('ma-invest-amount')?.value || document.getElementById('ma-project-amount')?.value || 0) || 0,
-        investProject: document.getElementById('ma-project')?.value || null,
-        formFee: parseFloat(document.getElementById('ma-form-fee').value) || 100,
-        paymentMethod: document.getElementById('ma-pay-method').value,
-        nomineeName: nomName, nomineeRelation: nomRel, nomineePhone: nomPhone,
-        nomineeAddress: document.getElementById('ma-nom-addr').value,
-        status: 'active', units: 0,
-        createdAt: new Date().toISOString(), createdBy: adminSession?.id
-    };
-
-    const members = getMembers();
-    members.push(member);
-    saveMembers(members);
-
-    // Update user role if linked
-    if (uid) {
-        const users = DB.getUsers();
-        const idx = users.findIndex(u => u.id === uid);
-        if (idx >= 0) { users[idx].role = 'member'; users[idx].memberID = memberID; DB.saveUsers(users); }
-    }
-
-    addAuditLog('CREATE_MEMBER', 'members', `MemberID: ${memberID}, Name: ${name}`);
-    showToast('সদস্য তৈরি সফল।');
-    gotoPage('member-list');
-}
-
-// ════ MEMBER PAYMENT ════
-function renderMemberPayment(el) {
-    const members = getMembers();
-    const settings = getSettings();
-    el.innerHTML = `
-    <div class="card">
+// ── Member Payment Collection ──
+async function renderMemberPayment(el) {
+  const content = el || document.getElementById('adminContent');
+  content.innerHTML = `
+    <div class="admin-card">
       <div class="card-title">💵 সদস্য পেমেন্ট সংগ্রহ</div>
-      <div style="display:flex;gap:10px;margin-bottom:16px;">
-        <input class="search-input" id="mp-search" placeholder="সদস্য আইডি বা নাম বা মোবাইল..." style="flex:1;">
-        <button class="btn-primary" onclick="findMemberForPayment()">🔍 খুঁজুন</button>
+      <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+        <input class="form-input" id="mpSearch" placeholder="আইডি, নাম বা মোবাইল..." style="flex:1;min-width:200px"/>
+        <button class="btn btn-primary" onclick="findMemberForPayment()">🔍 খুঁজুন</button>
       </div>
-      <div id="mp-profile" style="display:none;"></div>
+      <div id="mpProfile"></div>
+      <div id="mpPayForm" style="display:none">
+        <h4 style="margin-bottom:12px">পেমেন্ট করুন</h4>
+        <div id="mpPayOrders" style="margin-bottom:14px"></div>
+        <div class="two-col">
+          <div class="form-group"><label class="form-label">পরিমাণ (৳)</label><input type="number" class="form-input" id="mpAmount"/></div>
+          <div class="form-group"><label class="form-label">পেমেন্ট পদ্ধতি</label>
+            <select class="form-select" id="mpMethod"><option value="cash">ক্যাশ</option><option value="bkash">বিকাশ</option><option value="nagad">নগদ</option><option value="rocket">রকেট</option><option value="bank">ব্যাংক</option></select>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;margin-bottom:14px">
+          <label class="form-check"><input type="checkbox" id="mpSendSMS" checked/> SMS পাঠান</label>
+        </div>
+        <button class="btn btn-primary btn-lg" onclick="collectMemberPayment()">💰 পেমেন্ট সংগ্রহ করুন</button>
+      </div>
     </div>`;
 }
 
-function prefillMemberPayment(memberID) {
-    const input = document.getElementById('mp-search');
-    if (input) { input.value = memberID; findMemberForPayment(); }
+let _mpCurrentMember = null;
+
+async function findMemberForPayment() {
+  const q = document.getElementById('mpSearch')?.value.trim();
+  if (!q) { showToast('আইডি বা নাম দিন।', 'error'); return; }
+  const wrap = document.getElementById('mpProfile');
+  wrap.innerHTML = '<div class="spinner" style="margin:16px auto"></div>';
+
+  let member = null;
+  try {
+    const r = await apiFetch(`/members?q=${encodeURIComponent(q)}`);
+    member = r?.members?.[0] || r?.member;
+  } catch (_) {}
+  if (!member) {
+    const local = JSON.parse(localStorage.getItem('bf_members')||'[]');
+    member = local.find(m=>m.memberID===q||(m.name||'').toLowerCase().includes(q.toLowerCase())||(m.phone||'').includes(q));
+  }
+  if (!member) { wrap.innerHTML = `<p style="color:var(--clr-danger)">সদস্য পাওয়া যায়নি।</p>`; return; }
+
+  _mpCurrentMember = member;
+  const savings = (typeof DB!=='undefined') ? (DB.getSavings?.()|| []).filter(s=>s.userId===member.userId) : [];
+  const total   = savings.reduce((a,s)=>a+(s.amount||0),0);
+
+  wrap.innerHTML = `
+    <div style="display:flex;align-items:center;gap:14px;padding:16px;background:var(--bg-surface-2);border-radius:12px;margin-bottom:16px">
+      <div class="avatar avatar-md" style="background:${randomAdminColor(member.name)}">${(member.name||'ব')[0]}</div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:1rem">${member.name}</div>
+        <div style="font-size:.8rem;color:var(--text-muted)">ID: ${member.memberID} · ${member.phone||'—'}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:.78rem;color:var(--text-muted)">মোট জমা</div>
+        <div style="font-weight:800;color:var(--clr-primary-500)">${fmtMoney(total)}</div>
+      </div>
+    </div>`;
+
+  document.getElementById('mpPayForm').style.display = '';
+  document.getElementById('mpAmount').value = getSettings().monthlySavings || 2000;
+  const ordersWrap = document.getElementById('mpPayOrders');
+  ordersWrap.innerHTML = `<p style="font-size:.85rem;color:var(--text-muted);margin-bottom:8px">পে-অর্ডার: মাসিক সঞ্চয় — ${new Date().toLocaleDateString('bn-BD',{year:'numeric',month:'long'})}</p>`;
 }
 
-function findMemberForPayment() {
-    const q = document.getElementById('mp-search').value.trim().toLowerCase();
-    if (!q) return;
-    const members = getMembers();
-    const m = members.find(mem =>
-        (mem.memberID || '').toLowerCase() === q ||
-        (mem.name || '').toLowerCase().includes(q) ||
-        (mem.phone || '').includes(q)
-    );
-    const profileDiv = document.getElementById('mp-profile');
-    if (!m) { profileDiv.style.display = 'block'; profileDiv.innerHTML = '<div class="alert alert-error">সদস্য পাওয়া যায়নি।</div>'; return; }
+function prefillMemberPayment(memberID) {
+  const inp = document.getElementById('mpSearch');
+  if (inp) { inp.value = memberID; findMemberForPayment(); }
+}
 
-    const savings = (DB.getSavings ? DB.getSavings() : []).filter(s => s.userId === m.userId || s.memberID === m.memberID);
-    const totalDeposit = savings.reduce((s, v) => s + (v.amount || 0), 0);
-    const settings = getSettings();
-    const currentMonth = new Date().toISOString().substring(0, 7);
-    const paidThisMonth = savings.find(s => s.month === currentMonth);
+async function collectMemberPayment() {
+  if (!_mpCurrentMember) { showToast('আগে সদস্য খুঁজুন।', 'error'); return; }
+  const amount  = parseFloat(document.getElementById('mpAmount')?.value)||0;
+  const method  = document.getElementById('mpMethod')?.value||'cash';
+  const sendSMS = document.getElementById('mpSendSMS')?.checked;
+  if (amount <= 0) { showToast('সঠিক পরিমাণ দিন।', 'error'); return; }
 
-    profileDiv.style.display = 'block';
-    profileDiv.innerHTML = `
-    <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:16px;margin-bottom:14px;">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-        <div style="width:48px;height:48px;border-radius:50%;background:#1D9E75;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;">${(m.name||'ব')[0]}</div>
-        <div><div style="font-size:15px;font-weight:700;color:#fff;">${m.name}</div>
-        <div style="font-size:11px;color:var(--gold);">${m.memberID} | ${m.phone || '—'}</div></div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
-        <div class="stat-card" style="padding:10px;"><div class="stat-val" style="font-size:16px;">${fmtMoney(totalDeposit)}</div><div class="stat-lbl">মোট জমা</div></div>
-        <div class="stat-card" style="padding:10px;"><div class="stat-val" style="font-size:16px;color:${paidThisMonth?'#10b981':'#ef4444'};">${paidThisMonth ? '✅ পরিশোধিত' : '❌ বাকি'}</div><div class="stat-lbl">এই মাস</div></div>
-        <div class="stat-card" style="padding:10px;"><div class="stat-val" style="font-size:16px;">${savings.length}</div><div class="stat-lbl">মোট এন্ট্রি</div></div>
-      </div>
-    </div>
+  const now = new Date().toISOString();
+  const month = now.slice(0,7);
 
-    <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:16px;">
-      <div style="font-size:13px;color:var(--gold);margin-bottom:12px;">💵 নতুন পেমেন্ট</div>
-      <div class="form-row">
-        <div class="form-group"><label>মাস *</label><input class="form-input" type="month" id="mpp-month" value="${currentMonth}"></div>
-        <div class="form-group"><label>পরিমাণ (৳) *</label><input class="form-input" type="number" id="mpp-amount" value="${settings.monthlySavings || 2000}"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>পেমেন্ট মেথড</label>
-          <select class="form-select" id="mpp-method">
-            <option value="cash">নগদ</option><option value="bkash">বিকাশ</option>
-            <option value="nagad">নগদ MFS</option><option value="bank">ব্যাংক</option>
-          </select>
-        </div>
-        <div class="form-group"><label>নোট</label><input class="form-input" id="mpp-note" placeholder="ঐচ্ছিক"></div>
-      </div>
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-        <label style="display:flex;gap:6px;align-items:center;font-size:12px;cursor:pointer;">
-          <input type="checkbox" id="mpp-sms" checked> SMS পাঠান
-        </label>
-      </div>
-      <button class="btn-primary" onclick="collectMemberPayment('${m.id}','${m.memberID}','${m.name}','${m.userId||''}','${m.phone||''}')">💳 পেমেন্ট নিন</button>
-    </div>
+  let receiptNum = 'M-00001';
+  try {
+    const data = {
+      userId: _mpCurrentMember.userId || _mpCurrentMember.id,
+      memberId: _mpCurrentMember.id,
+      amount, method, month,
+      sendSMS, date: now,
+    };
+    const r = await apiPost('/savings', data);
+    receiptNum = r?.receiptNumber || receiptNum;
+    showToast('পেমেন্ট সংগ্রহ হয়েছে!', 'success');
+  } catch (_) {
+    if (typeof DB !== 'undefined') {
+      DB.addSaving?.({ id:'S-'+Date.now(), userId:_mpCurrentMember.userId, memberId:_mpCurrentMember.id, amount, method, month, date:now, createdAt:now });
+    }
+    showToast('পেমেন্ট সংরক্ষিত (অফলাইন)।', 'success');
+  }
 
-    <div style="margin-top:16px;">
-      <div style="font-size:13px;color:var(--gold);margin-bottom:8px;">📜 পেমেন্ট ইতিহাস</div>
-      <div class="table-wrap" style="max-height:200px;overflow-y:auto;">
-        <table><thead><tr><th>মাস</th><th>পরিমাণ</th><th>লেট ফি</th><th>তারিখ</th><th>রসিদ</th></tr></thead>
-        <tbody>${savings.slice(0, 20).map(s => `<tr>
-          <td>${s.month || '—'}</td><td>${fmtMoney(s.amount)}</td><td>${fmtMoney(s.lateFee||0)}</td>
-          <td>${fmtDate(s.date)}</td><td><code style="font-size:10px;">${s.receiptNo || '—'}</code></td>
-        </tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:rgba(255,255,255,0.3);">কোনো ইতিহাস নেই।</td></tr>'}
+  printReceipt({
+    receiptNo: receiptNum,
+    name: _mpCurrentMember.name,
+    memberId: _mpCurrentMember.memberID,
+    items: [{ label:`মাসিক সঞ্চয় — ${month}`, amount }],
+    total: amount,
+    method: method === 'cash' ? 'ক্যাশ' : method,
+    date: now,
+    collectedBy: adminSession?.name,
+  });
+}
+
+// ── Applications ──
+async function renderApplications(el) {
+  const content = el || document.getElementById('adminContent');
+  let apps = [];
+  try { const r = await apiFetch('/applications'); apps = r?.applications || []; } catch (_) {}
+  if (!apps.length) apps = (typeof DB!=='undefined') ? (DB.get?.('bf_applications')||[]) : [];
+
+  content.innerHTML = `
+    <div class="admin-card">
+      <div class="card-title">📝 সদস্য আবেদন তালিকা <span class="badge badge-warning ml-auto">${apps.filter(a=>a.status==='pending').length} পেন্ডিং</span></div>
+      <div class="table-wrap">
+        <table><thead>
+          <tr><th>আবেদন আইডি</th><th>নাম</th><th>মোবাইল</th><th>বিনিয়োগ ধরন</th><th>তারিখ</th><th>স্ট্যাটাস</th><th>অ্যাকশন</th></tr>
+        </thead><tbody>
+          ${apps.length ? apps.map(a=>`<tr>
+            <td><code style="font-size:.75rem">${a.applicationId||a.id?.slice(0,8)||'—'}</code></td>
+            <td style="font-weight:600">${a.personalInfo?.nameBn||a.name||'—'}</td>
+            <td>${a.personalInfo?.phone||a.phone||'—'}</td>
+            <td>${a.investment?.type||a.investType||'—'}</td>
+            <td style="font-size:.78rem">${fmtDate(a.submittedAt||a.createdAt)}</td>
+            <td>${statusBadge(a.status)}</td>
+            <td>
+              <button class="btn btn-sm btn-ghost" onclick="viewApplication('${a.id||a.applicationId}')">👁️</button>
+              ${a.status==='pending'?`<button class="btn btn-sm btn-primary" onclick="approveApp('${a.id||a.applicationId}')">✅</button><button class="btn btn-sm btn-danger" onclick="rejectApp('${a.id||a.applicationId}')">❌</button>`:''}
+            </td>
+          </tr>`).join('') : '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted)">কোনো আবেদন নেই।</td></tr>'}
+        </tbody></table>
+      </div>
+    </div>`;
+  window._appsData = apps;
+}
+
+function viewApplication(id) { showToast('বিস্তারিত পেনেলটি শীঘ্রই আসছে।', 'info'); }
+async function approveApp(id) {
+  showConfirm('আবেদন অনুমোদন','এই আবেদনটি অনুমোদন করবেন?', async () => {
+    try { await apiPatch(`/applications/${id}`, { status:'approved' }); showToast('অনুমোদিত!','success'); renderApplications(); }
+    catch(_) { showToast('ব্যর্থ।','error'); }
+  });
+}
+async function rejectApp(id) {
+  const reason = prompt('প্রত্যাখ্যানের কারণ:');
+  if (!reason) return;
+  try { await apiPatch(`/applications/${id}`, { status:'rejected', rejectReason: reason }); showToast('প্রত্যাখ্যাত।','success'); renderApplications(); }
+  catch (_) { showToast('ব্যর্থ।','error'); }
+}
+
+// ── Member Due ──
+async function renderMemberDue(el) {
+  const content = el || document.getElementById('adminContent');
+  let dueList = [];
+  try { const r = await apiFetch('/reports/defaulters/' + new Date().toISOString().slice(0,7)); dueList = r?.defaulters || []; } catch (_) {}
+
+  content.innerHTML = `
+    <div class="admin-card">
+      <div class="card-title">⚠️ সদস্য ডিউ রিপোর্ট <button class="btn btn-sm btn-ghost ml-auto" onclick="window.print()">🖨️ প্রিন্ট</button></div>
+      <div class="table-wrap">
+        <table><thead>
+          <tr><th>আইডি</th><th>নাম</th><th>মোবাইল</th><th>ডিউ পরিমাণ</th><th>মাস</th><th>অ্যাকশন</th></tr>
+        </thead><tbody>
+          ${dueList.length ? dueList.map(d=>`<tr>
+            <td><code>${d.memberID||'—'}</code></td>
+            <td style="font-weight:600">${d.name||'—'}</td>
+            <td>${d.phone||'—'}</td>
+            <td style="font-weight:700;color:var(--clr-danger)">${fmtMoney(d.dueAmount||2000)}</td>
+            <td>${d.month||new Date().toISOString().slice(0,7)}</td>
+            <td><button class="btn btn-sm btn-primary" onclick="gotoPage('member-payment');setTimeout(()=>prefillMemberPayment('${d.memberID}'),400)">💵 পেমেন্ট</button></td>
+          </tr>`).join('') : `<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted)">কোনো ডিউ নেই। 🎉</td></tr>`}
         </tbody></table>
       </div>
     </div>`;
 }
 
-function collectMemberPayment(memberId, memberID, memberName, userId, phone) {
-    const month = document.getElementById('mpp-month').value;
-    const amount = parseFloat(document.getElementById('mpp-amount').value) || 0;
-    const method = document.getElementById('mpp-method').value;
-    const note = document.getElementById('mpp-note').value;
-    const sendSMS = document.getElementById('mpp-sms').checked;
-
-    if (!month || !amount) { showToast('মাস ও পরিমাণ দিন।', 'error'); return; }
-
-    const settings = getSettings();
-    const dueDay = settings.savingsDueDay || 15;
-    const today = new Date();
-    const isLate = today.getDate() > dueDay && today.toISOString().substring(0, 7) === month;
-    const lateFee = isLate ? (settings.lateFee || 100) : 0;
-
-    const receiptNo = generateReceiptNo('M');
-    const now = new Date().toISOString();
-
-    // Save savings entry
-    const savings = DB.getSavings ? DB.getSavings() : [];
-    savings.push({
-        id: 'sv-' + Date.now(), userId, memberID, memberId,
-        month, amount, lateFee, method, note,
-        receiptNo, lateFlag: isLate,
-        date: now, addedBy: adminSession?.id
-    });
-    if (DB.set) DB.set(DB.KEYS.SAVINGS, savings);
-    else localStorage.setItem('bf_savings', JSON.stringify(savings));
-
-    saveReceipt(receiptNo, 'member_savings', { memberId, memberID, memberName, month, amount, lateFee, method });
-
-    // Ledger entry
-    const incomes = getIncomeEntries();
-    incomes.push({ id: 'inc-' + Date.now(), category: 'member_savings', amount, date: now, description: `মাসিক সঞ্চয় — ${memberName} (${memberID}) — ${month}`, receiptNo, paymentMethod: method, addedBy: adminSession?.id });
-    saveIncome(incomes);
-
-    // Charity: late fee goes to charity fund
-    if (lateFee > 0) {
-        const ci = getCharityIncome();
-        ci.push({ id: 'ch-' + Date.now(), category: 'late_fee', amount: lateFee, date: now, description: `বিলম্ব ফি — ${memberName} (${memberID}) — ${month}`, addedBy: adminSession?.id });
-        saveCharityIncome(ci);
-    }
-
-    addAuditLog('COLLECT_MEMBER_PAYMENT', 'accounts', `Member: ${memberID}, Month: ${month}, Amount: ${amount}`);
-
-    // Print receipt
-    printReceipt({
-        receiptNo, name: memberName, id: memberID,
-        items: [
-            { label: `মাসিক সঞ্চয় (${month})`, amount },
-            ...(lateFee > 0 ? [{ label: 'বিলম্ব ফি', amount: lateFee }] : [])
-        ],
-        total: amount + lateFee, method, date: now, collectedBy: adminSession?.name
-    });
-
-    showToast(`পেমেন্ট সফল। রসিদ: ${receiptNo}${isLate ? ' (বিলম্ব ফি সহ)' : ''}`);
-    findMemberForPayment();
+// ── Helper ──
+function randomAdminColor(str) {
+  const colors = ['#1D9E75','#639922','#BA7517','#185FA5','#3B6D11','#0F6E56','#854F0B','#3C3489','#993C1D','#972B56'];
+  let h = 0; for (let c of (str||'')) h = c.charCodeAt(0)+((h<<5)-h);
+  return colors[Math.abs(h)%colors.length];
 }
