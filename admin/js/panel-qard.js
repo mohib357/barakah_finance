@@ -1,7 +1,15 @@
-// panel-qard.js — Qard-e-Hasana Module
+// panel-qard.js — Qard-e-Hasana Module (API-connected)
 
-function renderQardList(el) {
-    const loans = getLoans();
+async function renderQardList(el) {
+    el.innerHTML = '<div class="spinner" style="margin:30px auto"></div>';
+    let loans = [];
+    try {
+        const r = await apiFetch('/loans');
+        loans = r?.loans || r || [];
+    } catch (_) {
+        loans = getLoans ? getLoans() : [];
+    }
+    window._qardData = loans;
     el.innerHTML = `
     <div class="stats-row">
       <div class="stat-card"><div class="stat-val">${loans.length}</div><div class="stat-lbl">মোট</div></div>
@@ -32,32 +40,41 @@ function renderQardList(el) {
     </div>`;
 }
 
-function approveQard(id) {
-    const loans = getLoans();
-    const idx = loans.findIndex(l=>l.id===id);
-    if(idx<0) return;
-    loans[idx].status = 'active';
-    loans[idx].approvedAt = new Date().toISOString();
-    loans[idx].approvedBy = adminSession?.id;
-    if(DB.set) DB.set(DB.KEYS.LOANS, loans);
-    else localStorage.setItem('bf_loans', JSON.stringify(loans));
-
-    // Qard fund deduction
-    const qi = getCharityIncome().filter(c=>c.category!=='qard_disbursement');
-    // Log charity expense
-    const ce = getCharityExpense();
-    ce.push({id:'qd-'+Date.now(),category:'qard_disbursement',amount:loans[idx].amount,date:new Date().toISOString(),description:`করজ বিতরণ — ${loans[idx].userName}`,addedBy:adminSession?.id});
-    saveCharityExpense(ce);
-
-    addAuditLog('APPROVE_QARD','qard',`Loan: ${id}, Amount: ${loans[idx].amount}`);
-    showToast('করজ অনুমোদন দেওয়া হয়েছে।');
-    renderPage('qard-list');
+async function approveQard(id) {
+    if (!confirm('করজ অনুমোদন দিতে চান?')) return;
+    try {
+        await apiPatch(`/loans/${id}/status`, { status: 'active' });
+        showToast('করজ অনুমোদন দেওয়া হয়েছে।', 'success');
+    } catch (_) {
+        // localStorage fallback
+        const loans = getLoans ? getLoans() : [];
+        const idx = loans.findIndex(l=>l.id===id);
+        if(idx<0) return;
+        loans[idx].status = 'active';
+        loans[idx].approvedAt = new Date().toISOString();
+        if(typeof DB !== 'undefined' && DB.set) DB.set(DB.KEYS.LOANS, loans);
+        else localStorage.setItem('bf_loans', JSON.stringify(loans));
+    }
+    renderQardList(document.getElementById('adminContent'));
 }
 
-function rejectQard(id) {
+async function rejectQard(id) {
     const reason = prompt('প্রত্যাখ্যানের কারণ:');
     if(!reason) return;
-    const loans = getLoans();
+    try {
+        await apiPatch(`/loans/${id}/status`, { status: 'rejected', reason });
+        showToast('করজ প্রত্যাখ্যাত হয়েছে।', 'success');
+    } catch (_) {
+        const loans = getLoans ? getLoans() : [];
+        const idx = loans.findIndex(l=>l.id===id);
+        if(idx<0) return;
+        loans[idx].status = 'rejected';
+        loans[idx].rejectReason = reason;
+        if(typeof DB !== 'undefined' && DB.set) DB.set(DB.KEYS.LOANS, loans);
+        else localStorage.setItem('bf_loans', JSON.stringify(loans));
+    }
+    renderQardList(document.getElementById('adminContent'));
+}
     const idx = loans.findIndex(l=>l.id===id);
     if(idx<0) return;
     loans[idx].status = 'rejected';

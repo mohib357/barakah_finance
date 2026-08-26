@@ -19,6 +19,7 @@ async function renderClientList(el) {
     }
     const enriched = clients;
     window._clientsData = enriched;
+    el.innerHTML = `
     <div class="stats-row">
       <div class="stat-card"><div class="stat-val">${clients.length}</div><div class="stat-lbl">মোট</div></div>
       <div class="stat-card"><div class="stat-val" style="color:#10b981;">${clients.filter(c=>c.status==='active').length}</div><div class="stat-lbl">সক্রিয়</div></div>

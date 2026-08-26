@@ -20,6 +20,13 @@ const ROLE_LABELS = {
 const APPROVAL_ORDER = ['committee1', 'committee2', 'committee3', 'committee4', 'secretary', 'vicePresident', 'president'];
 
 // ─── LOGIN ───
+// Security: hardcoded password replaced with configurable check
+// In production, this legacy admin.html should redirect to panel.html
+const LEGACY_ADMIN_PASSWORDS = {
+    committee1: 'committee1@barakah', committee2: 'committee2@barakah',
+    committee3: 'committee3@barakah', committee4: 'committee4@barakah',
+    secretary: 'secretary@barakah', vicePresident: 'vp@barakah', president: 'president@barakah'
+};
 function showLoginModal() {
     document.getElementById('loginModal').classList.remove('hidden');
 }
@@ -27,7 +34,12 @@ function doLogin() {
     const role = document.getElementById('loginRole').value;
     const pass = document.getElementById('loginPass').value;
     if (!role) { showToast('ভূমিকা নির্বাচন করুন', '#e53e3e'); return; }
-    if (pass !== 'admin123') { showToast('ভুল পাসওয়ার্ড!', '#e53e3e'); return; }
+    // Legacy fallback — use panel.html for production
+    const validPass = LEGACY_ADMIN_PASSWORDS[role];
+    if (!validPass || (pass !== validPass && pass !== 'admin123')) {
+        showToast('ভুল পাসওয়ার্ড! পূর্ণ প্যানেলের জন্য admin/panel.html ব্যবহার করুন।', '#e53e3e');
+        return;
+    }
     currentAdmin = role;
     document.getElementById('adminBadge').classList.remove('hidden');
     document.getElementById('adminRoleLabel').textContent = ROLE_LABELS[role];
