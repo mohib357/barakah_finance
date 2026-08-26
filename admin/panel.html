@@ -1,271 +1,278 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="bn" data-theme="light">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>বারাকাহ ফাইন্যান্স — ম্যানেজমেন্ট প্যানেল</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700&family=Noto+Sans+Bengali:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
-  <link rel="stylesheet" href="style/panel.css">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>অ্যাডমিন প্যানেল | বারাকাহ ফাইন্যান্স</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@300;400;500;600;700;800&family=Noto+Serif+Bengali:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../style/design-system.css"/>
+  <link rel="stylesheet" href="../style/pages.css"/>
+  <link rel="stylesheet" href="../style/admin.css"/>
 </head>
-<body>
+<body class="admin-body">
 
-<!-- ════ SIDEBAR ════ -->
-<aside class="sidebar" id="sidebar">
-  <div class="sb-header">
-    <div class="sb-logo">ব</div>
-    <div>
-      <div class="sb-title">বারাকাহ ফাইন্যান্স</div>
-      <div class="sb-subtitle">ম্যানেজমেন্ট প্যানেল</div>
-    </div>
-    <button class="sb-close" onclick="toggleSidebar()" title="বন্ধ করুন">✕</button>
-  </div>
-
-  <div class="sb-user" id="sbUser">
-    <div class="sb-avatar" id="sbAvatar">অ</div>
-    <div>
-      <div class="sb-uname" id="sbUname">লোড হচ্ছে...</div>
-      <div class="sb-role" id="sbRole">Admin</div>
-    </div>
-    <button class="sb-logout" onclick="adminLogout()" title="লগআউট">🚪</button>
-  </div>
-
-  <nav class="sb-nav" id="sbNav">
-    <div class="sb-section-label">মূল মেনু</div>
-
-    <div class="nav-item active" data-page="dashboard" onclick="gotoPage('dashboard',this)">
-      <span class="nav-icon">📊</span><span>ড্যাশবোর্ড</span>
-    </div>
-
-    <div class="nav-group">
-      <div class="nav-item has-sub" onclick="toggleSubMenu(this)">
-        <span class="nav-icon">⚙️</span><span>Basic Settings</span><span class="caret">›</span>
+<!-- ══ LOGIN SCREEN ══ -->
+<div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#032418,#0a2418,#163d2e)">
+  <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:40px;max-width:400px;width:100%;backdrop-filter:blur(16px)">
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="width:72px;height:72px;border-radius:50%;overflow:hidden;margin:0 auto 12px;border:2px solid rgba(201,162,39,.4)">
+        <img src="../image/logo.png" alt="লোগো" style="width:100%;height:100%;object-fit:cover"/>
       </div>
-      <div class="sub-menu">
-        <div class="nav-item" data-page="admin-mgmt" onclick="gotoPage('admin-mgmt',this)">👤 Admin Management</div>
-        <div class="nav-item" data-page="site-info" onclick="gotoPage('site-info',this)">🏢 Economy Information</div>
-        <div class="nav-item" data-page="economy-calendar" onclick="gotoPage('economy-calendar',this)">📅 Economy Calendar</div>
-        <div class="nav-item" data-page="permissions" onclick="gotoPage('permissions',this)">🔐 Page Access</div>
+      <h2 style="font-family:'Noto Serif Bengali',serif;color:#fff;font-size:1.5rem;margin-bottom:4px">বারাকাহ ফাইন্যান্স</h2>
+      <p style="color:rgba(255,255,255,.5);font-size:.85rem">অ্যাডমিন প্যানেল</p>
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="display:block;font-size:.82rem;color:rgba(255,255,255,.7);margin-bottom:6px">আইডি / ইউজারনেম / মোবাইল</label>
+      <input id="liId" type="text" placeholder="admin" style="width:100%;padding:12px 14px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;font-family:'Noto Sans Bengali',sans-serif;font-size:.9rem;outline:none" onkeydown="if(event.key==='Enter')doAdminLogin()"/>
+    </div>
+    <div style="margin-bottom:18px">
+      <label style="display:block;font-size:.82rem;color:rgba(255,255,255,.7);margin-bottom:6px">পাসওয়ার্ড</label>
+      <div style="position:relative">
+        <input id="liPw" type="password" placeholder="••••••••" style="width:100%;padding:12px 40px 12px 14px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;font-family:'Noto Sans Bengali',sans-serif;font-size:.9rem;outline:none" onkeydown="if(event.key==='Enter')doAdminLogin()"/>
+        <button onclick="const i=document.getElementById('liPw');i.type=i.type==='password'?'text':'password'" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(255,255,255,.5);font-size:1rem">👁</button>
       </div>
     </div>
-
-    <div class="nav-group">
-      <div class="nav-item has-sub" onclick="toggleSubMenu(this)">
-        <span class="nav-icon">👥</span><span>Member</span><span class="caret">›</span>
-      </div>
-      <div class="sub-menu">
-        <div class="nav-item" data-page="member-list" onclick="gotoPage('member-list',this)">📋 Member List</div>
-        <div class="nav-item" data-page="member-add" onclick="gotoPage('member-add',this)">➕ Add New Member</div>
-        <div class="nav-item" data-page="applications" onclick="gotoPage('applications',this)">📩 Applications</div>
-      </div>
-    </div>
-
-    <div class="nav-group">
-      <div class="nav-item has-sub" onclick="toggleSubMenu(this)">
-        <span class="nav-icon">🛒</span><span>Client/Product</span><span class="caret">›</span>
-      </div>
-      <div class="sub-menu">
-        <div class="nav-item" data-page="client-list" onclick="gotoPage('client-list',this)">📋 Client List</div>
-        <div class="nav-item" data-page="client-fund" onclick="gotoPage('client-fund',this)">💰 Client Fund</div>
-        <div class="nav-item" data-page="paid-clients" onclick="gotoPage('paid-clients',this)">✅ Paid Clients</div>
-        <div class="nav-item" data-page="due-clients" onclick="gotoPage('due-clients',this)">⚠️ Due Clients</div>
-        <div class="nav-item" data-page="client-add" onclick="gotoPage('client-add',this)">➕ Add New Client</div>
-        <div class="nav-item" data-page="product-ledger" onclick="gotoPage('product-ledger',this)">📒 Product Ledger</div>
-      </div>
-    </div>
-
-    <div class="nav-group">
-      <div class="nav-item has-sub" onclick="toggleSubMenu(this)">
-        <span class="nav-icon">💳</span><span>Accounts</span><span class="caret">›</span>
-      </div>
-      <div class="sub-menu">
-        <div class="nav-item" data-page="acc-settings" onclick="gotoPage('acc-settings',this)">⚙️ Settings</div>
-        <div class="nav-item" data-page="member-payment" onclick="gotoPage('member-payment',this)">💵 Member Payment</div>
-        <div class="nav-item" data-page="client-payment" onclick="gotoPage('client-payment',this)">💵 Client Installment</div>
-        <div class="nav-item" data-page="other-income" onclick="gotoPage('other-income',this)">📈 Other Income</div>
-        <div class="nav-item" data-page="expense" onclick="gotoPage('expense',this)">📉 Expense</div>
-        <div class="nav-item" data-page="acc-summary" onclick="gotoPage('acc-summary',this)">📊 Account Summary</div>
-        <div class="nav-item" data-page="member-due-report" onclick="gotoPage('member-due-report',this)">⚠️ Member Due</div>
-        <div class="nav-item" data-page="client-due-report" onclick="gotoPage('client-due-report',this)">⚠️ Client Due</div>
-        <div class="nav-item" data-page="acc-log" onclick="gotoPage('acc-log',this)">📜 Accounts Log</div>
-      </div>
-    </div>
-
-    <div class="nav-group">
-      <div class="nav-item has-sub" onclick="toggleSubMenu(this)">
-        <span class="nav-icon">📊</span><span>Project</span><span class="caret">›</span>
-      </div>
-      <div class="sub-menu">
-        <div class="nav-item" data-page="project-list" onclick="gotoPage('project-list',this)">📋 Project List</div>
-        <div class="nav-item" data-page="project-running" onclick="gotoPage('project-running',this)">🔄 Running</div>
-        <div class="nav-item" data-page="project-add" onclick="gotoPage('project-add',this)">➕ Create Project</div>
-      </div>
-    </div>
-
-    <div class="nav-group">
-      <div class="nav-item has-sub" onclick="toggleSubMenu(this)">
-        <span class="nav-icon">🏗️</span><span>Fixed Asset</span><span class="caret">›</span>
-      </div>
-      <div class="sub-menu">
-        <div class="nav-item" data-page="asset-list" onclick="gotoPage('asset-list',this)">📋 Asset List</div>
-        <div class="nav-item" data-page="asset-add" onclick="gotoPage('asset-add',this)">➕ Add Asset</div>
-      </div>
-    </div>
-
-    <div class="nav-group">
-      <div class="nav-item has-sub" onclick="toggleSubMenu(this)">
-        <span class="nav-icon">🤝</span><span>Qard-e-Hasana</span><span class="caret">›</span>
-      </div>
-      <div class="sub-menu">
-        <div class="nav-item" data-page="qard-list" onclick="gotoPage('qard-list',this)">📋 Qard List</div>
-        <div class="nav-item" data-page="qard-fund" onclick="gotoPage('qard-fund',this)">💰 Qard Fund</div>
-        <div class="nav-item" data-page="qard-collection" onclick="gotoPage('qard-collection',this)">💵 Collection</div>
-        <div class="nav-item" data-page="qard-add" onclick="gotoPage('qard-add',this)">➕ Create Qard</div>
-      </div>
-    </div>
-
-    <div class="nav-group">
-      <div class="nav-item has-sub" onclick="toggleSubMenu(this)">
-        <span class="nav-icon">❤️</span><span>Charity</span><span class="caret">›</span>
-      </div>
-      <div class="sub-menu">
-        <div class="nav-item" data-page="charity-income" onclick="gotoPage('charity-income',this)">📈 Fundraising</div>
-        <div class="nav-item" data-page="charity-expense" onclick="gotoPage('charity-expense',this)">📉 Expenditure</div>
-        <div class="nav-item" data-page="charity-apps" onclick="gotoPage('charity-apps',this)">📩 Applications</div>
-        <div class="nav-item" data-page="charity-ledger" onclick="gotoPage('charity-ledger',this)">📒 Ledger</div>
-      </div>
-    </div>
-
-    <div class="nav-group">
-      <div class="nav-item has-sub" onclick="toggleSubMenu(this)">
-        <span class="nav-icon">📱</span><span>SMS</span><span class="caret">›</span>
-      </div>
-      <div class="sub-menu">
-        <div class="nav-item" data-page="sms-records" onclick="gotoPage('sms-records',this)">📜 SMS Records</div>
-        <div class="nav-item" data-page="sms-send" onclick="gotoPage('sms-send',this)">📤 Send SMS</div>
-        <div class="nav-item" data-page="sms-recharge" onclick="gotoPage('sms-recharge',this)">🔋 Recharge</div>
-        <div class="nav-item" data-page="sms-templates" onclick="gotoPage('sms-templates',this)">📝 Templates</div>
-      </div>
-    </div>
-
-    <div class="nav-group">
-      <div class="nav-item has-sub" onclick="toggleSubMenu(this)">
-        <span class="nav-icon">🏛️</span><span>Committee</span><span class="caret">›</span>
-      </div>
-      <div class="sub-menu">
-        <div class="nav-item" data-page="committee-running" onclick="gotoPage('committee-running',this)">👥 Running Committee</div>
-        <div class="nav-item" data-page="committee-old" onclick="gotoPage('committee-old',this)">🕰️ Old Committee</div>
-        <div class="nav-item" data-page="committee-add" onclick="gotoPage('committee-add',this)">➕ Add Member</div>
-        <div class="nav-item" data-page="committee-rules" onclick="gotoPage('committee-rules',this)">📋 Rules</div>
-      </div>
-    </div>
-
-    <div class="nav-item" data-page="website-content" onclick="gotoPage('website-content',this)">
-      <span class="nav-icon">🌐</span><span>Website Content</span>
-    </div>
-
-    <div class="nav-group">
-      <div class="nav-item has-sub" onclick="toggleSubMenu(this)">
-        <span class="nav-icon">🛍️</span><span>E-Commerce</span><span class="caret">›</span>
-      </div>
-      <div class="sub-menu">
-        <div class="nav-item" data-page="products" onclick="gotoPage('products',this)">📦 Products</div>
-        <div class="nav-item" data-page="orders" onclick="gotoPage('orders',this)">🛒 Orders</div>
-        <div class="nav-item" data-page="shop-settings" onclick="gotoPage('shop-settings',this)">⚙️ Shop Settings</div>
-      </div>
-    </div>
-
-    <div class="nav-item" data-page="activity-log" onclick="gotoPage('activity-log',this)">
-      <span class="nav-icon">🔴</span><span>Activities & Transactions</span>
-      <span class="live-dot"></span>
-    </div>
-
-    <div class="nav-item" data-page="reviews" onclick="gotoPage('reviews',this)">
-      <span class="nav-icon">⭐</span><span>Reviews</span>
-    </div>
-
-    <div class="nav-item" data-page="gallery-mgmt" onclick="gotoPage('gallery-mgmt',this)">
-      <span class="nav-icon">🖼️</span><span>Gallery</span>
-    </div>
-
-    <div class="nav-item" data-page="timeline-mgmt" onclick="gotoPage('timeline-mgmt',this)">
-      <span class="nav-icon">📅</span><span>Timeline</span>
-    </div>
-  </nav>
-</aside>
-
-<!-- ════ MAIN ════ -->
-<div class="main-wrap" id="mainWrap">
-
-  <!-- TOP BAR -->
-  <header class="topbar" id="topbar">
-    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-    <div class="topbar-title" id="topbarTitle">ড্যাশবোর্ড</div>
-    <div class="topbar-right">
-      <div class="sms-bal" id="smsBal" title="SMS ব্যালেন্স">📱 —</div>
-      <div class="topbar-admin" id="topbarAdmin">লোড হচ্ছে...</div>
-      <a href="../index.html" class="topbar-link">🏠 হোম</a>
-    </div>
-  </header>
-
-  <!-- PAGE CONTENT -->
-  <main class="page-content" id="pageContent">
-    <!-- Pages are rendered here by JS -->
-    <div class="loading-screen" id="loadingScreen">
-      <div class="loader"></div>
-      <p>লোড হচ্ছে...</p>
-    </div>
-  </main>
-</div>
-
-<!-- ════ LOGIN MODAL ════ -->
-<div class="modal-overlay hidden" id="loginModal">
-  <div class="modal" style="max-width:380px;">
-    <div class="modal-head">
-      <h3>🔑 অ্যাডমিন লগইন</h3>
-      <button onclick="document.getElementById('loginModal').classList.add('hidden')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="aalert hidden" id="loginErr" style="color:#fca5a5;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:8px 12px;margin-bottom:12px;font-size:12px;"></div>
-      <div class="form-group"><label>মোবাইল / ইমেইল / ইউজারনেম *</label><input class="form-input" id="li-id" placeholder="01XXXXXXXXX বা username"></div>
-      <div class="form-group"><label>পাসওয়ার্ড *</label><input class="form-input" type="password" id="li-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doAdminLogin()"></div>
-      <button class="btn-primary w-full" onclick="doAdminLogin()">লগইন করুন</button>
-    </div>
+    <p id="loginErr" style="color:#f87171;font-size:.82rem;margin-bottom:12px;display:none"></p>
+    <button onclick="doAdminLogin()" style="width:100%;padding:13px;background:linear-gradient(135deg,#1D9E75,#0f7a57);border:none;border-radius:10px;color:#fff;font-family:'Noto Sans Bengali',sans-serif;font-size:1rem;font-weight:700;cursor:pointer">লগইন করুন</button>
   </div>
 </div>
 
-<!-- ════ TOAST ════ -->
-<div class="toast hidden" id="toast"></div>
+<!-- ══ MAIN PANEL ══ -->
+<div id="panelWrap" class="admin-layout" style="display:none">
 
-<!-- ════ CONFIRM MODAL ════ -->
+  <!-- SIDEBAR -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <!-- Brand -->
+    <div class="sb-brand">
+      <div class="sb-brand-logo sidebar-collapsed-hide"><img src="../image/logo.png" alt=""/></div>
+      <div class="sidebar-collapsed-hide">
+        <div class="sb-brand-name">বারাকাহ ফাইন্যান্স</div>
+        <div class="sb-brand-sub">অ্যাডমিন প্যানেল</div>
+      </div>
+      <div class="sidebar-collapsed-show" style="width:36px;height:36px;border-radius:50%;overflow:hidden">
+        <img src="../image/logo.png" style="width:100%;height:100%;object-fit:cover"/>
+      </div>
+    </div>
+
+    <!-- Admin Info -->
+    <div style="padding:14px;border-bottom:1px solid rgba(255,255,255,.08)" class="sidebar-collapsed-hide">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="admin-avatar" id="sbAdminAvatar">অ</div>
+        <div>
+          <div style="font-size:.85rem;font-weight:700;color:#fff" id="sbAdminName">অ্যাডমিন</div>
+          <div style="font-size:.72rem;color:rgba(255,255,255,.4)" id="sbAdminRole">Admin</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NAV GROUPS -->
+    <div class="sb-nav-group">
+      <div class="sb-nav-label sidebar-collapsed-hide">ড্যাশবোর্ড</div>
+      <button class="sb-nav active" data-page="dashboard" onclick="gotoPage('dashboard',this)">
+        <span class="sb-nav-icon">📊</span><span class="sb-nav-txt">ড্যাশবোর্ড</span>
+      </button>
+    </div>
+
+    <div class="sb-nav-group">
+      <div class="sb-nav-label sidebar-collapsed-hide">সদস্য ও ক্লাইন্ট</div>
+      <button class="sb-nav" onclick="toggleSub(this)">
+        <span class="sb-nav-icon">👥</span><span class="sb-nav-txt">সদস্য</span><span class="sb-nav-arrow sidebar-collapsed-hide">›</span>
+      </button>
+      <div class="sb-sub">
+        <button class="sb-sub-item" data-page="member-list"    onclick="gotoPage('member-list',this)">তালিকা</button>
+        <button class="sb-sub-item" data-page="member-add"     onclick="gotoPage('member-add',this)">নতুন সদস্য</button>
+        <button class="sb-sub-item" data-page="applications"   onclick="gotoPage('applications',this)">আবেদন</button>
+        <button class="sb-sub-item" data-page="member-payment" onclick="gotoPage('member-payment',this)">পেমেন্ট সংগ্রহ</button>
+        <button class="sb-sub-item" data-page="member-due"     onclick="gotoPage('member-due',this)">ডিউ রিপোর্ট</button>
+      </div>
+
+      <button class="sb-nav" onclick="toggleSub(this)">
+        <span class="sb-nav-icon">🏷️</span><span class="sb-nav-txt">ক্লাইন্ট</span><span class="sb-nav-arrow sidebar-collapsed-hide">›</span>
+      </button>
+      <div class="sb-sub">
+        <button class="sb-sub-item" data-page="client-list"    onclick="gotoPage('client-list',this)">তালিকা</button>
+        <button class="sb-sub-item" data-page="client-add"     onclick="gotoPage('client-add',this)">নতুন ক্লাইন্ট</button>
+        <button class="sb-sub-item" data-page="client-payment" onclick="gotoPage('client-payment',this)">কিস্তি সংগ্রহ</button>
+        <button class="sb-sub-item" data-page="client-due"     onclick="gotoPage('client-due',this)">ডিউ তালিকা</button>
+        <button class="sb-sub-item" data-page="client-paid"    onclick="gotoPage('client-paid',this)">পরিশোধিত</button>
+        <button class="sb-sub-item" data-page="client-fund"    onclick="gotoPage('client-fund',this)">ক্লাইন্ট ফান্ড</button>
+      </div>
+    </div>
+
+    <div class="sb-nav-group">
+      <div class="sb-nav-label sidebar-collapsed-hide">হিসাব</div>
+      <button class="sb-nav" onclick="toggleSub(this)">
+        <span class="sb-nav-icon">💰</span><span class="sb-nav-txt">একাউন্টস</span><span class="sb-nav-arrow sidebar-collapsed-hide">›</span>
+      </button>
+      <div class="sb-sub">
+        <button class="sb-sub-item" data-page="acc-settings"   onclick="gotoPage('acc-settings',this)">পেমেন্ট সেটিংস</button>
+        <button class="sb-sub-item" data-page="other-income"   onclick="gotoPage('other-income',this)">অন্যান্য আয়</button>
+        <button class="sb-sub-item" data-page="expense"        onclick="gotoPage('expense',this)">ব্যয়</button>
+        <button class="sb-sub-item" data-page="acc-summary"    onclick="gotoPage('acc-summary',this)">সারসংক্ষেপ</button>
+        <button class="sb-sub-item" data-page="acc-log"        onclick="gotoPage('acc-log',this)">একাউন্ট লগ</button>
+        <button class="sb-sub-item" data-page="receipt-check"  onclick="gotoPage('receipt-check',this)">রিসিট চেক</button>
+      </div>
+
+      <button class="sb-nav" onclick="toggleSub(this)">
+        <span class="sb-nav-icon">🏗️</span><span class="sb-nav-txt">প্রজেক্ট</span><span class="sb-nav-arrow sidebar-collapsed-hide">›</span>
+      </button>
+      <div class="sb-sub">
+        <button class="sb-sub-item" data-page="project-list"   onclick="gotoPage('project-list',this)">তালিকা</button>
+        <button class="sb-sub-item" data-page="project-add"    onclick="gotoPage('project-add',this)">নতুন প্রজেক্ট</button>
+        <button class="sb-sub-item" data-page="asset-list"     onclick="gotoPage('asset-list',this)">ফিক্সড এসেট</button>
+      </div>
+    </div>
+
+    <div class="sb-nav-group">
+      <div class="sb-nav-label sidebar-collapsed-hide">বিশেষ সেবা</div>
+      <button class="sb-nav" onclick="toggleSub(this)">
+        <span class="sb-nav-icon">🤝</span><span class="sb-nav-txt">করজে হাসানা</span><span class="sb-nav-arrow sidebar-collapsed-hide">›</span>
+      </button>
+      <div class="sb-sub">
+        <button class="sb-sub-item" data-page="qard-list"       onclick="gotoPage('qard-list',this)">তালিকা</button>
+        <button class="sb-sub-item" data-page="qard-fund"       onclick="gotoPage('qard-fund',this)">ফান্ড</button>
+        <button class="sb-sub-item" data-page="qard-collection" onclick="gotoPage('qard-collection',this)">সংগ্রহ</button>
+        <button class="sb-sub-item" data-page="qard-add"        onclick="gotoPage('qard-add',this)">নতুন করজ</button>
+      </div>
+
+      <button class="sb-nav" onclick="toggleSub(this)">
+        <span class="sb-nav-icon">❤️</span><span class="sb-nav-txt">চ্যারিটি</span><span class="sb-nav-arrow sidebar-collapsed-hide">›</span>
+      </button>
+      <div class="sb-sub">
+        <button class="sb-sub-item" data-page="charity-income"  onclick="gotoPage('charity-income',this)">ফান্ডরেইজিং</button>
+        <button class="sb-sub-item" data-page="charity-expense" onclick="gotoPage('charity-expense',this)">ব্যয়</button>
+        <button class="sb-sub-item" data-page="charity-apps"    onclick="gotoPage('charity-apps',this)">আবেদন</button>
+        <button class="sb-sub-item" data-page="charity-ledger"  onclick="gotoPage('charity-ledger',this)">লেজার</button>
+      </div>
+    </div>
+
+    <div class="sb-nav-group">
+      <div class="sb-nav-label sidebar-collapsed-hide">যোগাযোগ ও কন্টেন্ট</div>
+      <button class="sb-nav" onclick="toggleSub(this)">
+        <span class="sb-nav-icon">📱</span><span class="sb-nav-txt">SMS</span><span class="sb-nav-arrow sidebar-collapsed-hide">›</span>
+      </button>
+      <div class="sb-sub">
+        <button class="sb-sub-item" data-page="sms-records"   onclick="gotoPage('sms-records',this)">রেকর্ড</button>
+        <button class="sb-sub-item" data-page="sms-send"      onclick="gotoPage('sms-send',this)">SMS পাঠান</button>
+        <button class="sb-sub-item" data-page="sms-recharge"  onclick="gotoPage('sms-recharge',this)">রিচার্জ</button>
+        <button class="sb-sub-item" data-page="sms-templates" onclick="gotoPage('sms-templates',this)">টেমপ্লেট</button>
+      </div>
+
+      <button class="sb-nav" onclick="toggleSub(this)">
+        <span class="sb-nav-icon">🏛️</span><span class="sb-nav-txt">কমিটি</span><span class="sb-nav-arrow sidebar-collapsed-hide">›</span>
+      </button>
+      <div class="sb-sub">
+        <button class="sb-sub-item" data-page="committee-running" onclick="gotoPage('committee-running',this)">চলতি কমিটি</button>
+        <button class="sb-sub-item" data-page="committee-old"     onclick="gotoPage('committee-old',this)">পুরাতন কমিটি</button>
+        <button class="sb-sub-item" data-page="committee-add"     onclick="gotoPage('committee-add',this)">সদস্য যোগ</button>
+      </div>
+
+      <button class="sb-nav" onclick="toggleSub(this)">
+        <span class="sb-nav-icon">🌐</span><span class="sb-nav-txt">ওয়েবসাইট</span><span class="sb-nav-arrow sidebar-collapsed-hide">›</span>
+      </button>
+      <div class="sb-sub">
+        <button class="sb-sub-item" data-page="site-notices"   onclick="gotoPage('site-notices',this)">নোটিশ</button>
+        <button class="sb-sub-item" data-page="site-badges"    onclick="gotoPage('site-badges',this)">ব্যাজ</button>
+        <button class="sb-sub-item" data-page="site-info"      onclick="gotoPage('site-info',this)">সংগঠন তথ্য</button>
+        <button class="sb-sub-item" data-page="site-reviews"   onclick="gotoPage('site-reviews',this)">রিভিউ</button>
+        <button class="sb-sub-item" data-page="gallery-mgmt"   onclick="gotoPage('gallery-mgmt',this)">গ্যালারি</button>
+        <button class="sb-sub-item" data-page="timeline-mgmt"  onclick="gotoPage('timeline-mgmt',this)">টাইমলাইন</button>
+      </div>
+    </div>
+
+    <div class="sb-nav-group">
+      <div class="sb-nav-label sidebar-collapsed-hide">শপ</div>
+      <button class="sb-nav" onclick="toggleSub(this)">
+        <span class="sb-nav-icon">🛒</span><span class="sb-nav-txt">শপ</span><span class="sb-nav-arrow sidebar-collapsed-hide">›</span>
+      </button>
+      <div class="sb-sub">
+        <button class="sb-sub-item" data-page="products"      onclick="gotoPage('products',this)">পণ্য</button>
+        <button class="sb-sub-item" data-page="orders"        onclick="gotoPage('orders',this)">অর্ডার</button>
+      </div>
+    </div>
+
+    <div class="sb-nav-group">
+      <div class="sb-nav-label sidebar-collapsed-hide">সিস্টেম</div>
+      <button class="sb-nav" onclick="toggleSub(this)">
+        <span class="sb-nav-icon">⚙️</span><span class="sb-nav-txt">সেটিংস</span><span class="sb-nav-arrow sidebar-collapsed-hide">›</span>
+      </button>
+      <div class="sb-sub">
+        <button class="sb-sub-item" data-page="admin-mgmt"    onclick="gotoPage('admin-mgmt',this)">অ্যাডমিন ম্যানেজ</button>
+        <button class="sb-sub-item" data-page="permissions"   onclick="gotoPage('permissions',this)">পেজ এক্সেস</button>
+        <button class="sb-sub-item" data-page="settings"      onclick="gotoPage('settings',this)">সাইট সেটিংস</button>
+        <button class="sb-sub-item" data-page="backup"        onclick="gotoPage('backup',this)">ব্যাকআপ</button>
+      </div>
+      <button class="sb-nav" data-page="activity-log" onclick="gotoPage('activity-log',this)">
+        <span class="sb-nav-icon">📡</span><span class="sb-nav-txt">লাইভ একটিভিটি</span>
+      </button>
+      <button class="sb-nav" data-page="audit-log" onclick="gotoPage('audit-log',this)">
+        <span class="sb-nav-icon">🔍</span><span class="sb-nav-txt">অডিট লগ</span>
+      </button>
+    </div>
+
+    <!-- Logout -->
+    <div style="padding:12px;margin-top:auto;border-top:1px solid rgba(255,255,255,.08)">
+      <button class="sb-nav" onclick="adminLogout()" style="color:#f87171">
+        <span class="sb-nav-icon">🚪</span><span class="sb-nav-txt">লগআউট</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN AREA -->
+  <div class="admin-main" id="adminMain">
+    <!-- Topbar -->
+    <div class="admin-topbar">
+      <button class="admin-topbar-btn" onclick="toggleAdminSidebar()" title="সাইডবার">☰</button>
+      <div class="admin-topbar-title" id="topbarTitle">ড্যাশবোর্ড</div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
+        <!-- SMS Balance -->
+        <div style="font-size:.8rem;color:var(--text-muted);background:var(--bg-surface-2);padding:4px 10px;border-radius:8px;border:1px solid var(--border-light)" id="smsBalanceTop">SMS: ···</div>
+        <!-- Theme -->
+        <button class="admin-topbar-btn" onclick="toggleAdminTheme()" id="adminThemeBtn" title="থিম">🌙</button>
+        <!-- Admin -->
+        <div class="admin-topbar-admin">
+          <div class="admin-avatar" id="topAdminAvatar">অ</div>
+          <span id="topAdminName" style="font-size:.85rem">অ্যাডমিন</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="admin-content" id="adminContent">
+      <!-- Pages injected by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- CONFIRM MODAL -->
 <div class="modal-overlay hidden" id="confirmModal">
-  <div class="modal" style="max-width:360px;">
+  <div class="modal modal-sm">
     <div class="modal-head"><h3 id="confirmTitle">নিশ্চিত করুন</h3></div>
-    <div class="modal-body">
-      <p id="confirmMsg" style="color:rgba(255,255,255,0.8);margin-bottom:16px;"></p>
-      <div style="display:flex;gap:10px;">
-        <button class="btn-danger flex-1" id="confirmYes">হ্যাঁ, করুন</button>
-        <button class="btn-secondary flex-1" onclick="document.getElementById('confirmModal').classList.add('hidden')">না, বাতিল</button>
-      </div>
+    <div class="modal-body"><p id="confirmMsg"></p></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('confirmModal').classList.add('hidden')">বাতিল</button>
+      <button class="btn btn-danger btn-sm" id="confirmYes">হ্যাঁ</button>
     </div>
   </div>
 </div>
 
-<!-- JS -->
+<!-- RECEIPT PRINT AREA (hidden) -->
+<div id="receiptPrintWrap" style="display:none"></div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- DB & API -->
 <script src="../js/db.js"></script>
-<script src="../js/data.js"></script>
+<script src="../js/api.js"></script>
+<!-- Admin modules -->
 <script src="js/panel-core.js"></script>
-<script src="js/panel-pages.js"></script>
 <script src="js/panel-member.js"></script>
 <script src="js/panel-client.js"></script>
 <script src="js/panel-accounts.js"></script>
 <script src="js/panel-qard.js"></script>
-<script src="js/panel-charity.js"></script>
-<script src="js/panel-sms.js"></script>
-<script src="js/panel-committee.js"></script>
-<script src="js/panel-projects.js"></script>
-<script src="js/panel-activity.js"></script>
-<script src="js/panel-website.js"></script>
+<script src="js/panel-pages.js"></script>
 </body>
 </html>

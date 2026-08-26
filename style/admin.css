@@ -1,0 +1,119 @@
+/* ═══════════════════════════════════════════════════════════════
+   BARAKAH FINANCE — ADMIN PANEL SPECIFIC STYLES
+   ═══════════════════════════════════════════════════════════════ */
+
+.admin-body { margin:0; overflow-x:hidden; background:var(--bg-body); }
+
+/* ─── Stats row ─── */
+.stats-row {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:14px;
+  margin-bottom:20px;
+}
+
+/* ─── Admin card ─── */
+.admin-card {
+  background:var(--bg-surface);
+  border-radius:var(--radius-xl);
+  padding:var(--space-5);
+  border:1px solid var(--border-light);
+  box-shadow:var(--shadow-xs);
+  margin-bottom:16px;
+}
+.admin-card .card-title {
+  font-size:.95rem;
+  font-weight:700;
+  color:var(--text-primary);
+  margin-bottom:14px;
+  padding-bottom:10px;
+  border-bottom:1px solid var(--border-light);
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+/* ─── Quick action buttons ─── */
+.quick-actions {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom:16px;
+}
+
+/* ─── Dashboard pending badges ─── */
+.pending-badge {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 14px;
+  background:rgba(245,158,11,.1);
+  border:1px solid rgba(245,158,11,.25);
+  border-radius:var(--radius-lg);
+  font-size:.82rem;
+  color:var(--clr-warning);
+  cursor:pointer;
+  transition:all .2s;
+}
+.pending-badge:hover { background:rgba(245,158,11,.18); }
+
+/* ─── Chart container ─── */
+.chart-wrap {
+  position:relative;
+  width:100%;
+  height:220px;
+}
+
+/* ─── Receipt print ─── */
+@media print {
+  .admin-sidebar,.admin-topbar,.toast-container,.modal-overlay,
+  #loginScreen,button,a.btn { display:none !important; }
+  .admin-content,.admin-main { margin:0 !important; padding:0 !important; }
+  body { background:#fff !important; }
+}
+
+/* ─── Two column grid ─── */
+.two-col { display:grid;grid-template-columns:1fr 1fr;gap:16px; }
+.three-col { display:grid;grid-template-columns:repeat(3,1fr);gap:14px; }
+@media (max-width:768px) {
+  .two-col,.three-col { grid-template-columns:1fr; }
+  .stats-row { grid-template-columns:repeat(2,1fr); }
+}
+
+/* ─── Sidebar mobile overlay ─── */
+@media (max-width:768px) {
+  .admin-sidebar {
+    position:fixed;top:0;left:0;bottom:0;z-index:300;
+    transform:translateX(-100%);transition:transform .3s ease;
+  }
+  .admin-sidebar.mobile-open { transform:translateX(0); }
+  .admin-main { margin-left:0 !important; }
+  .admin-sidebar-overlay {
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:299;
+  }
+  .admin-sidebar.mobile-open ~ .admin-sidebar-overlay { display:block; }
+}
+
+/* ─── Topbar compact on mobile ─── */
+@media (max-width:480px) {
+  .admin-topbar { padding:0 12px; gap:8px; }
+  .admin-topbar-title { font-size:.9rem; }
+  #smsBalanceTop { display:none; }
+}
+
+/* ─── Active log item ─── */
+.log-item {
+  display:flex;align-items:flex-start;gap:12px;
+  padding:10px 14px;border-radius:10px;
+  background:var(--bg-surface-2);margin-bottom:6px;
+  border-left:3px solid var(--border-color);
+}
+.log-item.income { border-color:var(--clr-success); }
+.log-item.expense { border-color:var(--clr-danger); }
+.log-item.warning { border-color:var(--clr-warning); }
+.log-item-icon { font-size:1.2rem;flex-shrink:0; }
+.log-item-body { flex:1;min-width:0; }
+.log-item-title { font-size:.85rem;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.log-item-sub { font-size:.75rem;color:var(--text-muted);margin-top:2px; }
+.log-item-amount { font-weight:700;font-size:.9rem;flex-shrink:0; }
