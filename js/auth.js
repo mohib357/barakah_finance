@@ -205,13 +205,72 @@ function resendOtp() {
 }
 
 // ════════ FORGOT PASSWORD ════════
-function doForgot() {
+async function doForgot() {
     const id = document.getElementById('fg-id')?.value.trim();
     if (!id) return aAlert('নম্বর বা ইমেইল দিন।', 'err', 'forgot');
-    const u = DB.findUser(id);
-    if (!u) return aAlert('অ্যাকাউন্ট পাওয়া যায়নি।', 'err', 'forgot');
-    aAlert('ডেমো: পাসওয়ার্ড "' + u.password + '" (বাস্তবে OTP যাবে)', 'ok', 'forgot');
+
+    aAlert('অনুরোধ পাঠানো হচ্ছে...', 'ok', 'forgot');
+    try {
+        const API_BASE = 'http://localhost:3001/api';
+        const res = await fetch(`${API_BASE}/auth/forgot-password`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone: id })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            const u = DB.findUser(id);
+            if (u) aAlert('SMS পাঠানো সম্ভব হয়নি। অ্যাডমিনের সাথে যোগাযোগ করুন।', 'err', 'forgot');
+            else aAlert(data.error || 'অ্যাকাউন্ট পাওয়া যায়নি।', 'err', 'forgot');
+            return;
+        }
+        const msg = data.smsSent
+            ? 'আপনার মোবাইলে OTP পাঠানো হয়েছে।'
+            : (data.demo_otp ? `Demo OTP: ${data.demo_otp}` : 'OTP পাঠানো হয়েছে।');
+        aAlert(msg, 'ok', 'forgot');
+        // Add OTP input if available
+        if (data.demo_otp || data.smsSent) {
+            const forgotPanel = document.getElementById('ap-forgot');
+            if (forgotPanel && !document.getElementById('fg-otp')) {
+                forgotPanel.insertAdjacentHTML('beforeend', `
+                    <div class="af" style="margin-top:8px">
+                        <label>OTP কোড</label>
+                        <input class="ai" id="fg-otp" maxlength="6" placeholder="6 সংখ্যার OTP"/>
+                    </div>
+                    <div class="af">
+                        <label>নতুন পাসওয়ার্ড</label>
+                        <input class="ai" id="fg-newpw" type="password" placeholder="নতুন পাসওয়ার্ড (৮+ অক্ষর)"/>
+                    </div>
+                    <button class="auth-btn" onclick="doResetPassword('${id}')" style="margin-top:8px">✅ পাসওয়ার্ড পরিবর্তন করুন</button>
+                `);
+            }
+        }
+    } catch (e) {
+        const u = DB.findUser(id);
+        if (u) aAlert('সার্ভার সংযোগ নেই। অ্যাডমিনের সাথে যোগাযোগ করুন।', 'err', 'forgot');
+        else aAlert('অ্যাকাউন্ট পাওয়া যায়নি।', 'err', 'forgot');
+    }
 }
+
+async function doResetPassword(phone) {
+    const otp = document.getElementById('fg-otp')?.value.trim();
+    const newPw = document.getElementById('fg-newpw')?.value;
+    if (!otp || !newPw) return aAlert('OTP ও নতুন পাসওয়ার্ড দিন।', 'err', 'forgot');
+    if (newPw.length < 8) return aAlert('পাসওয়ার্ড কমপক্ষে ৮ অক্ষর হতে হবে।', 'err', 'forgot');
+    try {
+        const API_BASE = 'http://localhost:3001/api';
+        const res = await fetch(`${API_BASE}/auth/reset-password`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone, otp, newPassword: newPw })
+        });
+        const data = await res.json();
+        if (!res.ok) return aAlert(data.error || 'পাসওয়ার্ড পরিবর্তন ব্যর্থ।', 'err', 'forgot');
+        aAlert('পাসওয়ার্ড সফলভাবে পরিবর্তন হয়েছে! লগইন করুন।', 'ok', 'forgot');
+        setTimeout(() => setPanel('login'), 2000);
+    } catch (e) { aAlert('সার্ভার সংযোগ নেই।', 'err', 'forgot'); }
+}
+
+// Alias for index.html calls
+function doForgotPassword() { doForgot(); }
 
 // ════════ AFTER LOGIN ════════
 function onLoginOk(u) {
