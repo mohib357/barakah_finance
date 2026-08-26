@@ -10,12 +10,14 @@ const { verifyToken, requireAdmin } = require('../middleware/auth');
 // ── অন্যান্য আয় ──
 router.get('/income', verifyToken, requireAdmin, (req, res) => {
     const { category, from, to } = req.query;
-    let income = db.get('income').value();
+    // Fix: deleted entries filter করা
+    let income = db.get('income').value().filter(i => !i.deleted);
     if (category) income = income.filter(i => i.category === category);
     if (from) income = income.filter(i => i.date >= from);
     if (to) income = income.filter(i => i.date <= to);
     income = income.sort((a, b) => new Date(b.date) - new Date(a.date));
-    res.json({ income });
+    const categories = [...new Set(db.get('income').value().map(i => i.category))].filter(Boolean);
+    res.json({ income, categories });
 });
 
 router.post('/income', verifyToken, requireAdmin, (req, res) => {
@@ -221,11 +223,18 @@ router.get('/log', verifyToken, requireAdmin, (req, res) => {
     res.json({ log });
 });
 
-// ── Helper ──
+// ── Helper — collision-safe receipt number ──
 function generateReceiptNumber(prefix) {
+    // সর্বোচ্চ সিরিয়াল নম্বর খুঁজে বের করি, শুধু count নয়
     const receipts = db.get('receipts').value();
-    const count = receipts.filter(r => r.receiptNumber && r.receiptNumber.startsWith(prefix)).length;
-    return `${prefix}-${String(count + 1).padStart(5, '0')}`;
+    const nums = receipts
+        .filter(r => r.receiptNumber && r.receiptNumber.startsWith(prefix + '-'))
+        .map(r => {
+            const parts = r.receiptNumber.split('-');
+            return parseInt(parts[parts.length - 1]) || 0;
+        });
+    const maxNum = nums.length > 0 ? Math.max(...nums) : 0;
+    return `${prefix}-${String(maxNum + 1).padStart(5, '0')}`;
 }
 
 module.exports = router;

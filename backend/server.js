@@ -9,8 +9,17 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // ── Middleware ──
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000,http://127.0.0.1:5500,http://localhost:5500').split(',');
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:5500', 'http://localhost:5500', '*'],
+    origin: function(origin, callback) {
+        // Allow requests with no origin (mobile apps, curl, same-origin)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+            callback(null, true);
+        } else {
+            callback(new Error('CORS নীতি: অননুমোদিত উৎস'));
+        }
+    },
     credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));

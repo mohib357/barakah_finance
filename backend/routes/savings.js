@@ -139,11 +139,15 @@ router.get('/report/monthly', verifyToken, requireAdmin, (req, res) => {
 // ── কে কে বাকি (মাস অনুযায়ী) ──
 router.get('/missing/:month', verifyToken, requireAdmin, (req, res) => {
     const { month } = req.params;
-    const members = db.get('users').filter(u => ['member', 'admin'].includes(u.role) && u.role !== 'admin').value();
+    // Fix: শুধু monthly_savings members চাই, admin বাদ
+    const memberRecords = db.get('members').filter({ status: 'active', investType: 'monthly_savings' }).value();
+    const memberUserIds = memberRecords.map(m => m.userId);
+    const members = db.get('users').filter(u => memberUserIds.includes(u.id)).value();
     const paid = db.get('savings').filter({ month }).map(s => s.userId).value();
-    const missing = members.filter(m => !paid.includes(m.id)).map(m => ({
-        id: m.id, name: m.name, phone: m.phone, memberID: m.memberID
-    }));
+    const missing = members.filter(m => !paid.includes(m.id)).map(m => {
+        const memberRec = memberRecords.find(mr => mr.userId === m.id);
+        return { id: m.id, name: m.name, phone: m.phone, memberID: memberRec?.memberID || m.memberID };
+    });
     res.json({ month, missing, paidCount: paid.length, missingCount: missing.length });
 });
 

@@ -103,11 +103,108 @@ router.get('/settings', verifyToken, requireAdmin, (req, res) => {
 });
 
 router.put('/settings', verifyToken, requireAdmin, (req, res) => {
-    const allowed = ['monthlySavings', 'lateFee', 'profitMargin', 'maxLoan', 'registrationOpen', 'noticeSpeed', 'siteName', 'slogan', 'phone', 'address'];
+    const allowed = [
+        'monthlySavings', 'lateFee', 'profitMargin', 'maxLoan', 'registrationOpen',
+        'noticeSpeed', 'siteName', 'slogan', 'phone', 'address', 'email', 'website',
+        'unitValue', 'savingsDueDay', 'savingsWarnDay', 'installmentGraceDays',
+        'memberProfitShare', 'charityShare', 'orgShare', 'formFee', 'maxGuarantors',
+        'withdrawalNoticeDays', 'fbPageUrl', 'smsApiKey', 'smsApiUrl', 'smsSenderId',
+        'twoFAEnabled', 'backupEnabled', 'backupIntervalHours', 'backupRetentionDays',
+        'profitCalcMethod', 'clientFund'
+    ];
+    const old = JSON.stringify(db.get('settings').value());
     const updates = {};
     allowed.forEach(k => { if (req.body[k] !== undefined) updates[k] = req.body[k]; });
     db.get('settings').assign(updates).write();
+
+    // Audit log for sensitive setting changes
+    const sensitiveKeys = ['unitValue', 'memberProfitShare', 'charityShare', 'orgShare', 'profitMargin', 'lateFee', 'maxLoan'];
+    const changedSensitive = sensitiveKeys.filter(k => updates[k] !== undefined);
+    if (changedSensitive.length > 0) {
+        const { uuidv4: uid } = require('../db/database');
+        db.get('audit_log').push({
+            id: uid(),
+            action: 'CHANGE_SETTINGS',
+            module: 'settings',
+            recordId: 'settings',
+            oldValue: old,
+            newValue: JSON.stringify(updates),
+            reason: req.body.changeReason || 'Settings updated',
+            userId: req.user.id,
+            date: new Date().toISOString()
+        }).write();
+    }
+
     res.json({ message: 'সেটিংস আপডেট হয়েছে', settings: db.get('settings').value() });
+});
+
+// ── ব্যাকআপ ──
+const path = require('path');
+const fs = require('fs');
+
+router.post('/backup', verifyToken, requireAdmin, (req, res) => {
+    try {
+        const data = db.get('').value ? db.getState() : JSON.parse(fs.readFileSync(path.join(__dirname, '../db/data.json'), 'utf8'));
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+        const backupDir = path.join(__dirname, '../db/backups');
+
+        if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
+
+        const filename = `backup_${timestamp}.json`;
+        const filepath = path.join(backupDir, filename);
+        fs.writeFileSync(filepath, JSON.stringify(data, null, 2), 'utf8');
+
+        // ৬০ দিনের বেশি পুরোনো ব্যাকআপ মুছো
+        const retentionDays = db.get('settings').value().backupRetentionDays || 60;
+        const cutoff = Date.now() - retentionDays * 24 * 60 * 60 * 1000;
+        fs.readdirSync(backupDir).forEach(f => {
+            if (f.startsWith('backup_') && f.endsWith('.json')) {
+                const fpath = path.join(backupDir, f);
+                if (fs.statSync(fpath).mtimeMs < cutoff) fs.unlinkSync(fpath);
+            }
+        });
+
+        // Audit log
+        const { uuidv4: uid } = require('../db/database');
+        db.get('audit_log').push({
+            id: uid(), action: 'BACKUP_CREATED', module: 'backup', recordId: filename,
+            newValue: JSON.stringify({ filename, size: fs.statSync(filepath).size }),
+            userId: req.user.id, date: new Date().toISOString()
+        }).write();
+
+        res.json({ message: 'ব্যাকআপ সম্পন্ন হয়েছে', filename, timestamp });
+    } catch (err) {
+        res.status(500).json({ error: 'ব্যাকআপ ব্যর্থ হয়েছে: ' + err.message });
+    }
+});
+
+// ── ব্যাকআপ তালিকা ──
+router.get('/backups', verifyToken, requireAdmin, (req, res) => {
+    try {
+        const backupDir = path.join(__dirname, '../db/backups');
+        if (!fs.existsSync(backupDir)) return res.json({ backups: [] });
+        const backups = fs.readdirSync(backupDir)
+            .filter(f => f.startsWith('backup_') && f.endsWith('.json'))
+            .map(f => {
+                const fpath = path.join(backupDir, f);
+                const stat = fs.statSync(fpath);
+                return { filename: f, size: stat.size, createdAt: stat.mtime.toISOString() };
+            })
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        res.json({ backups });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── ব্যাকআপ ডাউনলোড ──
+router.get('/backups/:filename', verifyToken, requireAdmin, (req, res) => {
+    const backupDir = path.join(__dirname, '../db/backups');
+    const filepath = path.join(backupDir, req.params.filename);
+    // Path traversal protection
+    if (!filepath.startsWith(backupDir)) return res.status(400).json({ error: 'অবৈধ পথ' });
+    if (!fs.existsSync(filepath)) return res.status(404).json({ error: 'ফাইল পাওয়া যায়নি' });
+    res.download(filepath);
 });
 
 module.exports = router;
