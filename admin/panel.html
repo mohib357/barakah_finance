@@ -108,9 +108,19 @@
         <button class="sb-sub-item" data-page="acc-settings"   onclick="gotoPage('acc-settings',this)">পেমেন্ট সেটিংস</button>
         <button class="sb-sub-item" data-page="other-income"   onclick="gotoPage('other-income',this)">অন্যান্য আয়</button>
         <button class="sb-sub-item" data-page="expense"        onclick="gotoPage('expense',this)">ব্যয়</button>
+        <button class="sb-sub-item" data-page="fund-transfers" onclick="gotoPage('fund-transfers',this)">ফান্ড ট্রান্সফার</button>
         <button class="sb-sub-item" data-page="acc-summary"    onclick="gotoPage('acc-summary',this)">সারসংক্ষেপ</button>
         <button class="sb-sub-item" data-page="acc-log"        onclick="gotoPage('acc-log',this)">একাউন্ট লগ</button>
         <button class="sb-sub-item" data-page="receipt-check"  onclick="gotoPage('receipt-check',this)">রিসিট চেক</button>
+      </div>
+
+      <button class="sb-nav" onclick="toggleSub(this)">
+        <span class="sb-nav-icon">📈</span><span class="sb-nav-txt">মুনাফা</span><span class="sb-nav-arrow sidebar-collapsed-hide">›</span>
+      </button>
+      <div class="sb-sub">
+        <button class="sb-sub-item" data-page="profit-distribution" onclick="gotoPage('profit-distribution',this)">মুনাফা বিতরণ</button>
+        <button class="sb-sub-item" data-page="profit-history"      onclick="gotoPage('profit-history',this)">বিতরণের ইতিহাস</button>
+        <button class="sb-sub-item" data-page="withdrawals"         onclick="gotoPage('withdrawals',this)">উত্তোলনের আবেদন</button>
       </div>
 
       <button class="sb-nav" onclick="toggleSub(this)">

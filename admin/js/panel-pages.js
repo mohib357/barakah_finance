@@ -826,3 +826,279 @@ function renderWebsiteContent(el) {
       </div>`).join('')}
     </div>`;
 }
+
+// ════════════════════════════════════════════════════════
+// PROFIT DISTRIBUTION MODULE
+// ════════════════════════════════════════════════════════
+async function renderProfitDistribution(el) {
+    el.innerHTML = `
+    <div class="admin-card">
+      <div class="card-title">💰 মুনাফা বিতরণ</div>
+      <p style="color:var(--text-muted);font-size:.88rem;margin-bottom:16px">
+        Website.txt নিয়ম: নিট মুনাফা = আয় − পণ্য ব্যয় − পরিচালন ব্যয়। সদস্য ৬০%, চ্যারিটি ৫%, সংগঠন ৩৫%।
+      </p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+        <div class="form-group">
+          <label class="form-label">শুরুর তারিখ <span class="req">*</span></label>
+          <input type="date" class="form-input" id="pd-from" value="${new Date().toISOString().slice(0,7)+'-01'}"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">শেষ তারিখ <span class="req">*</span></label>
+          <input type="date" class="form-input" id="pd-to" value="${new Date().toISOString().slice(0,10)}"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">মোট ব্যবসায়িক আয় (৳) <span class="req">*</span></label>
+          <input type="number" class="form-input" id="pd-revenue" placeholder="০" min="0" step="0.01"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">পণ্যের ক্রয় মূল্য (৳)</label>
+          <input type="number" class="form-input" id="pd-cogs" placeholder="০" min="0" step="0.01"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">পরিচালন ব্যয় (৳)</label>
+          <input type="number" class="form-input" id="pd-opex" placeholder="০" min="0" step="0.01"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">বিবরণ</label>
+          <input type="text" class="form-input" id="pd-desc" placeholder="যেমন: জুলাই ২০২৬ মুনাফা বিতরণ"/>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px">
+        <button class="btn btn-outline btn-sm" onclick="calcProfit()">🔢 হিসাব দেখুন (Preview)</button>
+        <button class="btn btn-primary btn-sm" onclick="distributeProfit()" id="pdFinalBtn" disabled>✅ চূড়ান্ত বিতরণ করুন</button>
+      </div>
+      <div id="pdResult"></div>
+    </div>
+    <div class="admin-card" style="margin-top:16px">
+      <div class="card-title">📋 বিতরণের ইতিহাস</div>
+      <div id="pdHistory"><div class="spinner" style="margin:16px auto"></div></div>
+    </div>`;
+    loadProfitHistory('pdHistory');
+}
+
+async function calcProfit() {
+    const from = document.getElementById('pd-from')?.value;
+    const to = document.getElementById('pd-to')?.value;
+    const revenue = parseFloat(document.getElementById('pd-revenue')?.value) || 0;
+    const cogs = parseFloat(document.getElementById('pd-cogs')?.value) || 0;
+    const opex = parseFloat(document.getElementById('pd-opex')?.value) || 0;
+    const resultEl = document.getElementById('pdResult');
+    if (!from || !to || revenue <= 0) { showToast('তারিখ ও আয় দিন।', 'warning'); return; }
+    resultEl.innerHTML = '<div class="spinner" style="margin:16px auto"></div>';
+    try {
+        const r = await apiPost('/profit/calculate', { fromDate: from, toDate: to, businessRevenue: revenue, costOfGoods: cogs, operationalExpense: opex, description: document.getElementById('pd-desc')?.value });
+        if (r.netProfit <= 0) {
+            resultEl.innerHTML = `<div style="padding:16px;background:rgba(239,68,68,.1);border-radius:8px;color:#f87171">⚠️ নিট মুনাফা শূন্য বা ঋণাত্মক (৳${r.netProfit})। কোনো বিতরণ হবে না।</div>`;
+            document.getElementById('pdFinalBtn').disabled = true;
+            return;
+        }
+        window._profitPreview = r;
+        document.getElementById('pdFinalBtn').disabled = false;
+        resultEl.innerHTML = `
+        <div style="background:rgba(29,158,117,.1);border:1px solid rgba(29,158,117,.3);border-radius:12px;padding:16px;margin-bottom:16px">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:16px">
+            <div class="stat-card"><div class="stat-val" style="font-size:1.1rem">৳${fmtN(r.netProfit)}</div><div class="stat-lbl">নিট মুনাফা</div></div>
+            <div class="stat-card"><div class="stat-val" style="font-size:1.1rem;color:#10b981">৳${fmtN(r.memberPool)}</div><div class="stat-lbl">সদস্যদের ভাগ (${r.memberSharePercent}%)</div></div>
+            <div class="stat-card"><div class="stat-val" style="font-size:1.1rem;color:#f59e0b">৳${fmtN(r.charityAllocation)}</div><div class="stat-lbl">চ্যারিটি ফান্ড (${r.charitySharePercent}%)</div></div>
+            <div class="stat-card"><div class="stat-val" style="font-size:1.1rem;color:#60a5fa">৳${fmtN(r.orgAllocation)}</div><div class="stat-lbl">সংগঠন ফান্ড (${r.orgSharePercent}%)</div></div>
+          </div>
+          <div class="table-wrap" style="max-height:300px;overflow-y:auto">
+            <table><thead><tr><th>সদস্য আইডি</th><th>নাম</th><th>মূলধন</th><th>ইউনিট</th><th>সক্রিয় দিন</th><th>মুনাফার ভাগ</th><th>শতাংশ</th></tr></thead>
+            <tbody>${(r.memberShares||[]).map(m=>`<tr>
+              <td><code>${m.memberID||'—'}</code></td>
+              <td>${m.name||'—'}</td>
+              <td>৳${fmtN(m.activeCapital)}</td>
+              <td>${m.units||0}</td>
+              <td>${m.activeDays||0}/${m.totalDays||0}</td>
+              <td style="font-weight:700;color:#10b981">৳${fmtN(m.profitShare)}</td>
+              <td>${(m.sharePercent||0).toFixed(2)}%</td>
+            </tr>`).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--text-muted)">কোনো সদস্য নেই।</td></tr>'}</tbody>
+            </table>
+          </div>
+        </div>`;
+    } catch (e) { resultEl.innerHTML = `<div style="color:#f87171">ত্রুটি: ${e.message}</div>`; document.getElementById('pdFinalBtn').disabled = true; }
+}
+
+async function distributeProfit() {
+    if (!window._profitPreview) { showToast('আগে হিসাব দেখুন।', 'warning'); return; }
+    if (!confirm(`মোট ৳${fmtN(window._profitPreview.netProfit)} নিট মুনাফা চূড়ান্তভাবে বিতরণ করতে চান?`)) return;
+    const from = document.getElementById('pd-from')?.value;
+    const to = document.getElementById('pd-to')?.value;
+    const revenue = parseFloat(document.getElementById('pd-revenue')?.value) || 0;
+    const cogs = parseFloat(document.getElementById('pd-cogs')?.value) || 0;
+    const opex = parseFloat(document.getElementById('pd-opex')?.value) || 0;
+    const desc = document.getElementById('pd-desc')?.value;
+    try {
+        const r = await apiPost('/profit/distribute', { fromDate: from, toDate: to, businessRevenue: revenue, costOfGoods: cogs, operationalExpense: opex, description: desc });
+        showToast(r.message || 'মুনাফা বিতরণ সম্পন্ন।', 'success');
+        document.getElementById('pdFinalBtn').disabled = true;
+        window._profitPreview = null;
+        loadProfitHistory('pdHistory');
+    } catch (e) { showToast('ব্যর্থ: ' + e.message, 'error'); }
+}
+
+async function loadProfitHistory(wrapperId) {
+    const wrap = document.getElementById(wrapperId);
+    if (!wrap) return;
+    try {
+        const r = await apiFetch('/profit');
+        const dists = r?.distributions || [];
+        if (!dists.length) { wrap.innerHTML = '<p style="color:var(--text-muted)">কোনো বিতরণ নেই।</p>'; return; }
+        wrap.innerHTML = `<div class="table-wrap"><table>
+          <thead><tr><th>সময়কাল</th><th>নিট মুনাফা</th><th>সদস্য ভাগ</th><th>চ্যারিটি</th><th>সংগঠন</th><th>তারিখ</th></tr></thead>
+          <tbody>${dists.map(d=>`<tr>
+            <td style="font-size:.8rem">${fmtDate(d.fromDate)} — ${fmtDate(d.toDate)}</td>
+            <td style="font-weight:700">৳${fmtN(d.netProfit)}</td>
+            <td style="color:#10b981">৳${fmtN(d.memberPool)}</td>
+            <td style="color:#f59e0b">৳${fmtN(d.charityAllocation)}</td>
+            <td style="color:#60a5fa">৳${fmtN(d.orgAllocation)}</td>
+            <td style="font-size:.78rem">${fmtDate(d.createdAt)}</td>
+          </tr>`).join('')}</tbody>
+        </table></div>`;
+    } catch (_) { wrap.innerHTML = '<p style="color:var(--text-muted)">লোড ব্যর্থ।</p>'; }
+}
+
+async function renderProfitHistory(el) {
+    el.innerHTML = '<div class="admin-card"><div class="card-title">📋 মুনাফা বিতরণের ইতিহাস</div><div id="fullProfitHistory"><div class="spinner" style="margin:20px auto"></div></div></div>';
+    loadProfitHistory('fullProfitHistory');
+}
+
+// ════════════════════════════════════════════════════════
+// WITHDRAWAL MANAGEMENT MODULE
+// ════════════════════════════════════════════════════════
+async function renderWithdrawals(el) {
+    el.innerHTML = '<div class="spinner" style="margin:30px auto"></div>';
+    let requests = [];
+    try {
+        const r = await apiFetch('/profit/withdrawals');
+        requests = r?.requests || [];
+    } catch (_) {}
+    window._withdrawals = requests;
+
+    el.innerHTML = `
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-val">${requests.length}</div><div class="stat-lbl">মোট আবেদন</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:#f59e0b">${requests.filter(r=>r.status==='pending').length}</div><div class="stat-lbl">পেন্ডিং</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:#10b981">${requests.filter(r=>r.status==='paid').length}</div><div class="stat-lbl">পরিশোধিত</div></div>
+    </div>
+    <div class="admin-card">
+      <div class="card-title">💸 উত্তোলনের আবেদন</div>
+      <div class="search-bar" style="margin-bottom:12px">
+        <select class="filter-select" id="wdStatus" onchange="filterWithdrawals()">
+          <option value="">সব</option><option value="pending">পেন্ডিং</option><option value="approved">অনুমোদিত</option><option value="paid">পরিশোধিত</option><option value="rejected">প্রত্যাখ্যাত</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>নাম</th><th>ফোন</th><th>পরিমাণ</th><th>ধরন</th><th>স্ট্যাটাস</th><th>তারিখ</th><th>অ্যাকশন</th></tr></thead>
+        <tbody id="wdTbody">${renderWithdrawalRows(requests)}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderWithdrawalRows(requests) {
+    if (!requests.length) return '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px">কোনো আবেদন নেই।</td></tr>';
+    const badge = { pending:'badge-pending', approved:'badge-active', paid:'badge-paid', rejected:'badge-danger' };
+    const label = { pending:'পেন্ডিং', approved:'অনুমোদিত', paid:'পরিশোধিত', rejected:'প্রত্যাখ্যাত' };
+    return requests.map(r=>`<tr>
+      <td>${r.name||'—'}</td>
+      <td>${r.phone||'—'}</td>
+      <td style="font-weight:700">৳${fmtN(r.amount)}</td>
+      <td>${r.withdrawalType==='partial'?'আংশিক':'পূর্ণ'}</td>
+      <td><span class="badge ${badge[r.status]||'badge-pending'}">${label[r.status]||r.status}</span></td>
+      <td style="font-size:.78rem">${fmtDate(r.requestedAt)}</td>
+      <td style="display:flex;gap:4px">
+        ${r.status==='pending'?`<button class="btn btn-sm btn-ghost" style="color:#10b981" onclick="processWithdrawal('${r.id}','approved')">✅</button><button class="btn btn-sm btn-ghost" style="color:#ef4444" onclick="processWithdrawal('${r.id}','rejected')">❌</button>`:''}
+        ${r.status==='approved'?`<button class="btn btn-sm btn-ghost" style="color:#60a5fa" onclick="processWithdrawal('${r.id}','paid')">💸 পরিশোধ</button>`:''}
+      </td>
+    </tr>`).join('');
+}
+
+function filterWithdrawals() {
+    const s = document.getElementById('wdStatus')?.value||'';
+    const filtered = (window._withdrawals||[]).filter(r=>!s||r.status===s);
+    const tbody = document.getElementById('wdTbody');
+    if (tbody) tbody.innerHTML = renderWithdrawalRows(filtered);
+}
+
+async function processWithdrawal(id, status) {
+    const reason = status==='rejected'?prompt('প্রত্যাখ্যানের কারণ:'):'';
+    if (status==='rejected'&&!reason) return;
+    try {
+        await apiPatch(`/profit/withdrawals/${id}`, { status, reason: reason||'' });
+        showToast(status==='approved'?'অনুমোদিত।':status==='paid'?'পরিশোধ চিহ্নিত।':'প্রত্যাখ্যাত।', 'success');
+        renderWithdrawals(document.getElementById('adminContent'));
+    } catch (e) { showToast('ব্যর্থ: ' + e.message, 'error'); }
+}
+
+// ════════════════════════════════════════════════════════
+// FUND TRANSFERS MODULE
+// ════════════════════════════════════════════════════════
+async function renderFundTransfers(el) {
+    el.innerHTML = '<div class="spinner" style="margin:30px auto"></div>';
+    let transfers = [];
+    try {
+        const r = await apiFetch('/fund-transfers');
+        transfers = r?.transfers || [];
+    } catch (_) {}
+    window._fundTransfers = transfers;
+
+    const accounts = ['ক্যাশ', 'বিকাশ', 'নগদ', 'রকেট', 'ব্যাংক', 'সদস্য তহবিল', 'ক্লাইন্ট তহবিল', 'করজ ফান্ড', 'চ্যারিটি ফান্ড', 'সংগঠন ফান্ড'];
+
+    el.innerHTML = `
+    <div class="admin-card">
+      <div class="card-title">🔄 ফান্ড ট্রান্সফার</div>
+      <p style="color:var(--text-muted);font-size:.85rem;margin-bottom:16px">এক ফান্ড থেকে অন্য ফান্ডে টাকা সরানো। এটি আয় বা ব্যয় হিসেবে গণ্য হবে না।</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div class="form-group">
+          <label class="form-label">উৎস ফান্ড <span class="req">*</span></label>
+          <select class="form-select" id="ft-from"><option value="">-- নির্বাচন করুন --</option>${accounts.map(a=>`<option>${a}</option>`).join('')}</select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">গন্তব্য ফান্ড <span class="req">*</span></label>
+          <select class="form-select" id="ft-to"><option value="">-- নির্বাচন করুন --</option>${accounts.map(a=>`<option>${a}</option>`).join('')}</select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">পরিমাণ (৳) <span class="req">*</span></label>
+          <input type="number" class="form-input" id="ft-amount" placeholder="০" min="1"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">তারিখ <span class="req">*</span></label>
+          <input type="date" class="form-input" id="ft-date" value="${new Date().toISOString().slice(0,10)}"/>
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label class="form-label">বিবরণ</label>
+          <input type="text" class="form-input" id="ft-desc" placeholder="কেন এই ট্রান্সফার?"/>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="submitFundTransfer()">🔄 ট্রান্সফার করুন</button>
+    </div>
+    <div class="admin-card" style="margin-top:16px">
+      <div class="card-title">📋 ট্রান্সফার ইতিহাস</div>
+      ${transfers.length ? `<div class="table-wrap"><table>
+        <thead><tr><th>উৎস</th><th>গন্তব্য</th><th>পরিমাণ</th><th>বিবরণ</th><th>তারিখ</th></tr></thead>
+        <tbody>${transfers.map(t=>`<tr>
+          <td>${t.fromAccount||'—'}</td>
+          <td>${t.toAccount||'—'}</td>
+          <td style="font-weight:700">৳${fmtN(t.amount)}</td>
+          <td style="font-size:.82rem;color:var(--text-muted)">${t.description||'—'}</td>
+          <td style="font-size:.78rem">${fmtDate(t.date)}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>` : '<p style="color:var(--text-muted)">কোনো ট্রান্সফার নেই।</p>'}
+    </div>`;
+}
+
+async function submitFundTransfer() {
+    const from = document.getElementById('ft-from')?.value;
+    const to = document.getElementById('ft-to')?.value;
+    const amount = parseFloat(document.getElementById('ft-amount')?.value);
+    const date = document.getElementById('ft-date')?.value;
+    const description = document.getElementById('ft-desc')?.value;
+    if (!from || !to || !amount || !date) { showToast('সব তথ্য পূরণ করুন।', 'warning'); return; }
+    if (from === to) { showToast('উৎস ও গন্তব্য আলাদা হতে হবে।', 'warning'); return; }
+    try {
+        await apiPost('/fund-transfers', { fromAccount: from, toAccount: to, amount, date, description });
+        showToast('ট্রান্সফার সফল।', 'success');
+        renderFundTransfers(document.getElementById('adminContent'));
+    } catch (e) { showToast('ব্যর্থ: ' + e.message, 'error'); }
+}
