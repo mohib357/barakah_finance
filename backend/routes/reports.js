@@ -12,13 +12,44 @@ router.get('/dashboard', verifyToken, requireAdmin, (req, res) => {
     const loans = db.get('loans').value();
     const orders = db.get('orders').value();
     const applications = db.get('applications').value();
+    const members = db.get('members').filter({ status: 'active' }).value();
+    const clients = db.get('clients').value();
+    const ledger = db.get('ledger').value();
+    const charityFund = db.get('charity_fundraising').value();
+    const charityExp = db.get('charity_expenditure').value();
+    const settings = db.get('settings').value();
 
     const thisMonth = new Date().toISOString().slice(0, 7);
+    const now = new Date();
+
+    // Monthly savings for last 6 months
+    const savedByMonth = {};
+    savings.forEach(s => { if (s.month) savedByMonth[s.month] = (savedByMonth[s.month] || 0) + (s.amount || 0); });
+
+    // Client fund stats
+    const installments = db.get('installments').value();
+    const totalClientPaid = installments.filter(i => i.status === 'paid').reduce((s, i) => s + (i.paidAmount || 0), 0);
+    const totalClientDue = installments.filter(i => ['due', 'overdue', 'upcoming'].includes(i.status)).reduce((s, i) => s + (i.remainingAmount || 0), 0);
+
+    // Charity balance
+    const charityIn  = charityFund.reduce((s, c) => s + (c.amount || 0), 0);
+    const charityOut = charityExp.reduce((s, c) => s + (c.amount || 0), 0);
+
+    // Pending actions
+    const pendingMemberships = applications.filter(a => a.status === 'pending').length;
+    const overdueInstallments = installments.filter(i => i.status === 'overdue').length;
+    const pendingQard = loans.filter(l => l.status === 'pending').length;
+    const pendingOrders = orders.filter(o => o.status === 'pending').length;
+    const pendingWithdrawals = (db.get('withdrawal_requests')?.value() || []).filter(w => w.status === 'pending').length;
+
+    // Today's birthdays
+    const todayMD = `${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    const birthdayUsers = users.filter(u => u.dob && u.dob.substring(5) === todayMD).map(u => ({ name: u.name, phone: u.phone }));
 
     res.json({
         users: {
             total: users.filter(u => u.verified).length,
-            members: users.filter(u => u.role === 'member').length,
+            members: members.length,
             newThisMonth: users.filter(u => u.createdAt?.startsWith(thisMonth)).length
         },
         savings: {
@@ -26,20 +57,44 @@ router.get('/dashboard', verifyToken, requireAdmin, (req, res) => {
             thisMonth: savings.filter(s => s.month === thisMonth).reduce((a, s) => a + s.amount, 0),
             count: savings.length
         },
+        savedByMonth,
         loans: {
             active: loans.filter(l => l.status === 'active').length,
-            outstanding: loans.filter(l => l.status === 'active').reduce((a, l) => a + l.remaining, 0),
+            outstanding: loans.filter(l => l.status === 'active').reduce((a, l) => a + (l.remaining || 0), 0),
             total: loans.length
         },
         orders: {
-            pending: orders.filter(o => o.status === 'pending').length,
+            pending: pendingOrders,
             total: orders.length
         },
         applications: {
-            pending: applications.filter(a => a.status === 'pending').length,
+            pending: pendingMemberships,
             approved: applications.filter(a => a.status === 'approved').length,
             total: applications.length
-        }
+        },
+        clients: {
+            total: clients.length,
+            active: clients.filter(c => c.status === 'active').length,
+            paid: clients.filter(c => c.status === 'paid').length,
+            totalReceived: totalClientPaid,
+            totalDue: totalClientDue
+        },
+        charity: {
+            income: charityIn,
+            expense: charityOut,
+            balance: charityIn - charityOut
+        },
+        income: ledger.filter(l => l.type === 'income').reduce((s, l) => s + (l.amount || 0), 0),
+        expense: ledger.filter(l => l.type === 'expense').reduce((s, l) => s + (l.amount || 0), 0),
+        pendingActions: {
+            memberships: pendingMemberships,
+            overdueInstallments,
+            qardApplications: pendingQard,
+            orders: pendingOrders,
+            withdrawals: pendingWithdrawals
+        },
+        todayBirthdays: birthdayUsers,
+        smsBalance: settings.smsBalance || 0
     });
 });
 

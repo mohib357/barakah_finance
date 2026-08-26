@@ -297,17 +297,29 @@ async function renderDashCharts(stats) {
   const tc = isDark ? 'rgba(255,255,255,.5)' : '#555';
   const gc = isDark ? 'rgba(255,255,255,.04)' : 'rgba(0,0,0,.04)';
 
-  // Monthly savings
+  // Monthly savings — real data from API
   const sc = document.getElementById('dashSavChart');
   if (sc && typeof Chart !== 'undefined') {
     const months = [], amounts = [];
+    // Build last 6 months labels
     for (let i = 5; i >= 0; i--) {
       const d = new Date(); d.setMonth(d.getMonth() - i);
       months.push(d.toLocaleDateString('bn-BD', { month: 'short' }));
-      amounts.push(Math.round(Math.random() * 50000 + 10000));
     }
-    // Use real data if available
-    if (stats.monthlySavings) { amounts.splice(0, amounts.length, ...stats.monthlySavings); }
+    // Use real data if available, otherwise zeros (not random)
+    if (stats.monthlySavings && Array.isArray(stats.monthlySavings)) {
+      amounts.push(...stats.monthlySavings.slice(-6));
+    } else if (stats.savedByMonth) {
+      // Build from monthly savings summary
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(); d.setMonth(d.getMonth() - i);
+        const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+        amounts.push(stats.savedByMonth[key] || 0);
+      }
+    } else {
+      // Fallback zeros
+      for (let i = 0; i < 6; i++) amounts.push(0);
+    }
     new Chart(sc, {
       type: 'bar', data: { labels: months, datasets: [{ label:'সঞ্চয়', data: amounts, backgroundColor:'rgba(29,158,117,.7)', borderRadius:6 }] },
       options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
@@ -658,10 +670,20 @@ async function triggerBackup() {
 async function loadBackupList() {
   const el = document.getElementById('backupList');
   if (!el) return;
+  el.innerHTML = '<div class="spinner" style="margin:10px auto"></div>';
   try {
     const r = await apiFetch('/reports/backups');
     const list = r?.backups || [];
-    el.innerHTML = list.length ? list.map(b => `<div class="log-item" style="margin-bottom:6px"><span>🗄️</span><div class="log-item-body"><div class="log-item-title">${b.filename||b}</div><div class="log-item-sub">${fmtDT(b.createdAt||b)}</div></div><a href="${API}/reports/backups/${b.filename||b}/download" class="btn btn-sm btn-ghost" target="_blank">⬇️ ডাউনলোড</a></div>`).join('') : '<p style="color:var(--text-muted)">কোনো ব্যাকআপ নেই।</p>';
+    el.innerHTML = list.length ? `
+      <div class="table-wrap" style="margin-top:12px"><table>
+        <thead><tr><th>ফাইলনাম</th><th>সাইজ</th><th>তারিখ</th><th>অ্যাকশন</th></tr></thead>
+        <tbody>${list.map(b => `<tr>
+          <td style="font-size:.8rem;font-family:monospace">${b.filename}</td>
+          <td style="font-size:.8rem">${(b.size/1024).toFixed(1)} KB</td>
+          <td style="font-size:.8rem">${fmtDT(b.createdAt)}</td>
+          <td><a href="${API}/reports/backups/${encodeURIComponent(b.filename)}" download="${b.filename}" class="btn btn-sm btn-ghost" target="_blank">⬇️ ডাউনলোড</a></td>
+        </tr>`).join('')}</tbody>
+      </table></div>` : '<p style="color:var(--text-muted);margin-top:10px">কোনো ব্যাকআপ নেই।</p>';
   } catch (_) { el.innerHTML = '<p style="color:var(--text-muted)">ব্যাকআপ তালিকা লোড ব্যর্থ।</p>'; }
 }
 
@@ -705,8 +727,151 @@ function renderPermissions(el) {
   content.innerHTML = `
     <div class="admin-card">
       <div class="card-title">🔐 পেজ এক্সেস ম্যানেজমেন্ট</div>
-      <p style="color:var(--text-muted);font-size:.85rem">এই ফিচার শীঘ্রই যুক্ত হবে।</p>
+      <p style="color:var(--text-muted);font-size:.85rem;margin-bottom:16px">ব্যবহারকারী বা ভূমিকা অনুযায়ী module-ভিত্তিক permission নিয়ন্ত্রণ করুন।</p>
+      <div class="search-bar" style="margin-bottom:16px">
+        <input class="form-input" id="permUserSearch" placeholder="ব্যবহারকারী নাম, ফোন, ইউজারনেম..." style="flex:1" oninput="searchPermUser()"/>
+      </div>
+      <div id="permUserList"><p style="color:var(--text-muted)">অনুসন্ধান করুন...</p></div>
+      <div id="permEditor" style="display:none;margin-top:20px"></div>
     </div>`;
+  loadPermUsers();
+}
+
+async function loadPermUsers() {
+  const wrap = document.getElementById('permUserList');
+  if (!wrap) return;
+  wrap.innerHTML = '<div class="spinner" style="margin:16px auto"></div>';
+  try {
+    const r = await apiFetch('/users');
+    const users = (r?.users || r || []).filter(u => u.role !== 'user');
+    window._permUsers = users;
+    renderPermUserRows(users);
+  } catch (_) { wrap.innerHTML = '<p style="color:var(--text-muted)">লোড ব্যর্থ।</p>'; }
+}
+
+function renderPermUserRows(users) {
+  const wrap = document.getElementById('permUserList');
+  if (!wrap) return;
+  if (!users.length) { wrap.innerHTML = emptyState('🔐', 'কোনো ব্যবহারকারী নেই'); return; }
+  wrap.innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>নাম</th><th>ভূমিকা</th><th>ফোন</th><th>Custom?</th><th>অ্যাকশন</th></tr></thead>
+    <tbody>${users.map(u=>`<tr>
+      <td>${u.name||'—'}</td>
+      <td><span class="badge badge-${u.role==='admin'?'gold':u.role==='member'?'green':'active'}">${u.role}</span></td>
+      <td>${u.phone||'—'}</td>
+      <td style="font-size:.8rem;color:var(--text-muted)">—</td>
+      <td><button class="btn btn-sm btn-ghost" onclick="loadPermEditor('${u.id}','${u.name||'—'}','${u.role}')">✏️ সেট করুন</button></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+function searchPermUser() {
+  const q = (document.getElementById('permUserSearch')?.value || '').toLowerCase();
+  const filtered = (window._permUsers || []).filter(u =>
+    (u.name||'').toLowerCase().includes(q) ||
+    (u.phone||'').includes(q) ||
+    (u.username||'').toLowerCase().includes(q)
+  );
+  renderPermUserRows(filtered);
+}
+
+async function loadPermEditor(userId, name, role) {
+  const editorWrap = document.getElementById('permEditor');
+  if (!editorWrap) return;
+  editorWrap.style.display = 'block';
+  editorWrap.innerHTML = '<div class="spinner" style="margin:16px auto"></div>';
+
+  let perms = {};
+  let modules = {};
+  try {
+    const [pr, mr] = await Promise.allSettled([apiFetch(`/permissions/user/${userId}`), apiFetch('/permissions/modules')]);
+    if (pr.status === 'fulfilled') perms = pr.value?.permissions || {};
+    if (mr.status === 'fulfilled') modules = mr.value?.modules || {};
+  } catch (_) {}
+
+  const ACTIONS = ['view','create','edit','cancel','approve','export','print','manage'];
+  const actionLabels = { view:'দেখুন', create:'তৈরি', edit:'সম্পাদনা', cancel:'বাতিল', approve:'অনুমোদন', export:'এক্সপোর্ট', print:'প্রিন্ট', manage:'পরিচালনা' };
+  const modLabels = {
+    dashboard:'ড্যাশবোর্ড', members:'সদস্য', customers:'গ্রাহক', products:'পণ্য', orders:'অর্ডার',
+    installments:'কিস্তি', payments:'পেমেন্ট', receipts:'রসিদ', savings:'সঞ্চয়',
+    investment:'বিনিয়োগ', projects:'প্রজেক্ট', qard:'করজ', charity:'চ্যারিটি',
+    accounts:'হিসাব', expenses:'ব্যয়', assets:'সম্পদ', reports:'রিপোর্ট',
+    kyc:'KYC', documents:'ডকুমেন্ট', sms:'SMS', notifications:'নোটিফিকেশন',
+    committee:'কমিটি', website:'ওয়েবসাইট', users:'ব্যবহারকারী', roles:'রোল',
+    permissions:'পারমিশন', audit_log:'অডিট লগ', backup:'ব্যাকআপ', settings:'সেটিংস'
+  };
+
+  window._editPerms = JSON.parse(JSON.stringify(perms));
+
+  editorWrap.innerHTML = `
+    <div class="admin-card" style="border:1px solid rgba(201,162,39,.3)">
+      <div class="card-title" style="margin-bottom:12px">🔐 Permission Editor — <strong>${name}</strong> (${role})</div>
+      <div style="overflow-x:auto">
+      <table style="width:100%;font-size:.82rem">
+        <thead><tr style="background:rgba(255,255,255,.05)">
+          <th style="text-align:left;padding:8px 12px;min-width:120px">Module</th>
+          ${ACTIONS.map(a=>`<th style="padding:8px;text-align:center;white-space:nowrap">${actionLabels[a]||a}</th>`).join('')}
+        </tr></thead>
+        <tbody>
+          ${Object.entries(modules).map(([mod, availableActions]) => `
+          <tr style="border-top:1px solid rgba(255,255,255,.06)">
+            <td style="padding:8px 12px;font-weight:500">${modLabels[mod]||mod}</td>
+            ${ACTIONS.map(action => {
+              const avail = availableActions.includes(action);
+              const checked = avail && !!(perms[mod] && perms[mod][action]);
+              return `<td style="text-align:center;padding:4px">
+                ${avail ? `<input type="checkbox" class="perm-cb" data-mod="${mod}" data-action="${action}" ${checked?'checked':''} onchange="togglePerm('${mod}','${action}',this.checked)" style="width:16px;height:16px;cursor:pointer">` : '<span style="color:rgba(255,255,255,.15);font-size:10px">—</span>'}
+              </td>`;
+            }).join('')}
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap">
+        <button class="btn btn-primary btn-sm" onclick="savePermissions('${userId}')">💾 সংরক্ষণ করুন</button>
+        <button class="btn btn-ghost btn-sm" onclick="selectAllPerms(true)">✅ সব চালু</button>
+        <button class="btn btn-ghost btn-sm" onclick="selectAllPerms(false)">❌ সব বন্ধ</button>
+        <button class="btn btn-danger btn-sm" onclick="resetPermissions('${userId}')">🔄 Role Default-এ ফিরুন</button>
+      </div>
+    </div>`;
+}
+
+function togglePerm(mod, action, checked) {
+  if (!window._editPerms) window._editPerms = {};
+  if (!window._editPerms[mod]) window._editPerms[mod] = {};
+  window._editPerms[mod][action] = checked;
+}
+
+function selectAllPerms(val) {
+  document.querySelectorAll('.perm-cb').forEach(cb => {
+    cb.checked = val;
+    const mod = cb.dataset.mod;
+    const action = cb.dataset.action;
+    togglePerm(mod, action, val);
+  });
+}
+
+async function savePermissions(userId) {
+  try {
+    await apiPut(`/permissions/user/${userId}`, { permissions: window._editPerms || {} });
+    showToast('Permission সংরক্ষিত হয়েছে।', 'success');
+  } catch (e) { showToast('সংরক্ষণ ব্যর্থ: ' + e.message, 'error'); }
+}
+
+async function resetPermissions(userId) {
+  if (!confirm('Role Default-এ ফিরতে চান?')) return;
+  try {
+    await apiDelete(`/permissions/user/${userId}`);
+    showToast('Custom permission সরানো হয়েছে।', 'success');
+    renderPermissions(document.getElementById('adminContent'));
+  } catch (e) { showToast('ব্যর্থ।', 'error'); }
+}
+
+async function apiDelete(path) {
+  const token = localStorage.getItem('bf_admin_token');
+  const r = await fetch(API + path, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' } });
+  if (!r.ok) throw new Error((await r.json()).error || 'API error');
+  return r.json();
 }
 
 // ══════════════════════════ UTILITIES ══════════════════════════
