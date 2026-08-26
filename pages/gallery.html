@@ -1,316 +1,193 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="bn" data-theme="light">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>গ্যালারি — বারাকাহ ফাইন্যান্স</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700&family=Noto+Sans+Bengali:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../style/style.css"/>
-  <link rel="stylesheet" href="../style/navbar_style.css"/>
-  <link rel="stylesheet" href="../style/notice_bar.css"/>
-  <style>
-    :root{--gold:#C9A227;--gold-light:#F5D061;--bg:#0a1a0e;--card-bg:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);}
-    *{box-sizing:border-box;margin:0;padding:0;}
-    body{background:var(--bg);color:#e8f5e9;font-family:'Noto Serif Bengali',serif;min-height:100vh;}
-
-    .gallery-page{padding-top:100px;}
-
-    /* Banner slider */
-    .gallery-banner{
-      width:100%;height:320px;position:relative;overflow:hidden;
-      background:#050d07;
-    }
-    .banner-slide{
-      position:absolute;inset:0;opacity:0;transition:opacity 0.8s ease;
-      display:flex;align-items:center;justify-content:center;
-      background:linear-gradient(135deg,#0d2b17,#051208);
-      font-size:60px;
-    }
-    .banner-slide.active{opacity:1;}
-    .banner-empty{
-      width:100%;height:320px;background:linear-gradient(135deg,#0d2b17,#051208);
-      display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;
-      color:rgba(255,255,255,0.3);font-size:14px;
-    }
-    .banner-empty .big-icon{font-size:60px;margin-bottom:8px;}
-    .banner-dots{
-      position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
-      display:flex;gap:6px;z-index:5;
-    }
-    .banner-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.3);cursor:pointer;transition:background 0.2s;}
-    .banner-dot.active{background:var(--gold);}
-
-    /* Filter tabs */
-    .gallery-filters{
-      display:flex;gap:0;padding:0 5%;
-      background:rgba(10,26,14,0.97);backdrop-filter:blur(12px);
-      border-bottom:1px solid rgba(201,162,39,0.2);
-      position:sticky;top:80px;z-index:90;
-    }
-    .gf-btn{
-      padding:13px 22px;font-size:14px;color:rgba(255,255,255,0.6);
-      cursor:pointer;border-bottom:3px solid transparent;transition:all 0.2s;
-      font-family:'Noto Serif Bengali',serif;
-      background:none;border-left:none;border-right:none;border-top:none;
-      white-space:nowrap;
-    }
-    .gf-btn:hover{color:rgba(255,255,255,0.9);}
-    .gf-btn.active{color:var(--gold-light);border-bottom-color:var(--gold);}
-
-    /* Grid */
-    .gallery-content{padding:30px 5%;}
-    .gallery-grid{
-      display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-      gap:16px;margin-top:20px;
-    }
-    .gallery-item{
-      border-radius:12px;overflow:hidden;cursor:pointer;
-      border:1px solid var(--border);background:var(--card-bg);
-      transition:all 0.25s;aspect-ratio:1;
-      display:flex;align-items:center;justify-content:center;
-      position:relative;
-    }
-    .gallery-item:hover{transform:translateY(-3px);border-color:rgba(201,162,39,0.4);box-shadow:0 8px 25px rgba(0,0,0,0.3);}
-    .gallery-item img{width:100%;height:100%;object-fit:cover;}
-    .gallery-item .item-overlay{
-      position:absolute;inset:0;background:rgba(0,0,0,0.6);
-      display:flex;flex-direction:column;align-items:center;justify-content:center;
-      opacity:0;transition:opacity 0.2s;color:#fff;font-size:12px;
-    }
-    .gallery-item:hover .item-overlay{opacity:1;}
-    .gallery-item .item-icon{font-size:40px;color:rgba(255,255,255,0.2);}
-
-    /* Video items */
-    .video-item{background:rgba(0,0,0,0.3);aspect-ratio:16/9;}
-    .video-item iframe{width:100%;height:100%;border:none;}
-
-    /* Empty state */
-    .gallery-empty{
-      text-align:center;padding:60px 20px;color:rgba(255,255,255,0.3);
-    }
-    .gallery-empty .empty-icon{font-size:50px;margin-bottom:14px;}
-    .gallery-empty p{font-size:13px;}
-
-    /* Admin upload hint */
-    .admin-hint{
-      background:rgba(201,162,39,0.08);border:1px solid rgba(201,162,39,0.2);
-      border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:12px;
-      color:rgba(255,255,255,0.5);display:flex;align-items:center;gap:10px;
-    }
-
-    /* Lightbox */
-    .lightbox-overlay{
-      position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:3000;
-      display:flex;align-items:center;justify-content:center;padding:20px;
-    }
-    .lightbox-overlay.hidden{display:none;}
-    .lightbox-img{max-width:90vw;max-height:80vh;border-radius:10px;object-fit:contain;}
-    .lightbox-close{position:fixed;top:20px;right:24px;font-size:32px;color:#fff;cursor:pointer;z-index:3001;}
-    .lightbox-nav{position:fixed;top:50%;transform:translateY(-50%);font-size:32px;color:#fff;cursor:pointer;z-index:3001;padding:10px;}
-    .lightbox-prev{left:10px;}
-    .lightbox-next{right:10px;}
-
-    /* Event cards */
-    .event-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:20px;}
-    .event-card{
-      background:var(--card-bg);border:1px solid var(--border);
-      border-radius:14px;padding:18px;transition:all 0.25s;
-    }
-    .event-card:hover{border-color:rgba(201,162,39,0.4);transform:translateY(-2px);}
-    .event-card .ev-date{font-size:11px;color:var(--gold);margin-bottom:6px;}
-    .event-card h4{font-size:15px;color:#fff;margin-bottom:6px;}
-    .event-card p{font-size:12px;color:rgba(255,255,255,0.6);line-height:1.7;}
-
-    @media(max-width:640px){
-      .gallery-grid{grid-template-columns:repeat(2,1fr);}
-      .gallery-banner{height:200px;}
-    }
-  </style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>গ্যালারি | বারাকাহ ফাইন্যান্স</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@300;400;500;600;700;800&family=Noto+Serif+Bengali:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../style/design-system.css"/>
+  <link rel="stylesheet" href="../style/landing.css"/>
+  <link rel="stylesheet" href="../style/pages.css"/>
 </head>
 <body>
-  <!-- NAV -->
-  <nav id="mainNav">
-    <a href="../index.html" class="logo">
-      <div class="logo-icon"><img src="../image/logo.png" alt="logo" onerror="this.parentElement.innerHTML='<span style=font-size:20px;font-weight:700;color:#C9A227>ব</span>'"/></div>
-      <div class="logo-text"><strong>বারাকাহ ফাইন্যান্স – Barakah Finance</strong><span>সুদমুক্ত লেনদেনে সমৃদ্ধি সবার</span></div>
+<nav id="mainNav">
+  <div class="nav-inner">
+    <a href="../index.html" class="nav-logo">
+      <div class="nav-logo-img"><img src="../image/logo.png" alt="লোগো"/></div>
+      <div class="nav-logo-text"><span class="nav-logo-name">বারাকাহ ফাইন্যান্স</span><span class="nav-logo-slogan">সুদমুক্ত লেনদেনে সমৃদ্ধি সবার</span></div>
     </a>
     <ul class="nav-links">
-      <li><a href="../index.html">হোম</a></li>
-      <li><a href="timeline.html">টাইমলাইন</a></li>
-      <li><a href="gallery.html" style="color:var(--gold-light);">গ্যালারি ✓</a></li>
-      <li><a href="learn-more.html">আরও জানুন</a></li>
-      <li id="nav-login-btn"><a onclick="window.location='../index.html'" class="nav-cta">লগইন</a></li>
-      <li style="display:flex;align-items:center;"><div class="dk-tog" id="dkTog" onclick="toggleDarkMode()"></div></li>
+      <li><a href="timeline.html" class="nav-link">📰 টাইমলাইন</a></li>
+      <li><a href="gallery.html" class="nav-link active">🖼️ গ্যালারি</a></li>
+      <li><a href="learn-more.html" class="nav-link">ℹ️ আরও জানুন</a></li>
+      <li><a href="shop.html" class="nav-link">🛒 শপ</a></li>
     </ul>
-    <button class="hamburger" id="hamburger" onclick="document.getElementById('mobileMenuG').classList.toggle('active')"><span></span><span></span><span></span></button>
-  </nav>
-  <div class="nav-mobile" id="mobileMenuG">
-    <a href="../index.html">🏠 হোম</a>
-    <a href="timeline.html">📅 টাইমলাইন</a>
-    <a href="learn-more.html">📚 আরও জানুন</a>
-  </div>
-
-  <!-- NOTICE BAR -->
-  <div class="notice-bar" style="position:sticky;top:80px;z-index:97;">
-    <div class="notice-label">📢 নোটিশ</div>
-    <div class="notice-scroll-wrap"><div id="notice-track">লোড হচ্ছে...</div></div>
-  </div>
-
-  <div class="gallery-page">
-    <!-- BANNER -->
-    <div class="gallery-banner" id="galleryBanner"></div>
-
-    <!-- FILTER TABS -->
-    <div class="gallery-filters">
-      <button class="gf-btn active" onclick="switchGalleryTab('photos',this)">📷 ছবি</button>
-      <button class="gf-btn" onclick="switchGalleryTab('videos',this)">🎬 ভিডিও</button>
-      <button class="gf-btn" onclick="switchGalleryTab('events',this)">📅 ইভেন্ট</button>
-    </div>
-
-    <div class="gallery-content">
-      <div class="admin-hint">💡 গ্যালারিতে ছবি, ভিডিও ও ইভেন্ট যোগ করতে অ্যাডমিন প্যানেল থেকে পরিচালনা করুন।</div>
-
-      <!-- Photos -->
-      <div id="gallery-photos">
-        <div class="gallery-grid" id="photosGrid"></div>
+    <div class="nav-controls">
+      <button class="nav-theme-btn" id="themeToggle"><span id="themeIcon">🌙</span></button>
+      <div class="nav-auth" id="navAuth">
+        <button class="btn btn-outline btn-sm" onclick="openAuthModal('login')">লগইন</button>
+        <button class="btn btn-primary btn-sm" onclick="openAuthModal('signup')">সাইনআপ</button>
       </div>
-
-      <!-- Videos -->
-      <div id="gallery-videos" style="display:none;">
-        <div class="gallery-grid" id="videosGrid"></div>
+      <div class="nav-user hidden" id="navUser">
+        <div class="nav-user-avatar" id="navUserAvatar" onclick="toggleUserMenu()">অ</div>
+        <div class="nav-user-menu hidden" id="userMenu">
+          <div class="user-menu-header"><div class="user-menu-name" id="userMenuName">ব্যবহারকারী</div><div class="user-menu-role" id="userMenuRole">গ্রাহক</div></div>
+          <a href="dashboard.html" class="user-menu-item">📊 ড্যাশবোর্ড</a>
+          <a href="profile.html" class="user-menu-item">👤 প্রোফাইল</a>
+          <div id="adminMenuLinks" class="hidden"><a href="../admin/panel.html" class="user-menu-item" style="color:var(--clr-gold-500)">🛡️ অ্যাডমিন</a></div>
+          <button class="user-menu-item danger" onclick="doLogout()">🚪 লগআউট</button>
+        </div>
       </div>
-
-      <!-- Events -->
-      <div id="gallery-events" style="display:none;">
-        <div class="event-grid" id="eventsGrid"></div>
-      </div>
+      <button class="nav-hamburger" id="hamburgerBtn"><span></span><span></span><span></span></button>
     </div>
   </div>
+  <div class="nav-mobile" id="mobileMenu">
+    <a href="timeline.html" class="mob-link">📰 টাইমলাইন</a>
+    <a href="gallery.html" class="mob-link">🖼️ গ্যালারি</a>
+    <a href="learn-more.html" class="mob-link">ℹ️ আরও জানুন</a>
+    <a href="shop.html" class="mob-link">🛒 শপ</a>
+  </div>
+</nav>
+<div class="notice-bar" id="noticeBar">
+  <div class="notice-label"><span class="notice-icon">📢</span><span class="notice-txt">নোটিশ</span></div>
+  <div class="notice-track-wrap"><div class="notice-track" id="noticeTrack"></div></div>
+</div>
 
-  <!-- Lightbox -->
-  <div class="lightbox-overlay hidden" id="lightbox">
-    <span class="lightbox-close" onclick="closeLightbox()">✕</span>
-    <span class="lightbox-nav lightbox-prev" onclick="lightboxNav(-1)">‹</span>
-    <img class="lightbox-img" id="lightboxImg" src="" alt="">
-    <span class="lightbox-nav lightbox-next" onclick="lightboxNav(1)">›</span>
+<!-- Banner -->
+<div class="inner-hero" style="padding-bottom:0">
+  <div class="container"><nav class="breadcrumb"><a href="../index.html">হোম</a><span class="breadcrumb-sep">›</span><span>গ্যালারি</span></nav><h1 class="inner-hero-title">🖼️ গ্যালারি</h1></div>
+  <!-- Animated Banner -->
+  <div class="gallery-banner" id="galleryBanner">
+    <div class="gallery-banner-placeholder"><span>🖼️</span><span style="font-size:1rem;color:rgba(255,255,255,.4)">গ্যালারি ছবি লোড হচ্ছে...</span></div>
+  </div>
+</div>
+
+<div class="container section">
+  <!-- Tab buttons -->
+  <div class="gallery-tabs">
+    <button class="gallery-tab-btn active" onclick="switchGalleryTab('photos',this)">📸 ছবি</button>
+    <button class="gallery-tab-btn" onclick="switchGalleryTab('videos',this)">🎬 ভিডিও</button>
+    <button class="gallery-tab-btn" onclick="switchGalleryTab('events',this)">🎉 ইভেন্ট</button>
   </div>
 
-  <script src="../js/db.js"></script>
-  <script src="../js/notice.js"></script>
-  <script>
-    function toggleDarkMode(){
-      document.body.classList.toggle('dark-mode');
-      const t=document.getElementById('dkTog');if(t)t.classList.toggle('on');
-      localStorage.setItem('bf_dark',document.body.classList.contains('dark-mode')?'1':'0');
-    }
-    if(localStorage.getItem('bf_dark')==='1'){document.body.classList.add('dark-mode');const t=document.getElementById('dkTog');if(t)t.classList.add('on');}
+  <!-- Photos -->
+  <div class="gallery-grid" id="galleryPhotos">
+    <div class="gallery-empty">📸<p style="font-size:1rem">কোনো ছবি নেই। অ্যাডমিন প্যানেল থেকে যোগ করুন।</p></div>
+  </div>
 
-    // ── Gallery data (admin-controlled via localStorage) ──
-    function getGalleryData(){
-      return JSON.parse(localStorage.getItem('bf_gallery')||'{"photos":[],"videos":[],"events":[]}');
-    }
+  <!-- Videos -->
+  <div class="gallery-grid hidden" id="galleryVideos">
+    <div class="gallery-empty">🎬<p style="font-size:1rem">কোনো ভিডিও নেই।</p></div>
+  </div>
 
-    // ── Banner slider ──
-    let bannerIdx=0, bannerItems=[], bannerTimer=null;
-    function initBanner(){
-      const data=getGalleryData();
-      bannerItems = data.photos.concat(data.videos);
-      const banner=document.getElementById('galleryBanner');
-      if(!bannerItems.length){
-        banner.innerHTML=`<div class="banner-empty"><div class="big-icon">🖼️</div><p>গ্যালারিতে এখনো কোনো মিডিয়া যোগ করা হয়নি।</p></div>`;
-        return;
-      }
-      banner.innerHTML=bannerItems.map((item,i)=>`
-        <div class="banner-slide ${i===0?'active':''}" style="background:linear-gradient(135deg,#0d2b17,#051208);">
-          ${item.type==='photo'&&item.url?`<img src="${item.url}" style="width:100%;height:100%;object-fit:cover;">`:`<span style="font-size:60px;">${item.type==='video'?'🎬':'🖼️'}</span>`}
-        </div>`).join('')+`<div class="banner-dots">${bannerItems.map((_,i)=>`<div class="banner-dot ${i===0?'active':''}" onclick="goToBannerSlide(${i})"></div>`).join('')}</div>`;
-      if(bannerItems.length>1) bannerTimer=setInterval(()=>nextBannerSlide(),4000);
-    }
-    function goToBannerSlide(n){
-      const slides=document.querySelectorAll('.banner-slide');
-      const dots=document.querySelectorAll('.banner-dot');
-      slides.forEach(s=>s.classList.remove('active'));
-      dots.forEach(d=>d.classList.remove('active'));
-      bannerIdx=n;
-      if(slides[n]) slides[n].classList.add('active');
-      if(dots[n]) dots[n].classList.add('active');
-    }
-    function nextBannerSlide(){ goToBannerSlide((bannerIdx+1)%bannerItems.length); }
+  <!-- Events -->
+  <div class="gallery-grid hidden" id="galleryEvents">
+    <div class="gallery-empty">🎉<p style="font-size:1rem">কোনো ইভেন্ট নেই।</p></div>
+  </div>
+</div>
 
-    // ── Tab switch ──
-    function switchGalleryTab(tab, btn){
-      document.querySelectorAll('.gf-btn').forEach(b=>b.classList.remove('active'));
-      ['photos','videos','events'].forEach(t=>document.getElementById('gallery-'+t).style.display='none');
-      document.getElementById('gallery-'+tab).style.display='block';
-      if(btn) btn.classList.add('active');
-    }
+<!-- Lightbox -->
+<div class="modal-overlay hidden" id="lightbox" onclick="closeLightbox()">
+  <div style="max-width:90vw;max-height:90vh;position:relative" onclick="event.stopPropagation()">
+    <img id="lightboxImg" src="" alt="" style="max-width:90vw;max-height:85vh;border-radius:12px;display:block"/>
+    <button onclick="closeLightbox()" style="position:absolute;top:-16px;right:-16px;background:#dc2626;color:#fff;border:none;width:32px;height:32px;border-radius:50%;font-size:1.1rem;cursor:pointer">✕</button>
+  </div>
+</div>
 
-    // ── Render photos ──
-    let photosList=[];
-    function renderPhotos(){
-      const data=getGalleryData();
-      photosList=data.photos;
-      const grid=document.getElementById('photosGrid');
-      if(!photosList.length){
-        grid.innerHTML=`<div class="gallery-empty" style="grid-column:1/-1;"><div class="empty-icon">📷</div><p>এখনো কোনো ছবি যোগ করা হয়নি।</p></div>`;
-        return;
-      }
-      grid.innerHTML=photosList.map((p,i)=>`
-        <div class="gallery-item" onclick="openLightbox(${i})">
-          ${p.url?`<img src="${p.url}" alt="${p.title||''}"><div class="item-overlay"><span>🔍 দেখুন</span></div>`:`<div class="item-icon">🖼️</div>`}
-        </div>`).join('');
-    }
+<footer class="footer"><div class="footer-bottom"><div class="container footer-bottom-inner"><span>© ২০২৬ বারাকাহ ফাইন্যান্স</span><span>সুদমুক্ত লেনদেনে সমৃদ্ধি সবার 🌙</span></div></div></footer>
+<div class="toast-container" id="toastContainer"></div>
 
-    // ── Render videos ──
-    function renderVideos(){
-      const data=getGalleryData();
-      const grid=document.getElementById('videosGrid');
-      if(!data.videos.length){
-        grid.innerHTML=`<div class="gallery-empty" style="grid-column:1/-1;"><div class="empty-icon">🎬</div><p>এখনো কোনো ভিডিও যোগ করা হয়নি।</p></div>`;
-        return;
-      }
-      grid.innerHTML=data.videos.map(v=>`
-        <div class="gallery-item video-item" style="aspect-ratio:16/9;">
-          ${v.ytId?`<iframe src="https://www.youtube.com/embed/${v.ytId}" allowfullscreen title="${v.title||''}"></iframe>`:`<div class="item-icon">🎬</div>`}
-        </div>`).join('');
-    }
+<script src="../js/db.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/app.js"></script>
+<script src="../js/notice.js"></script>
+<script>
+let _galleryData = { photos:[], videos:[], events:[] };
 
-    // ── Render events ──
-    function renderEvents(){
-      const data=getGalleryData();
-      const grid=document.getElementById('eventsGrid');
-      if(!data.events||!data.events.length){
-        grid.innerHTML=`<div class="gallery-empty" style="grid-column:1/-1;"><div class="empty-icon">📅</div><p>এখনো কোনো ইভেন্ট যোগ করা হয়নি।</p></div>`;
-        return;
-      }
-      grid.innerHTML=data.events.map(ev=>`
-        <div class="event-card">
-          <div class="ev-date">${ev.date||''}</div>
-          <h4>${ev.title||'ইভেন্ট'}</h4>
-          <p>${ev.desc||''}</p>
-        </div>`).join('');
-    }
+document.addEventListener('DOMContentLoaded', loadGallery);
 
-    // ── Lightbox ──
-    let lightboxCurrentIdx=0;
-    function openLightbox(idx){
-      lightboxCurrentIdx=idx;
-      const p=photosList[idx];
-      if(!p||!p.url) return;
-      document.getElementById('lightboxImg').src=p.url;
-      document.getElementById('lightbox').classList.remove('hidden');
-    }
-    function closeLightbox(){ document.getElementById('lightbox').classList.add('hidden'); }
-    function lightboxNav(dir){
-      lightboxCurrentIdx=(lightboxCurrentIdx+dir+photosList.length)%photosList.length;
-      openLightbox(lightboxCurrentIdx);
-    }
-    document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeLightbox(); if(e.key==='ArrowLeft') lightboxNav(-1); if(e.key==='ArrowRight') lightboxNav(1); });
+async function loadGallery() {
+  try {
+    const res = await fetch('http://localhost:3001/api/notices/gallery', { signal: AbortSignal.timeout(2000) });
+    if (res.ok) { const d = await res.json(); _galleryData = d.gallery || { photos:[], videos:[], events:[] }; }
+  } catch(_) {
+    if (typeof DB !== 'undefined') { const g = DB.get && DB.get('bf_gallery'); if (g) _galleryData = g; }
+  }
+  renderGalleryTab('photos');
+  initBannerSlider();
+}
 
-    document.addEventListener('DOMContentLoaded',()=>{
-      initBanner(); renderPhotos(); renderVideos(); renderEvents();
-    });
-  </script>
+function switchGalleryTab(tab, btn) {
+  document.querySelectorAll('.gallery-tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  ['photos','videos','events'].forEach(t => document.getElementById('gallery'+capitalize(t)).classList.toggle('hidden', t!==tab));
+  renderGalleryTab(tab);
+}
+
+function capitalize(s) { return s.charAt(0).toUpperCase()+s.slice(1); }
+
+function renderGalleryTab(tab) {
+  const items = _galleryData[tab] || [];
+  const el = document.getElementById('gallery'+capitalize(tab));
+  if (!el) return;
+  if (!items.length) {
+    const labels = {photos:'ছবি',videos:'ভিডিও',events:'ইভেন্ট'};
+    el.innerHTML = `<div class="gallery-empty"><div>📁</div><p style="font-size:1rem">কোনো ${labels[tab]} নেই।</p></div>`;
+    return;
+  }
+  if (tab === 'videos') {
+    el.innerHTML = items.map(v=>`
+      <div class="gallery-item" style="aspect-ratio:16/9">
+        <iframe src="${v.url||''}" frameborder="0" allowfullscreen style="width:100%;height:100%;border-radius:12px"></iframe>
+      </div>`).join('');
+    return;
+  }
+  if (tab === 'events') {
+    el.innerHTML = items.map(e=>`
+      <div class="gallery-item" onclick="openEventModal('${e.id||''}')">
+        ${e.coverImage ? `<img src="${e.coverImage}" alt="${e.title||''}" loading="lazy"/>` : `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:3rem">🎉</div>`}
+        <div class="gallery-item-overlay">
+          <div style="text-align:center;padding:8px">
+            <div style="font-size:1rem;font-weight:700">${e.title||'ইভেন্ট'}</div>
+            <div style="font-size:.75rem;opacity:.8">${e.date||''}</div>
+          </div>
+        </div>
+      </div>`).join('');
+    return;
+  }
+  el.innerHTML = items.map(p=>`
+    <div class="gallery-item" onclick="openLightbox('${p.url||p.src||''}')">
+      <img src="${p.url||p.src||''}" alt="${p.caption||''}" loading="lazy"/>
+      <div class="gallery-item-overlay">🔍</div>
+    </div>`).join('');
+}
+
+function openLightbox(src) {
+  if (!src) return;
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('lightbox').classList.remove('hidden');
+}
+function closeLightbox() { document.getElementById('lightbox').classList.add('hidden'); }
+
+function initBannerSlider() {
+  const allPhotos = _galleryData.photos || [];
+  const banner = document.getElementById('galleryBanner');
+  if (!allPhotos.length || !banner) return;
+  allPhotos.forEach((p,i)=>{
+    const img = document.createElement('img');
+    img.src = p.url||p.src||'';
+    img.alt = p.caption||'';
+    if (i===0) img.classList.add('active');
+    banner.appendChild(img);
+  });
+  let idx = 0;
+  setInterval(()=>{
+    const imgs = banner.querySelectorAll('img');
+    imgs[idx].classList.remove('active');
+    idx = (idx+1)%imgs.length;
+    imgs[idx].classList.add('active');
+  }, 3500);
+}
+</script>
 </body>
 </html>

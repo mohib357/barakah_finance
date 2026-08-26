@@ -1,742 +1,647 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="bn" data-theme="light">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>আরও জানুন — বারাকাহ ফাইন্যান্স</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700&family=Noto+Sans+Bengali:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
-  <link rel="stylesheet" href="../style/style.css"/>
-  <link rel="stylesheet" href="../style/navbar_style.css"/>
-  <link rel="stylesheet" href="../style/notice_bar.css"/>
-  <style>
-    :root {
-      --dark-green:#065F46; --mid-green:#0d2b17; --gold:#C9A227; --gold-light:#F5D061;
-      --bg:#0a1a0e; --card-bg:rgba(255,255,255,0.04); --border:rgba(255,255,255,0.08);
-    }
-    * { box-sizing:border-box; margin:0; padding:0; }
-    body { background:var(--bg); color:#e8f5e9; font-family:'Noto Serif Bengali',serif; min-height:100vh; }
-    body.dark-mode { --bg:#070f09; }
-
-    /* ── Page wrapper ── */
-    .learn-page { padding-top:100px; min-height:100vh; }
-
-    /* ── Section tabs bar ── */
-    .learn-tabs {
-      position:sticky; top:80px; z-index:90;
-      background:rgba(10,26,14,0.97);
-      backdrop-filter:blur(12px);
-      border-bottom:1px solid rgba(201,162,39,0.2);
-      display:flex; gap:0; overflow-x:auto; padding:0 5%;
-      scrollbar-width:none;
-    }
-    .learn-tabs::-webkit-scrollbar{display:none;}
-    .ltab {
-      padding:12px 18px; font-size:13px; font-family:'Noto Serif Bengali',serif;
-      color:rgba(255,255,255,0.6); cursor:pointer; white-space:nowrap;
-      border-bottom:3px solid transparent; transition:all 0.25s; flex-shrink:0;
-    }
-    .ltab:hover { color:rgba(255,255,255,0.9); }
-    .ltab.active { color:var(--gold-light); border-bottom-color:var(--gold); }
-
-    /* ── Content area ── */
-    .learn-content { padding:40px 5% 60px; max-width:960px; margin:0 auto; }
-    .lsec { display:none; }
-    .lsec.active { display:block; animation:fadeIn 0.3s ease; }
-    @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
-
-    /* ── Section header ── */
-    .lsec-title {
-      font-size:26px; font-weight:700; color:var(--gold-light);
-      margin-bottom:6px; display:flex; align-items:center; gap:10px;
-    }
-    .lsec-sub { font-size:13px; color:rgba(255,255,255,0.5); margin-bottom:28px; }
-    .divider { width:60px; height:3px; background:linear-gradient(90deg,var(--gold),transparent); border-radius:2px; margin:10px 0 24px; }
-
-    /* ── Prose card ── */
-    .prose-card {
-      background:var(--card-bg); border:1px solid var(--border);
-      border-radius:14px; padding:24px 28px; margin-bottom:20px;
-    }
-    .prose-card h3 { font-size:17px; color:var(--gold); margin-bottom:10px; display:flex; align-items:center; gap:8px; }
-    .prose-card p { font-size:14px; color:rgba(255,255,255,0.8); line-height:2; margin-bottom:10px; }
-    .prose-card ul { padding-left:20px; }
-    .prose-card li { font-size:14px; color:rgba(255,255,255,0.8); line-height:2; }
-
-    /* ── Package cards ── */
-    .pkg-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:20px; margin-top:20px; }
-    .pkg-card {
-      background:var(--card-bg); border:1px solid var(--border);
-      border-radius:16px; padding:22px; cursor:pointer;
-      transition:all 0.25s; position:relative; overflow:hidden;
-    }
-    .pkg-card:hover { border-color:rgba(201,162,39,0.5); transform:translateY(-3px); box-shadow:0 10px 30px rgba(0,0,0,0.3); }
-    .pkg-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg,var(--gold),var(--gold-light)); }
-    .pkg-card .pkg-icon { font-size:32px; margin-bottom:12px; }
-    .pkg-card h4 { font-size:15px; color:var(--gold-light); margin-bottom:6px; }
-    .pkg-card p { font-size:12px; color:rgba(255,255,255,0.6); line-height:1.8; }
-    .pkg-card .pkg-amount { font-size:22px; font-weight:700; color:var(--gold); margin:10px 0 4px; }
-    .pkg-card .pkg-period { font-size:11px; color:rgba(255,255,255,0.4); }
-
-    /* ── Package detail modal ── */
-    .pkg-modal-overlay {
-      position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:2000;
-      display:flex; align-items:center; justify-content:center; padding:20px;
-    }
-    .pkg-modal-overlay.hidden { display:none; }
-    .pkg-modal {
-      background:#0d2a16; border:1px solid rgba(201,162,39,0.3);
-      border-radius:18px; padding:30px; max-width:560px; width:100%;
-      max-height:80vh; overflow-y:auto; position:relative;
-    }
-    .pkg-modal-close { position:absolute; top:14px; right:18px; background:none; border:none; color:#fff; font-size:20px; cursor:pointer; }
-
-    /* ── Calculator in installment section ── */
-    .inline-calc {
-      background:rgba(201,162,39,0.06); border:1px solid rgba(201,162,39,0.25);
-      border-radius:14px; padding:22px; margin-top:20px;
-    }
-    .inline-calc h3 { font-size:16px; color:var(--gold); margin-bottom:16px; }
-    .calc-row { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
-    .calc-label { font-size:13px; color:rgba(255,255,255,0.7); }
-    .calc-input {
-      padding:10px 14px; background:rgba(255,255,255,0.06);
-      border:1px solid rgba(255,255,255,0.15); border-radius:8px;
-      color:#fff; font-size:14px; font-family:'Noto Serif Bengali',serif;
-      transition:border 0.2s;
-    }
-    .calc-input:focus { outline:none; border-color:rgba(201,162,39,0.5); }
-    .calc-btn {
-      padding:10px 24px; background:linear-gradient(135deg,var(--gold),#A67C00);
-      color:#fff; border:none; border-radius:8px; cursor:pointer;
-      font-size:14px; font-family:'Noto Serif Bengali',serif; transition:all 0.2s;
-    }
-    .calc-btn:hover { transform:translateY(-1px); box-shadow:0 4px 15px rgba(201,162,39,0.3); }
-    .calc-result {
-      margin-top:16px; display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
-      gap:12px;
-    }
-    .calc-item { background:rgba(255,255,255,0.06); border-radius:10px; padding:14px; text-align:center; }
-    .calc-item .val { font-size:20px; font-weight:700; color:var(--gold); margin-bottom:4px; }
-    .calc-item .lbl { font-size:11px; color:rgba(255,255,255,0.5); }
-
-    /* ── Members grid ── */
-    .members-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px; margin-top:20px; }
-    .member-card-lm {
-      background:var(--card-bg); border:1px solid var(--border);
-      border-radius:14px; padding:18px; text-align:center; cursor:pointer;
-      transition:all 0.25s;
-    }
-    .member-card-lm:hover { border-color:rgba(201,162,39,0.4); transform:translateY(-2px); }
-    .member-avatar-lm {
-      width:60px; height:60px; border-radius:50%; display:flex;
-      align-items:center; justify-content:center;
-      font-size:22px; font-weight:700; color:#fff; margin:0 auto 10px;
-    }
-    .member-card-lm h4 { font-size:13px; color:#fff; margin-bottom:4px; }
-    .member-card-lm .role { font-size:11px; color:var(--gold); display:block; margin-bottom:2px; }
-    .member-card-lm .phone { font-size:11px; color:rgba(255,255,255,0.4); }
-
-    /* ── Search bar ── */
-    .search-bar {
-      display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;
-    }
-    .search-bar input {
-      flex:1; min-width:180px; padding:10px 14px;
-      background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15);
-      border-radius:8px; color:#fff; font-size:13px; font-family:'Noto Serif Bengali',serif;
-    }
-    .search-bar input:focus { outline:none; border-color:rgba(201,162,39,0.4); }
-    .search-bar button {
-      padding:10px 20px; background:var(--gold); color:#fff;
-      border:none; border-radius:8px; cursor:pointer; font-family:'Noto Serif Bengali',serif;
-      font-size:13px;
-    }
-
-    /* ── Committee card ── */
-    .committee-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; margin-top:20px; }
-    .committee-card {
-      background:var(--card-bg); border:1px solid var(--border);
-      border-radius:14px; padding:18px; text-align:center; cursor:pointer; transition:all 0.25s;
-    }
-    .committee-card:hover { border-color:rgba(201,162,39,0.4); transform:translateY(-2px); }
-    .committee-card .cm-role {
-      background:rgba(201,162,39,0.15); color:var(--gold); font-size:11px;
-      padding:3px 10px; border-radius:20px; display:inline-block; margin-bottom:10px;
-    }
-    .committee-card h4 { font-size:14px; color:#fff; margin-bottom:3px; }
-    .committee-card .cm-phone { font-size:11px; color:rgba(255,255,255,0.4); margin-top:5px; }
-
-    /* ── Apply button ── */
-    .apply-btn {
-      display:inline-block; margin-top:20px; padding:12px 28px;
-      background:linear-gradient(135deg,var(--dark-green),#043d2a);
-      color:#fff; border:1px solid rgba(201,162,39,0.4);
-      border-radius:10px; text-decoration:none; font-size:14px;
-      cursor:pointer; transition:all 0.2s; font-family:'Noto Serif Bengali',serif;
-    }
-    .apply-btn:hover { background:linear-gradient(135deg,#076b4e,#055a3c); transform:translateY(-2px); }
-
-    /* ── Qard apply form ── */
-    .qard-form {
-      background:var(--card-bg); border:1px solid var(--border);
-      border-radius:14px; padding:24px; margin-top:20px; max-width:540px;
-    }
-    .qard-form h3 { font-size:16px; color:var(--gold); margin-bottom:16px; }
-    .form-group { margin-bottom:14px; }
-    .form-group label { display:block; font-size:13px; color:rgba(255,255,255,0.7); margin-bottom:6px; }
-    .form-group input, .form-group textarea, .form-group select {
-      width:100%; padding:10px 14px; background:rgba(255,255,255,0.06);
-      border:1px solid rgba(255,255,255,0.15); border-radius:8px;
-      color:#fff; font-size:13px; font-family:'Noto Serif Bengali',serif;
-    }
-    .form-group input:focus,.form-group textarea:focus,.form-group select:focus {
-      outline:none; border-color:rgba(201,162,39,0.5);
-    }
-    .form-group select option { background:#0d2a16; color:#fff; }
-    .alert { padding:10px 14px; border-radius:8px; font-size:13px; margin-top:10px; }
-    .alert-success { background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); color:#6ee7b7; }
-    .alert-error { background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#fca5a5; }
-
-    @media(max-width:768px) {
-      .learn-content { padding:24px 4% 40px; }
-      .pkg-grid { grid-template-columns:1fr; }
-      .members-grid { grid-template-columns:repeat(2,1fr); }
-      .committee-grid { grid-template-columns:repeat(2,1fr); }
-    }
-  </style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>আরও জানুন | বারাকাহ ফাইন্যান্স</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@300;400;500;600;700;800&family=Noto+Serif+Bengali:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../style/design-system.css"/>
+  <link rel="stylesheet" href="../style/landing.css"/>
+  <link rel="stylesheet" href="../style/pages.css"/>
 </head>
 <body>
 
-  <!-- NAV (shared) -->
-  <nav id="mainNav">
-    <a href="../index.html" class="logo">
-      <div class="logo-icon">
-        <img src="../image/logo.png" alt="logo"
-          onerror="this.parentElement.innerHTML='<span style=font-size:20px;font-weight:700;color:#C9A227>ব</span>'"/>
-      </div>
-      <div class="logo-text">
-        <strong>বারাকাহ ফাইন্যান্স – Barakah Finance</strong>
-        <span>সুদমুক্ত লেনদেনে সমৃদ্ধি সবার</span>
+<!-- NAVBAR -->
+<nav id="mainNav">
+  <div class="nav-inner">
+    <a href="../index.html" class="nav-logo">
+      <div class="nav-logo-img"><img src="../image/logo.png" alt="লোগো"/></div>
+      <div class="nav-logo-text">
+        <span class="nav-logo-name">বারাকাহ ফাইন্যান্স</span>
+        <span class="nav-logo-slogan">সুদমুক্ত লেনদেনে সমৃদ্ধি সবার</span>
       </div>
     </a>
     <ul class="nav-links">
-      <li><a href="../index.html">হোম</a></li>
-      <li><a href="timeline.html">টাইমলাইন</a></li>
-      <li><a href="gallery.html">গ্যালারি</a></li>
-      <li><a href="../form.html">আবেদন</a></li>
-      <li class="nav-user-wrap" id="nav-user-menu" style="display:none;">
-        <button class="nav-user-btn">👤 <span id="nav-user-name">আমি</span> ▾</button>
-        <div class="nav-dropdown">
-          <a href="profile.html">📋 প্রোফাইল</a>
-          <a href="dashboard.html">📊 ড্যাশবোর্ড</a>
-          <hr/><button onclick="doLogout()">🚪 লগআউট</button>
-        </div>
-      </li>
-      <li id="nav-login-btn"><a onclick="openAuthModal && openAuthModal('login')" class="nav-cta">লগইন</a></li>
-      <li style="display:flex;align-items:center;">
-        <div class="dk-tog" id="dkTog" onclick="toggleDarkMode()" title="থিম"></div>
-      </li>
+      <li><a href="timeline.html" class="nav-link">📰 টাইমলাইন</a></li>
+      <li><a href="gallery.html" class="nav-link">🖼️ গ্যালারি</a></li>
+      <li><a href="learn-more.html" class="nav-link active">ℹ️ আরও জানুন</a></li>
+      <li><a href="shop.html" class="nav-link">🛒 শপ</a></li>
     </ul>
-    <button class="hamburger" id="hamburger" onclick="document.getElementById('mobileMenuLM').classList.toggle('active')" aria-label="মেনু">
-      <span></span><span></span><span></span>
-    </button>
-  </nav>
-  <div class="nav-mobile" id="mobileMenuLM">
-    <a href="../index.html">🏠 হোম</a>
-    <a href="gallery.html">🖼️ গ্যালারি</a>
-    <a href="timeline.html">📅 টাইমলাইন</a>
-    <a href="../form.html">📝 আবেদন</a>
+    <div class="nav-controls">
+      <button class="nav-theme-btn" id="themeToggle"><span id="themeIcon">🌙</span></button>
+      <div class="nav-auth" id="navAuth">
+        <button class="btn btn-outline btn-sm" onclick="openAuthModal('login')">লগইন</button>
+        <button class="btn btn-primary btn-sm" onclick="openAuthModal('signup')">সাইনআপ</button>
+      </div>
+      <div class="nav-user hidden" id="navUser">
+        <div class="nav-user-avatar" id="navUserAvatar" onclick="toggleUserMenu()">অ</div>
+        <div class="nav-user-menu hidden" id="userMenu">
+          <div class="user-menu-header">
+            <div class="user-menu-name" id="userMenuName">ব্যবহারকারী</div>
+            <div class="user-menu-role" id="userMenuRole">গ্রাহক</div>
+          </div>
+          <a href="dashboard.html" class="user-menu-item">📊 ড্যাশবোর্ড</a>
+          <a href="profile.html" class="user-menu-item">👤 প্রোফাইল</a>
+          <div id="adminMenuLinks" class="hidden"><a href="../admin/panel.html" class="user-menu-item" style="color:var(--clr-gold-500)">🛡️ অ্যাডমিন</a></div>
+          <button class="user-menu-item danger" onclick="doLogout()">🚪 লগআউট</button>
+        </div>
+      </div>
+      <button class="nav-hamburger" id="hamburgerBtn"><span></span><span></span><span></span></button>
+    </div>
   </div>
-
-  <!-- NOTICE BAR -->
-  <div class="notice-bar" style="position:sticky;top:80px;z-index:97;">
-    <div class="notice-label">📢 নোটিশ</div>
-    <div class="notice-scroll-wrap"><div id="notice-track">লোড হচ্ছে...</div></div>
+  <div class="nav-mobile" id="mobileMenu">
+    <a href="timeline.html" class="mob-link">📰 টাইমলাইন</a>
+    <a href="gallery.html" class="mob-link">🖼️ গ্যালারি</a>
+    <a href="learn-more.html" class="mob-link">ℹ️ আরও জানুন</a>
+    <a href="shop.html" class="mob-link">🛒 শপ</a>
   </div>
+</nav>
 
-  <div class="learn-page">
-    <!-- TABS -->
-    <div class="learn-tabs" id="learnTabs">
-      <div class="ltab active" onclick="showLSec('objectives',this)">(i) উদ্দেশ্য ও লক্ষ্য</div>
-      <div class="ltab" onclick="showLSec('packages',this)">(ii) প্যাকেজ</div>
-      <div class="ltab" onclick="showLSec('member-rules',this)">(iii) সদস্য নিয়মনীতি</div>
-      <div class="ltab" id="installment-tab" onclick="showLSec('installment',this)">(iv) কিস্তিতে পণ্য ক্রয়</div>
-      <div class="ltab" onclick="showLSec('qard',this)">(v) করজে হাসানা</div>
-      <div class="ltab" onclick="showLSec('charity',this)">(vi) চ্যারিটি সহযোগিতা</div>
-      <div class="ltab" onclick="showLSec('member-profiles',this)">(vii) সদস্য প্রোফাইল</div>
-      <div class="ltab" onclick="showLSec('committee',this)">(viii) কমিটিবৃন্দ</div>
+<!-- NOTICE BAR -->
+<div class="notice-bar" id="noticeBar">
+  <div class="notice-label"><span class="notice-icon">📢</span><span class="notice-txt">নোটিশ</span></div>
+  <div class="notice-track-wrap"><div class="notice-track" id="noticeTrack"></div></div>
+</div>
+
+<!-- PAGE HERO -->
+<div class="inner-hero">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="../index.html">হোম</a>
+      <span class="breadcrumb-sep">›</span>
+      <span>আরও জানুন</span>
+    </nav>
+    <h1 class="inner-hero-title">বারাকাহ ফাইন্যান্স সম্পর্কে</h1>
+    <p class="inner-hero-sub">শরিয়াহ সম্মত আর্থিক সেবা সম্পর্কে বিস্তারিত জানুন</p>
+  </div>
+</div>
+
+<!-- TAB NAVIGATION -->
+<div class="lm-tabs-wrap" id="lmTabsWrap">
+  <div class="container">
+    <div class="lm-tabs" id="lmTabs">
+      <button class="lm-tab active" data-tab="objectives" onclick="switchTab('objectives',this)">🎯 উদ্দেশ্য ও লক্ষ্য</button>
+      <button class="lm-tab" data-tab="packages" onclick="switchTab('packages',this)">📦 প্যাকেজ</button>
+      <button class="lm-tab" data-tab="membership" onclick="switchTab('membership',this)">🪪 সদস্যপদ নিয়ম</button>
+      <button class="lm-tab" data-tab="installment" onclick="switchTab('installment',this)">🛒 কিস্তির নিয়ম</button>
+      <button class="lm-tab" data-tab="qard" onclick="switchTab('qard',this)">🤝 করজে হাসানা</button>
+      <button class="lm-tab" data-tab="charity" onclick="switchTab('charity',this)">❤️ চ্যারিটি</button>
+      <button class="lm-tab" data-tab="members" onclick="switchTab('members',this)">👥 সদস্য প্রোফাইল</button>
+      <button class="lm-tab" data-tab="committee" onclick="switchTab('committee',this)">🏛️ কমিটিবৃন্দ</button>
+    </div>
+  </div>
+</div>
+
+<!-- TAB CONTENT -->
+<div class="container lm-content">
+
+  <!-- ① OBJECTIVES -->
+  <div class="lm-panel active" id="tab-objectives">
+    <div class="lm-two-col">
+      <div class="lm-info-card">
+        <div class="lm-info-icon">🎯</div>
+        <h2>মূল উদ্দেশ্য</h2>
+        <div class="lm-info-body">
+          <div class="obj-item"><span class="obj-icon">🕌</span><div><strong>সুদমুক্ত অর্থনীতি</strong><p>সমাজ থেকে সুদের অভিশাপ দূর করে সম্পূর্ণ শরিয়াহ সম্মত ও হালাল উপায়ে আর্থিক লেনদেনের ক্ষেত্র তৈরি করা।</p></div></span></div>
+          <div class="obj-item"><span class="obj-icon">🤝</span><div><strong>আর্থিক সহায়তা</strong><p>সদস্যদের আপদকালীন প্রয়োজনে বিনা সুদে 'করজে হাসানা' প্রদানের মাধ্যমে পারস্পরিক সহযোগিতা নিশ্চিত করা।</p></div></div>
+          <div class="obj-item"><span class="obj-icon">🛒</span><div><strong>সহজ কিস্তি সুবিধা</strong><p>সাধারণ মানুষকে মাত্র ১০% লাভে কিস্তিতে পণ্য ক্রয়ের সুবিধা দিয়ে তাদের জীবনমান সহজ করা।</p></div></div>
+          <div class="obj-item"><span class="obj-icon">💰</span><div><strong>সঞ্চয় ও বিনিয়োগ</strong><p>সদস্যদের ক্ষুদ্র ক্ষুদ্র সঞ্চয়কে একত্রিত করে একটি শক্তিশালী তহবিল গঠন করা এবং তা হালাল ব্যবসায় বিনিয়োগ করা।</p></div></div>
+        </div>
+      </div>
+      <div class="lm-info-card">
+        <div class="lm-info-icon">🌟</div>
+        <h2>ভিশন</h2>
+        <div class="lm-info-body">
+          <div class="obj-item"><span class="obj-icon">🗺️</span><div><strong>দেশব্যাপী বিস্তার</strong><p>৩০ জন সদস্য নিয়ে যাত্রা শুরু করলেও, এই সুদমুক্ত সেবা ও ভ্রাতৃত্বের মডেলকে টেকসইভাবে পুরো দেশব্যাপী ছড়িয়ে দেওয়া।</p></div></div>
+          <div class="obj-item"><span class="obj-icon">🏆</span><div><strong>আদর্শ মডেল তৈরি</strong><p>দেশে একটি স্বচ্ছ এবং আধুনিক সুদমুক্ত আর্থিক প্রতিষ্ঠানের সফল উদাহরণ তৈরি করা।</p></div></div>
+          <div class="obj-item"><span class="obj-icon">⚖️</span><div><strong>ইনসাফভিত্তিক সমাজ</strong><p>"সুদমুক্ত লেনদেনে সমৃদ্ধি সবার" — এই স্লোগানকে ধারণ করে একটি আত্মনির্ভরশীল সমাজ গড়া।</p></div></div>
+        </div>
+      </div>
     </div>
 
-    <div class="learn-content">
-
-      <!-- (i) উদ্দেশ্য ও লক্ষ্য -->
-      <div class="lsec active" id="lsec-objectives">
-        <div class="lsec-title">🎯 উদ্দেশ্য ও লক্ষ্য</div>
-        <div class="divider"></div>
-        <div class="prose-card">
-          <h3>📌 মূল উদ্দেশ্য (Key Objectives)</h3>
-          <ul>
-            <li><strong>সুদমুক্ত অর্থনীতি:</strong> সমাজ থেকে সুদের অভিশাপ দূর করে সম্পূর্ণ শরিয়াহসম্মত ও হালাল উপায়ে আর্থিক লেনদেনের ক্ষেত্র তৈরি করা।</li>
-            <li><strong>আর্থিক সহায়তা:</strong> সদস্যদের আপদকালীন প্রয়োজনে বিনা সুদে 'করজে হাসানা' প্রদানের মাধ্যমে পারস্পরিক সহযোগিতা নিশ্চিত করা।</li>
-            <li><strong>সহজ কিস্তি সুবিধা:</strong> সাধারণ মানুষকে ১০%-এর মতো সামান্য লাভে কিস্তিতে পণ্য ক্রয়ের সুবিধা দিয়ে তাদের জীবনমান সহজ করা।</li>
-            <li><strong>সঞ্চয় ও বিনিয়োগ:</strong> সদস্যদের ক্ষুদ্র ক্ষুদ্র সঞ্চয়কে একত্রিত করে একটি শক্তিশালী তহবিল গঠন করা এবং তা হালাল ব্যবসায় বিনিয়োগ করা।</li>
-          </ul>
-        </div>
-        <div class="prose-card">
-          <h3>🌟 ভিশন (Vision)</h3>
-          <ul>
-            <li><strong>দেশব্যাপী বিস্তার:</strong> ৩০ জন সদস্য নিয়ে যাত্রা শুরু করলেও, এই সুদমুক্ত সেবা ও ভ্রাতৃত্বের মডেলকে টেকসইভাবে পুরো দেশব্যাপী ছড়িয়ে দেওয়া।</li>
-            <li><strong>আদর্শ মডেল তৈরি:</strong> দেশে একটি স্বচ্ছ এবং আধুনিক সুদমুক্ত আর্থিক প্রতিষ্ঠানের সফল উদাহরণ তৈরি করা, যেখানে সচ্ছতা ও ন্যায়বিচারই হবে মূল ভিত্তি।</li>
-          </ul>
-          <p style="margin-top:16px;font-style:italic;color:var(--gold-light);">"সুদমুক্ত লেনদেনে সমৃদ্ধি সবার" — এই স্লোগানকে ধারণ করে একটি আত্মনির্ভরশীল ও ইনসাফভিত্তিক সমাজ বিনির্মাণ করাই আমাদের প্রধান লক্ষ্য।</p>
-        </div>
-      </div>
-
-      <!-- (ii) প্যাকেজ -->
-      <div class="lsec" id="lsec-packages">
-        <div class="lsec-title">📦 প্যাকেজ ও বিনিয়োগ</div>
-        <div class="divider"></div>
-        <p style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:20px;">আপনার সাধ্য ও সুবিধামতো যেকোনো প্যাকেজ বেছে নিন। নিচে প্যাকেজে ক্লিক করে বিস্তারিত জানুন।</p>
-        <div class="pkg-grid" id="pkgGrid"></div>
-      </div>
-
-      <!-- (iii) সদস্য হওয়ার নিয়মনীতি -->
-      <div class="lsec" id="lsec-member-rules">
-        <div class="lsec-title">📋 সদস্য হওয়ার নিয়মনীতি</div>
-        <div class="divider"></div>
-        <div class="prose-card">
-          <h3>✅ যোগ্যতা ও শর্তাবলী</h3>
-          <ul>
-            <li>বাংলাদেশের যেকোনো প্রাপ্তবয়স্ক মুসলিম নাগরিক সদস্য হতে পারবেন।</li>
-            <li>বৈধ জাতীয় পরিচয়পত্র (NID) অথবা জন্ম নিবন্ধন সনদ বাধ্যতামূলক।</li>
-            <li>একজন বিদ্যমান সদস্যের রেফারেন্স প্রদান করতে হবে।</li>
-            <li>কমিটির সভায় অনুমোদনের পর সদস্যপদ কার্যকর হবে।</li>
-            <li>আবেদন ফি: ১০০ টাকা (অফেরতযোগ্য)।</li>
-          </ul>
-        </div>
-        <div class="prose-card">
-          <h3>💰 মাসিক সঞ্চয় নিয়ম</h3>
-          <ul>
-            <li>প্রতি মাসের <strong>১ থেকে ১৫ তারিখের</strong> মধ্যে ন্যূনতম ২,০০০ টাকা সঞ্চয় বাধ্যতামূলক।</li>
-            <li>১ ইউনিট = ২,০০০ টাকা। যতটি ইউনিট, ততটি লভ্যাংশ।</li>
-            <li>১৫ তারিখের পরে জমা দিলে প্রতি ইউনিটে ১০০ টাকা বিলম্ব ফি আরোপিত হবে।</li>
-            <li>বিলম্ব ফি সংস্থার আয় হিসেবে নয়, চ্যারিটি ফান্ডে জমা হবে।</li>
-          </ul>
-        </div>
-        <div class="prose-card">
-          <h3>🔒 প্রতিশ্রুতিকাল</h3>
-          <ul>
-            <li>প্রাথমিক ৩ বছর সক্রিয় সদস্য থাকার প্রতিশ্রুতি।</li>
-            <li>টাকা তোলার ক্ষেত্রে ন্যূনতম ৩০ দিন আগে নোটিশ দিতে হবে।</li>
-            <li>পূর্ণ টাকা তুলতে চাইলে ৬০ দিন আগে নোটিশ দিতে হবে।</li>
-            <li>মূল জমাকৃত অর্থ সম্পূর্ণ ফেরতযোগ্য (প্রকৃত ব্যবসায়িক লোকশান ব্যতীত)।</li>
-          </ul>
-        </div>
-        <div class="prose-card">
-          <h3>📜 অধিকার ও সুবিধা</h3>
-          <ul>
-            <li>প্রতিটি বার্ষিক আয় থেকে ৬০% লভ্যাংশ পাবেন (আনুপাতিক হারে)।</li>
-            <li>করজে হাসানার জন্য আবেদনের অধিকার।</li>
-            <li>কিস্তিতে পণ্য ক্রয়ের সুবিধা।</li>
-            <li>সাধারণ সভায় ভোটদানের অধিকার।</li>
-            <li>সংস্থার যেকোনো সিদ্ধান্তে অংশগ্রহণের সুযোগ।</li>
-          </ul>
-        </div>
-        <a href="../form.html" class="apply-btn">📝 সদস্য হতে আবেদন করুন →</a>
-      </div>
-
-      <!-- (iv) কিস্তিতে পণ্য ক্রয় -->
-      <div class="lsec" id="lsec-installment">
-        <div class="lsec-title">🛒 কিস্তিতে পণ্য ক্রয়ের নিয়মনীতি</div>
-        <div class="divider"></div>
-        <div class="prose-card">
-          <h3>📌 মূল নিয়ম</h3>
-          <ul>
-            <li>যেকোনো সদস্য বা নিবন্ধিত গ্রাহক কিস্তিতে পণ্য কিনতে পারবেন।</li>
-            <li>লাভের হার: সর্বোচ্চ ১০% (অর্থায়িত অংশের উপর)।</li>
-            <li>কিস্তির মেয়াদ: ৩ থেকে ১২ মাস পর্যন্ত।</li>
-            <li>জামিনদার: সংস্থার একজন সক্রিয় সদস্যের গ্যারান্টি প্রয়োজন।</li>
-            <li>সাক্ষী: ন্যূনতম একজন সাক্ষীর তথ্য দিতে হবে।</li>
-            <li>পণ্য বাজার থেকে সংস্থা কিনে সরাসরি গ্রাহককে দেবে (মুরাবাহা পদ্ধতি)।</li>
-          </ul>
-        </div>
-        <div class="prose-card">
-          <h3>💳 কিস্তি গণনা পদ্ধতি (শরিয়াহ)</h3>
-          <p>আমরা শুধু আমাদের বিনিয়োগকৃত অংশের উপর লাভ ধরি। যেমন: পণ্যের দাম ৩০,০০০ টাকা, আপনি ডাউনপেমেন্ট দিলেন ১০,০০০ টাকা, আমাদের বিনিয়োগ ২০,০০০ টাকা। আমরা ওই ২০,০০০ টাকার ১০% = ২,০০০ টাকা লাভ ধরে মোট ৩২,০০০ টাকায় বিক্রি করব।</p>
-        </div>
-        <!-- Inline installment calculator -->
-        <div class="inline-calc" id="installment">
-          <h3>🔢 কিস্তি ক্যালকুলেটর</h3>
-          <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
-            <button class="calc-btn" onclick="switchLMCalc(1)" id="lm-calc-btn1" style="flex:1;background:linear-gradient(135deg,var(--gold),#A67C00);">পদ্ধতি-১: সম্পূর্ণ মূল্য</button>
-            <button class="calc-btn" onclick="switchLMCalc(2)" id="lm-calc-btn2" style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(201,162,39,0.3);">পদ্ধতি-২: অর্থায়িত</button>
-          </div>
-          <div id="lm-calc-1">
-            <div class="calc-row"><label class="calc-label">পণ্যের মূল্য (টাকা)</label><input class="calc-input" type="number" id="lm1-price" placeholder="যেমন: ৫০০০০" oninput="lmCalc1()"></div>
-            <div class="calc-row"><label class="calc-label">কিস্তির সংখ্যা</label><select class="calc-input" id="lm1-n" onchange="lmCalc1()"><option value="3">৩</option><option value="6" selected>৬</option><option value="9">৯</option><option value="12">১২</option></select></div>
-            <div class="calc-result" id="lm1-result" style="display:none;">
-              <div class="calc-item"><div class="val" id="lm1-total">-</div><div class="lbl">মোট মূল্য</div></div>
-              <div class="calc-item"><div class="val" id="lm1-labh">-</div><div class="lbl">লাভ</div></div>
-              <div class="calc-item"><div class="val" id="lm1-kisti">-</div><div class="lbl">মাসিক কিস্তি</div></div>
-            </div>
-          </div>
-          <div id="lm-calc-2" style="display:none;">
-            <div class="calc-row"><label class="calc-label">পণ্যের ক্রয়মূল্য</label><input class="calc-input" type="number" id="lm2-cost" placeholder="যেমন: ৩০০০০" oninput="lmCalc2()"></div>
-            <div class="calc-row"><label class="calc-label">ডাউনপেমেন্ট</label><input class="calc-input" type="number" id="lm2-down" placeholder="যেমন: ১০০০০" oninput="lmCalc2()"></div>
-            <div class="calc-row"><label class="calc-label">কিস্তির সংখ্যা</label><select class="calc-input" id="lm2-n" onchange="lmCalc2()"><option value="3">৩</option><option value="6" selected>৬</option><option value="9">৯</option><option value="12">১২</option></select></div>
-            <div class="calc-result" id="lm2-result" style="display:none;">
-              <div class="calc-item"><div class="val" id="lm2-financed">-</div><div class="lbl">অর্থায়িত</div></div>
-              <div class="calc-item"><div class="val" id="lm2-labh">-</div><div class="lbl">লাভ</div></div>
-              <div class="calc-item"><div class="val" id="lm2-total">-</div><div class="lbl">মোট বিক্রয়মূল্য</div></div>
-              <div class="calc-item"><div class="val" id="lm2-kisti">-</div><div class="lbl">মাসিক কিস্তি</div></div>
-            </div>
-          </div>
-        </div>
-        <a href="shop.html" class="apply-btn" style="margin-right:10px;">🛒 পণ্য দেখুন →</a>
-      </div>
-
-      <!-- (v) করজে হাসানা -->
-      <div class="lsec" id="lsec-qard">
-        <div class="lsec-title">🤝 করজে হাসানা নেওয়ার নিয়মনীতি</div>
-        <div class="divider"></div>
-        <div class="prose-card">
-          <h3>❓ করজে হাসানা কী?</h3>
-          <p>করজে হাসানা হলো ইসলামী শরিয়াহ অনুমোদিত একটি সুদমুক্ত ঋণ ব্যবস্থা, যেখানে শুধু মূল টাকাই ফেরত দিতে হয়, কোনো অতিরিক্ত অর্থ নয়। এটি পারস্পরিক সহযোগিতা ও ভ্রাতৃত্বের প্রতীক।</p>
-        </div>
-        <div class="prose-card">
-          <h3>📋 শর্তাবলী</h3>
-          <ul>
-            <li>শুধুমাত্র সক্রিয় সদস্যরা করজে হাসানার জন্য আবেদন করতে পারবেন।</li>
-            <li>সর্বোচ্চ পরিমাণ: ১৫,০০০ টাকা (ফান্ড সাপেক্ষে বেশি হতে পারে)।</li>
-            <li>পরিশোধের সময়কাল: ৩ থেকে ৬ মাস।</li>
-            <li>একজন সক্রিয় সদস্যের জামানত (গ্যারান্টি) প্রয়োজন।</li>
-            <li>একবারে একাধিক করজে হাসানা নেওয়া যাবে না।</li>
-            <li>কমিটির অনুমোদনের পর টাকা বিতরণ করা হবে।</li>
-          </ul>
-        </div>
-        <div class="prose-card">
-          <h3>📅 পরিশোধ পদ্ধতি</h3>
-          <ul>
-            <li>মাসিক সমান কিস্তিতে পরিশোধ।</li>
-            <li>প্রতিটি কিস্তি নির্ধারিত তারিখের মধ্যে পরিশোধ করতে হবে।</li>
-            <li>আংশিক পরিশোধ গ্রহণযোগ্য।</li>
-            <li>নির্ধারিত সময়ে পরিশোধ করতে না পারলে কমিটিকে আগেই জানাতে হবে।</li>
-          </ul>
-        </div>
-        <!-- Qard Application Form -->
-        <div class="qard-form" id="qard">
-          <h3>📩 করজে হাসানার আবেদন করুন</h3>
-          <div id="qard-auth-warning" style="display:none;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:12px;margin-bottom:12px;font-size:13px;color:#fca5a5;">
-            ⚠️ আবেদন করতে <a href="../index.html" style="color:#F5D061;text-decoration:underline;">লগইন করুন</a>।
-          </div>
-          <div id="qard-form-body">
-            <div class="form-group"><label>প্রয়োজনের কারণ *</label><textarea id="qf-reason" rows="3" placeholder="সংক্ষেপে কারণ লিখুন..."></textarea></div>
-            <div class="form-group"><label>পরিমাণ (টাকা) * সর্বোচ্চ ১৫,০০০</label><input type="number" id="qf-amount" max="15000" placeholder="৳"></div>
-            <div class="form-group"><label>পরিশোধের মেয়াদ</label>
-              <select id="qf-months"><option value="3">৩ মাস</option><option value="4">৪ মাস</option><option value="5">৫ মাস</option><option value="6">৬ মাস</option></select>
-            </div>
-            <div class="form-group"><label>জামানদারের নাম ও মোবাইল</label><input type="text" id="qf-guarantor" placeholder="নাম — ০১XXXXXXXXX"></div>
-            <button class="apply-btn" onclick="submitQardApp()" style="width:100%;text-align:center;">আবেদন জমা দিন →</button>
-            <div id="qf-alert" class="alert" style="display:none;margin-top:10px;"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- (vi) চ্যারিটি -->
-      <div class="lsec" id="lsec-charity">
-        <div class="lsec-title">❤️ চ্যারিটি সহযোগিতা</div>
-        <div class="divider"></div>
-        <div class="prose-card">
-          <h3>💚 চ্যারিটি ফান্ড সম্পর্কে</h3>
-          <p>বারাকাহ ফাইন্যান্সের প্রতিটি মুনাফার ৫% চ্যারিটি ফান্ডে জমা হয়। এছাড়াও বিলম্ব ফি-র সম্পূর্ণ অর্থ চ্যারিটি ফান্ডে যায়। এই তহবিল অসহায় মানুষদের সহায়তায় ব্যবহৃত হয়।</p>
-        </div>
-        <div class="prose-card">
-          <h3>📩 সহযোগিতার আবেদন</h3>
-          <p>যারা চ্যারিটি সহযোগিতার জন্য আবেদন করতে চান, নিচের ফরমটি পূরণ করুন। কমিটি পর্যালোচনা করে সিদ্ধান্ত নেবে।</p>
-        </div>
-        <div class="qard-form">
-          <h3>📝 চ্যারিটি আবেদন ফরম</h3>
-          <div class="form-group"><label>নাম *</label><input type="text" id="ch-name" placeholder="পূর্ণ নাম"></div>
-          <div class="form-group"><label>পিতার নাম *</label><input type="text" id="ch-fname" placeholder="পিতার নাম"></div>
-          <div class="form-group"><label>ঠিকানা *</label><input type="text" id="ch-addr" placeholder="বিস্তারিত ঠিকানা"></div>
-          <div class="form-group"><label>মোবাইল নম্বর *</label><input type="tel" id="ch-phone" placeholder="০১XXXXXXXXX"></div>
-          <div class="form-group"><label>ইমেইল (ঐচ্ছিক)</label><input type="email" id="ch-email" placeholder="email@example.com"></div>
-          <div class="form-group"><label>সহযোগিতার কারণ *</label><textarea id="ch-reason" rows="3" placeholder="কেন সহযোগিতা প্রয়োজন তা বিস্তারিত লিখুন..."></textarea></div>
-          <div class="form-group"><label>প্রয়োজনীয় সহযোগিতার পরিমাণ (টাকা)</label><input type="number" id="ch-amount" placeholder="৳"></div>
-          <button class="apply-btn" onclick="submitCharityApp()" style="width:100%;text-align:center;">আবেদন জমা দিন →</button>
-          <div id="ch-alert" class="alert" style="display:none;margin-top:10px;"></div>
-        </div>
-      </div>
-
-      <!-- (vii) সদস্য প্রোফাইল -->
-      <div class="lsec" id="lsec-member-profiles">
-        <div class="lsec-title">👥 সদস্য প্রোফাইল</div>
-        <div class="divider"></div>
-        <div class="search-bar">
-          <input type="text" id="mp-search" placeholder="নাম, মোবাইল, আইডি বা ঠিকানা দিয়ে খুঁজুন..." oninput="filterMembers()">
-          <button onclick="filterMembers()">🔍 খুঁজুন</button>
-        </div>
-        <div class="members-grid" id="lmMembersGrid"></div>
-      </div>
-
-      <!-- (viii) কমিটিবৃন্দ -->
-      <div class="lsec" id="lsec-committee">
-        <div class="lsec-title">🏛️ কমিটিবৃন্দ</div>
-        <div class="divider"></div>
-        <p style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:20px;">বর্তমান পরিচালনা কমিটির সদস্যবৃন্দ।</p>
-        <div class="committee-grid" id="lmCommitteeGrid"></div>
-      </div>
-
-    </div><!-- /learn-content -->
-  </div><!-- /learn-page -->
-
-  <!-- Package Detail Modal -->
-  <div class="pkg-modal-overlay hidden" id="pkgModal">
-    <div class="pkg-modal">
-      <button class="pkg-modal-close" onclick="closePkgModal()">✕</button>
-      <div id="pkgModalContent"></div>
+    <!-- Stats -->
+    <div class="lm-stats-row">
+      <div class="stat-card reveal"><div class="stat-icon stat-icon-green">👥</div><div class="stat-val" id="lmMemberCount">৩০+</div><div class="stat-lbl">মোট সদস্য</div></div>
+      <div class="stat-card reveal"><div class="stat-icon stat-icon-gold">💰</div><div class="stat-val">২০২৬</div><div class="stat-lbl">প্রতিষ্ঠাকাল</div></div>
+      <div class="stat-card reveal"><div class="stat-icon stat-icon-blue">🏗️</div><div class="stat-val">১০%</div><div class="stat-lbl">সর্বোচ্চ লাভ</div></div>
+      <div class="stat-card reveal"><div class="stat-icon stat-icon-red">🤝</div><div class="stat-val">১৫,০০০৳</div><div class="stat-lbl">সর্বোচ্চ করজ</div></div>
     </div>
   </div>
 
-  <!-- Member Detail Modal -->
-  <div class="pkg-modal-overlay hidden" id="memberModal">
-    <div class="pkg-modal">
-      <button class="pkg-modal-close" onclick="document.getElementById('memberModal').classList.add('hidden')">✕</button>
-      <div id="memberModalContent"></div>
+  <!-- ② PACKAGES -->
+  <div class="lm-panel hidden" id="tab-packages">
+    <div class="section-header"><h2 class="section-title">বিনিয়োগ প্যাকেজ</h2><p class="section-subtitle">আপনার সাধ্যমতো বিনিয়োগ করুন এবং হালাল মুনাফা উপভোগ করুন।</p></div>
+    <div class="pkg-grid">
+      <div class="pkg-card reveal">
+        <div class="pkg-badge">জনপ্রিয়</div>
+        <div class="pkg-icon">📅</div>
+        <h3>মাসিক সঞ্চয়</h3>
+        <div class="pkg-price">৳ ২,০০০ <span>/মাস</span></div>
+        <ul class="pkg-features">
+          <li>✅ প্রতি মাসে ২,০০০ টাকা জমা</li>
+          <li>✅ ১ ইউনিট = ২,০০০ টাকা</li>
+          <li>✅ আনুপাতিক হারে মুনাফা</li>
+          <li>✅ যেকোনো সময় উত্তোলন (৩০ দিন নোটিশ)</li>
+          <li>✅ করজে হাসানার সুবিধা</li>
+          <li>✅ কিস্তিতে পণ্য ক্রয়ের সুবিধা</li>
+        </ul>
+        <a href="../form.html" class="btn btn-primary btn-block">আবেদন করুন</a>
+      </div>
+      <div class="pkg-card reveal">
+        <div class="pkg-icon">💎</div>
+        <h3>এককালীন বিনিয়োগ</h3>
+        <div class="pkg-price">৳ ২,০০০+ <span>এককালীন</span></div>
+        <ul class="pkg-features">
+          <li>✅ যেকোনো পরিমাণ একবারে বিনিয়োগ</li>
+          <li>✅ ইউনিট হিসেবে গণনা (প্রতি ২০০০৳=১ ইউনিট)</li>
+          <li>✅ আনুপাতিক মুনাফা</li>
+          <li>✅ মূলধন নিরাপদ</li>
+          <li>✅ সকল সদস্য সুবিধা</li>
+          <li>✅ ফ্র্যাকশনাল ইউনিট সমর্থিত</li>
+        </ul>
+        <a href="../form.html" class="btn btn-outline btn-block">আবেদন করুন</a>
+      </div>
+      <div class="pkg-card reveal">
+        <div class="pkg-icon">🏗️</div>
+        <h3>প্রজেক্ট বিনিয়োগ</h3>
+        <div class="pkg-price">নির্ধারিত <span>প্রজেক্ট অনুযায়ী</span></div>
+        <ul class="pkg-features">
+          <li>✅ নির্দিষ্ট প্রজেক্টে বিনিয়োগ</li>
+          <li>✅ প্রজেক্টের লাভ-লোকসানের অংশীদার</li>
+          <li>✅ মেয়াদ নির্ধারিত</li>
+          <li>✅ বিস্তারিত প্রজেক্ট রিপোর্ট</li>
+          <li>✅ শরিয়াহ সম্মত চুক্তি</li>
+          <li>⏳ শীঘ্রই চালু হবে</li>
+        </ul>
+        <button class="btn btn-ghost btn-block">বিস্তারিত জানুন</button>
+      </div>
+    </div>
+
+    <!-- Profit Distribution -->
+    <div class="profit-dist-card reveal">
+      <h3>মুনাফা বণ্টন পদ্ধতি</h3>
+      <div class="profit-dist-grid">
+        <div class="pd-item"><div class="pd-pct" style="color:var(--clr-primary-500)">৬০%</div><div class="pd-lbl">সদস্য/বিনিয়োগকারী</div><div class="pd-sub">নিট মুনাফার ৬০%</div></div>
+        <div class="pd-item"><div class="pd-pct" style="color:var(--clr-gold-500)">৩৫%</div><div class="pd-lbl">সংগঠন তহবিল</div><div class="pd-sub">পরিচালনা ব্যয়</div></div>
+        <div class="pd-item"><div class="pd-pct" style="color:#ef4444">৫%</div><div class="pd-lbl">চ্যারিটি ফান্ড</div><div class="pd-sub">সমাজসেবা</div></div>
+      </div>
+      <p class="profit-note">⚠️ মুনাফা কেবল সক্রিয় বিনিয়োগের সময় থেকে গণনা হয়। নিট মুনাফা = মোট আয় - সকল ব্যয় - পণ্য ক্রয়মূল্য।</p>
     </div>
   </div>
 
-  <script src="../js/db.js"></script>
-  <script src="../js/data.js"></script>
-  <script src="../js/notice.js"></script>
-  <script>
-    // ── Dark mode ──
-    function toggleDarkMode() {
-      document.body.classList.toggle('dark-mode');
-      const t=document.getElementById('dkTog'); if(t) t.classList.toggle('on');
-      localStorage.setItem('bf_dark', document.body.classList.contains('dark-mode')?'1':'0');
-    }
-    if(localStorage.getItem('bf_dark')==='1'){
-      document.body.classList.add('dark-mode');
-      const t=document.getElementById('dkTog'); if(t) t.classList.add('on');
-    }
+  <!-- ③ MEMBERSHIP -->
+  <div class="lm-panel hidden" id="tab-membership">
+    <div class="section-header"><h2 class="section-title">সদস্য হওয়ার নিয়মনীতি</h2></div>
+    <div class="rules-grid">
+      <div class="rule-card reveal">
+        <div class="rule-step">০১</div>
+        <h4>আবেদন করুন</h4>
+        <p>অনলাইনে নিবন্ধন করুন এবং সদস্যপদ আবেদন ফরম পূরণ করুন। ফরম ফি মাত্র ১০০ টাকা।</p>
+      </div>
+      <div class="rule-card reveal">
+        <div class="rule-step">০২</div>
+        <h4>KYC যাচাই</h4>
+        <p>আপনার NID/জন্ম নিবন্ধন, পাসপোর্ট সাইজের ছবি ও স্বাক্ষর আপলোড করুন।</p>
+      </div>
+      <div class="rule-card reveal">
+        <div class="rule-step">০৩</div>
+        <h4>কমিটি অনুমোদন</h4>
+        <p>আহ্বায়ক কমিটি আবেদন পর্যালোচনা করে অনুমোদন/প্রত্যাখ্যান করবে।</p>
+      </div>
+      <div class="rule-card reveal">
+        <div class="rule-step">০৪</div>
+        <h4>প্রাথমিক জমা</h4>
+        <p>অনুমোদনের পর ফরম ফি ও প্রথম মাসের সঞ্চয় বা এককালীন বিনিয়োগ জমা দিন।</p>
+      </div>
+      <div class="rule-card reveal">
+        <div class="rule-step">০৫</div>
+        <h4>সদস্য আইডি</h4>
+        <p>পেমেন্ট নিশ্চিত হলে আপনি একটি ইউনিক সদস্য আইডি পাবেন।</p>
+      </div>
+      <div class="rule-card reveal">
+        <div class="rule-step">০৬</div>
+        <h4>SMS নিশ্চিতকরণ</h4>
+        <p>আপনার মোবাইলে স্বয়ংক্রিয় SMS পাঠানো হবে এবং সকল সুবিধা উপভোগ শুরু হবে।</p>
+      </div>
+    </div>
 
-    // ── Tab switching ──
-    function showLSec(id, tabEl) {
-      document.querySelectorAll('.lsec').forEach(s=>s.classList.remove('active'));
-      document.querySelectorAll('.ltab').forEach(t=>t.classList.remove('active'));
-      document.getElementById('lsec-'+id).classList.add('active');
-      if(tabEl) tabEl.classList.add('active');
-      // handle hash
-      history.replaceState(null,'','#'+id);
-    }
+    <div class="lm-rules-list reveal">
+      <h3>গুরুত্বপূর্ণ নিয়মাবলি</h3>
+      <ul>
+        <li>📌 মাসিক সঞ্চয় প্রতি মাসের ১৫ তারিখের মধ্যে জমা দিতে হবে।</li>
+        <li>📌 বিলম্বে জমা দিলে প্রতি ইউনিটে ১০০ টাকা জরিমানা — যা চ্যারিটি ফান্ডে যাবে।</li>
+        <li>📌 টাকা উত্তোলনের জন্য ন্যূনতম ৩০ দিন আগে আবেদন করতে হবে।</li>
+        <li>📌 সম্পূর্ণ উত্তোলনের জন্য ৬০ দিনের নোটিশ প্রয়োজন।</li>
+        <li>📌 একজন সদস্য সর্বোচ্চ ৩ জন ক্লায়েন্টের জামিনদার হতে পারবেন।</li>
+        <li>📌 ইউজারনেম ৬০ দিনের আগে এবং ১ বছর পর আর পরিবর্তন করা যাবে না।</li>
+        <li>📌 সকল লেনদেন শরিয়াহ নীতি অনুযায়ী পরিচালিত হবে।</li>
+      </ul>
+    </div>
 
-    // ── Load section from hash ──
-    window.addEventListener('load', ()=>{
-      const hash = location.hash.replace('#','');
-      const tabMap = {
-        'objectives':0,'packages':1,'member-rules':2,'installment':3,
-        'qard':4,'charity':5,'member-profiles':6,'committee':7
-      };
-      if(hash && tabMap[hash]!==undefined){
-        const tabs = document.querySelectorAll('.ltab');
-        showLSec(hash, tabs[tabMap[hash]]);
-      }
-      loadPackages();
-      loadMembersGrid();
-      loadCommitteeGrid();
+    <div class="text-center mt-8">
+      <a href="../form.html" class="btn btn-primary btn-xl">📝 এখনই আবেদন করুন</a>
+    </div>
+  </div>
+
+  <!-- ④ INSTALLMENT RULES -->
+  <div class="lm-panel hidden" id="tab-installment">
+    <div class="section-header"><h2 class="section-title">কিস্তিতে পণ্য ক্রয়ের নিয়ম</h2></div>
+
+    <!-- Calculator embed -->
+    <div class="inst-calc-wrap reveal">
+      <h3>🧮 কিস্তি ক্যালকুলেটর</h3>
+      <div class="calc-tabs" style="margin-bottom:20px">
+        <button class="calc-tab active" onclick="switchCalcMethod('A',this)">পদ্ধতি ক — সাধারণ</button>
+        <button class="calc-tab" onclick="switchCalcMethod('B',this)">পদ্ধতি খ — ডাউনপেমেন্ট সহ</button>
+      </div>
+      <div id="calcA" class="calc-body">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">পণ্যের মূল্য (৳)</label><input type="number" class="form-input calc-inp" id="calcAPrice" placeholder="৩০০০০" oninput="calcMethodA()"/></div>
+          <div class="form-group"><label class="form-label">যাতায়াত খরচ (৳)</label><input type="number" class="form-input calc-inp" id="calcATravel" placeholder="৫০০" oninput="calcMethodA()"/></div>
+          <div class="form-group"><label class="form-label">কিস্তির সংখ্যা</label>
+            <select class="form-select" id="calcAInstall" onchange="calcMethodA()">
+              <option value="3">৩ মাস</option><option value="6" selected>৬ মাস</option>
+              <option value="9">৯ মাস</option><option value="12">১২ মাস</option>
+              <option value="18">১৮ মাস</option><option value="24">২৪ মাস</option>
+            </select>
+          </div>
+        </div>
+        <div class="calc-result hidden" id="calcAResult">
+          <div class="calc-result-grid">
+            <div class="cr-item"><div class="cr-lbl">ক্রয়মূল্য</div><div class="cr-val" id="crABase">৳ ০</div></div>
+            <div class="cr-item highlight"><div class="cr-lbl">১০% লাভ</div><div class="cr-val gold" id="crAProfit">৳ ০</div></div>
+            <div class="cr-item big"><div class="cr-lbl">বিক্রয়মূল্য</div><div class="cr-val" id="crATotal">৳ ০</div></div>
+            <div class="cr-item big highlight"><div class="cr-lbl">মাসিক কিস্তি</div><div class="cr-val green" id="crAMonthly">৳ ০</div></div>
+          </div>
+          <p class="calc-note" id="crANote"></p>
+        </div>
+      </div>
+      <div id="calcB" class="calc-body hidden">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">পণ্যের মূল্য (৳)</label><input type="number" class="form-input calc-inp" id="calcBPrice" placeholder="৫০০০০" oninput="calcMethodB()"/></div>
+          <div class="form-group"><label class="form-label">ডাউনপেমেন্ট (৳)</label><input type="number" class="form-input calc-inp" id="calcBDown" placeholder="১০০০০" oninput="calcMethodB()"/></div>
+          <div class="form-group"><label class="form-label">কিস্তির সংখ্যা</label>
+            <select class="form-select" id="calcBInstall" onchange="calcMethodB()">
+              <option value="3">৩ মাস</option><option value="6" selected>৬ মাস</option>
+              <option value="9">৯ মাস</option><option value="12">১২ মাস</option>
+            </select>
+          </div>
+        </div>
+        <div class="calc-result hidden" id="calcBResult">
+          <div class="calc-result-grid">
+            <div class="cr-item"><div class="cr-lbl">ক্রয়মূল্য</div><div class="cr-val" id="crBBase">৳ ০</div></div>
+            <div class="cr-item"><div class="cr-lbl">ডাউনপেমেন্ট</div><div class="cr-val" id="crBDown">৳ ০</div></div>
+            <div class="cr-item"><div class="cr-lbl">অর্থায়িত পরিমাণ</div><div class="cr-val" id="crBFinanced">৳ ০</div></div>
+            <div class="cr-item highlight"><div class="cr-lbl">১০% লাভ</div><div class="cr-val gold" id="crBProfit">৳ ০</div></div>
+            <div class="cr-item big"><div class="cr-lbl">বিক্রয়মূল্য</div><div class="cr-val" id="crBTotal">৳ ০</div></div>
+            <div class="cr-item big highlight"><div class="cr-lbl">মাসিক কিস্তি</div><div class="cr-val green" id="crBMonthly">৳ ০</div></div>
+          </div>
+          <p class="calc-note" id="crBNote"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="lm-rules-list reveal">
+      <h3>নিয়মাবলি</h3>
+      <ul>
+        <li>📌 পণ্যের মূল্যের উপর মাত্র ১০% লাভ — সম্পূর্ণ শরিয়াহ সম্মত।</li>
+        <li>📌 ডাউনপেমেন্ট করলে শুধু অর্থায়িত অংশের উপর লাভ গণনা হয়।</li>
+        <li>📌 কিস্তির রাউন্ড ফিগার, শেষ কিস্তিতে স্বয়ংক্রিয় সমন্বয়।</li>
+        <li>📌 কিস্তি কম দিলে বাকি পরবর্তী কিস্তিতে যোগ হয়।</li>
+        <li>📌 কিস্তি বেশি দিলে পরবর্তী কিস্তি থেকে বাদ যাবে।</li>
+        <li>📌 নির্ধারিত তারিখের ৫ দিন আগে প্রাথমিক সতর্কতা দেওয়া হয়।</li>
+        <li>📌 একজন সদস্য জামিনদার হিসেবে স্বাক্ষর করলে তিনি দায়িত্বশীল।</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ⑤ QARD -->
+  <div class="lm-panel hidden" id="tab-qard">
+    <div class="section-header"><h2 class="section-title">করজে হাসানার নিয়মনীতি</h2><p class="section-subtitle">বিনা সুদে আপদকালীন আর্থিক সহায়তা</p></div>
+    <div class="qard-hero-card reveal">
+      <div class="qard-hero-left">
+        <div class="qard-amount">সর্বোচ্চ <span>১৫,০০০ টাকা</span></div>
+        <p>সম্পূর্ণ বিনা সুদে — কোনো লাভ নেই, কোনো চার্জ নেই</p>
+        <button class="btn btn-gold btn-lg" onclick="openQardApply()">📝 করজের আবেদন করুন</button>
+      </div>
+      <div class="qard-hero-right">
+        <div class="qard-stat"><span class="qs-val">৳ ০</span><span class="qs-lbl">বিতরণকৃত</span></div>
+        <div class="qard-stat"><span class="qs-val">৳ ০</span><span class="qs-lbl">সংগৃহীত</span></div>
+        <div class="qard-stat"><span class="qs-val" id="qardFund">গণনা হচ্ছে...</span><span class="qs-lbl">ফান্ড উপলব্ধ</span></div>
+      </div>
+    </div>
+
+    <div class="rules-grid">
+      <div class="rule-card reveal"><div class="rule-step">০১</div><h4>আবেদন</h4><p>শুধুমাত্র সক্রিয় সদস্যরা আবেদন করতে পারবেন। জামিনদার ও সাক্ষী প্রয়োজন।</p></div>
+      <div class="rule-card reveal"><div class="rule-step">০২</div><h4>KYC যাচাই</h4><p>আবেদনকারীর NID, ছবি এবং জামিনদারের তথ্য যাচাই করা হবে।</p></div>
+      <div class="rule-card reveal"><div class="rule-step">০৩</div><h4>কমিটি অনুমোদন</h4><p>আহ্বায়ক কমিটি আবেদন পর্যালোচনা করে অনুমোদন দেবে।</p></div>
+      <div class="rule-card reveal"><div class="rule-step">০৪</div><h4>বিতরণ</h4><p>অনুমোদনের পর নগদ বা মোবাইল ব্যাংকিংয়ে টাকা প্রদান করা হবে।</p></div>
+      <div class="rule-card reveal"><div class="rule-step">০৫</div><h4>পরিশোধ</h4><p>মাসিক কিস্তিতে (সর্বোচ্চ ৩ মাস) পরিশোধ করতে হবে — কোনো অতিরিক্ত টাকা নয়।</p></div>
+      <div class="rule-card reveal"><div class="rule-step">০৬</div><h4>সমাপ্তি</h4><p>সম্পূর্ণ পরিশোধের পর করজ বন্ধ হবে এবং আবার আবেদন করা যাবে।</p></div>
+    </div>
+
+    <div class="lm-rules-list reveal">
+      <h3>গুরুত্বপূর্ণ শর্তাবলি</h3>
+      <ul>
+        <li>📌 সর্বোচ্চ ১৫,০০০ টাকা — কোনো সুদ বা চার্জ নেই।</li>
+        <li>📌 কিস্তি পরিশোধের নির্ধারিত তারিখের ৪ দিন আগে SMS সতর্কতা।</li>
+        <li>📌 জামিনদার অবশ্যই সংগঠনের সক্রিয় সদস্য হতে হবে।</li>
+        <li>📌 একসাথে একাধিক করজ নেওয়া যাবে না।</li>
+        <li>📌 ফান্ডের উপর নির্ভর করে করজ অনুমোদন হয়।</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ⑥ CHARITY -->
+  <div class="lm-panel hidden" id="tab-charity">
+    <div class="section-header"><h2 class="section-title">চ্যারিটি সহযোগিতা</h2><p class="section-subtitle">সমাজের অসহায় মানুষদের পাশে দাঁড়ান</p></div>
+    <div class="lm-two-col">
+      <div class="lm-info-card">
+        <div class="lm-info-icon">❤️</div>
+        <h2>চ্যারিটি ফান্ড</h2>
+        <div class="lm-info-body">
+          <p style="margin-bottom:12px;color:var(--text-secondary)">প্রতিটি লেনদেনের নিট মুনাফার ৫% স্বয়ংক্রিয়ভাবে চ্যারিটি ফান্ডে জমা হয়।</p>
+          <div class="obj-item"><span class="obj-icon">🎓</span><div><strong>শিক্ষা সহায়তা</strong><p>মেধাবী ও অসহায় শিক্ষার্থীদের শিক্ষা ব্যয়ে সহায়তা।</p></div></div>
+          <div class="obj-item"><span class="obj-icon">🏥</span><div><strong>চিকিৎসা সহায়তা</strong><p>আপদকালীন চিকিৎসায় অসহায় পরিবারকে সহায়তা।</p></div></div>
+          <div class="obj-item"><span class="obj-icon">🍚</span><div><strong>খাদ্য সহায়তা</strong><p>দুর্যোগকালীন সময়ে খাদ্য ও ত্রাণ সামগ্রী বিতরণ।</p></div></div>
+        </div>
+      </div>
+      <div class="lm-info-card">
+        <div class="lm-info-icon">📝</div>
+        <h2>সহায়তার আবেদন</h2>
+        <form id="charityForm" onsubmit="submitCharityApp(event)">
+          <div class="form-group"><label class="form-label">নাম <span class="req">*</span></label><input type="text" class="form-input" id="chName" required/></div>
+          <div class="form-group"><label class="form-label">পিতার নাম</label><input type="text" class="form-input" id="chFather"/></div>
+          <div class="form-group"><label class="form-label">মোবাইল <span class="req">*</span></label><input type="tel" class="form-input" id="chPhone" required/></div>
+          <div class="form-group"><label class="form-label">ঠিকানা</label><input type="text" class="form-input" id="chAddress"/></div>
+          <div class="form-group"><label class="form-label">সহায়তার ধরন</label>
+            <select class="form-select" id="chType">
+              <option>শিক্ষা সহায়তা</option><option>চিকিৎসা সহায়তা</option>
+              <option>খাদ্য সহায়তা</option><option>অন্যান্য</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">বিস্তারিত <span class="req">*</span></label><textarea class="form-textarea" id="chDetails" rows="3" required></textarea></div>
+          <button type="submit" class="btn btn-primary btn-block">আবেদন জমা দিন</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑦ MEMBER PROFILES -->
+  <div class="lm-panel hidden" id="tab-members">
+    <div class="section-header"><h2 class="section-title">সদস্য প্রোফাইল</h2></div>
+    <div class="search-bar" style="max-width:500px;margin:0 auto 24px">
+      <div class="search-input-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="memberSearch" placeholder="নাম, আইডি বা মোবাইল দিয়ে খুঁজুন..." oninput="filterMembers()"/>
+      </div>
+    </div>
+    <div class="members-grid" id="lmMembersGrid">
+      <!-- Rendered by JS -->
+    </div>
+  </div>
+
+  <!-- ⑧ COMMITTEE -->
+  <div class="lm-panel hidden" id="tab-committee">
+    <div class="section-header"><h2 class="section-title">কমিটিবৃন্দ</h2><p class="section-subtitle">চলমান কমিটির সম্মানিত সদস্যরা</p></div>
+    <div class="committee-grid" id="committeeGrid">
+      <!-- Rendered by JS -->
+    </div>
+  </div>
+
+</div><!-- end .lm-content -->
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-bottom"><div class="container footer-bottom-inner"><span>© ২০২৬ বারাকাহ ফাইন্যান্স</span><span>সুদমুক্ত লেনদেনে সমৃদ্ধি সবার 🌙</span></div></div>
+</footer>
+
+<!-- Toast -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Qard Apply Modal -->
+<div class="modal-overlay hidden" id="qardModal">
+  <div class="modal modal-sm">
+    <div class="modal-head"><h3>🤝 করজে হাসানা আবেদন</h3><button class="modal-close" onclick="document.getElementById('qardModal').classList.add('hidden')">✕</button></div>
+    <div class="modal-body">
+      <p class="text-muted mb-4" style="font-size:var(--fs-sm)">লগইন করা সদস্যরা এখান থেকে আবেদন করতে পারবেন।</p>
+      <div class="form-group"><label class="form-label">পরিমাণ (সর্বোচ্চ ১৫,০০০৳)</label><input type="number" class="form-input" id="qardAmount" max="15000" placeholder="১০০০০"/></div>
+      <div class="form-group"><label class="form-label">কারণ</label><textarea class="form-textarea" id="qardReason" rows="3" placeholder="করজ নেওয়ার কারণ লিখুন..."></textarea></div>
+      <div class="form-group"><label class="form-label">পরিশোধের মেয়াদ</label>
+        <select class="form-select" id="qardMonths"><option value="1">১ মাস</option><option value="2">২ মাস</option><option value="3" selected>৩ মাস</option></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('qardModal').classList.add('hidden')">বাতিল</button>
+      <button class="btn btn-primary btn-sm" onclick="submitQardApp()">আবেদন করুন</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/db.js"></script>
+<script src="../js/data.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/app.js"></script>
+<script src="../js/notice.js"></script>
+<script>
+// ── Tab switching ──
+function switchTab(id, btn) {
+  document.querySelectorAll('.lm-panel').forEach(p => p.classList.add('hidden'));
+  document.querySelectorAll('.lm-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id)?.classList.remove('hidden');
+  if (btn) btn.classList.add('active');
+  // Load content
+  if (id === 'members')   loadMemberProfiles();
+  if (id === 'committee') loadCommittee();
+  if (id === 'qard')      loadQardStats();
+  window.scrollTo({ top: document.getElementById('lmTabsWrap')?.offsetTop - 80 || 0, behavior: 'smooth' });
+}
+
+// ── Load members ──
+async function loadMemberProfiles() {
+  const grid = document.getElementById('lmMembersGrid');
+  if (!grid || grid.dataset.loaded) return;
+  grid.dataset.loaded = 'true';
+  grid.innerHTML = '<div class="empty-state"><div class="spinner spinner-lg"></div></div>';
+  let members = [];
+  try {
+    const res = await fetch('../backend/db/data.json').catch(()=>null)
+      || await fetch('http://localhost:3001/api/members', { headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token')||'') }, signal: AbortSignal.timeout(2000) });
+    if (res?.ok) { const d = await res.json(); members = d.members || []; }
+  } catch(_) {}
+  if (!members.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="empty-state-icon">👥</div><div class="empty-state-title">সদস্য তথ্য লোড করতে সার্ভার প্রয়োজন</div></div>`;
+    return;
+  }
+  renderMemberCards(members);
+}
+
+function renderMemberCards(data) {
+  const grid = document.getElementById('lmMembersGrid');
+  if (!grid) return;
+  window._membersData = data;
+  grid.innerHTML = data.map(m => `
+    <div class="member-card reveal" onclick="viewMemberProfile('${m.id||m.memberID}')">
+      <div class="member-avatar" style="background:${randomColor(m.name)}">${initial(m.name)}</div>
+      <h4>${m.name || '—'}</h4>
+      <span class="role">${m.memberID || m.id || '—'}</span>
+      <div class="phone">${m.phone || '—'}</div>
+      <span class="badge badge-${m.status==='active'?'active':'pending'} mt-2">${m.status==='active'?'সক্রিয়':'পেন্ডিং'}</span>
+    </div>`).join('');
+  initReveal();
+}
+
+function filterMembers() {
+  const q = document.getElementById('memberSearch')?.value.toLowerCase() || '';
+  const data = (window._membersData || []).filter(m =>
+    !q || (m.name||'').toLowerCase().includes(q) || (m.memberID||'').toLowerCase().includes(q) || (m.phone||'').includes(q)
+  );
+  renderMemberCards(data);
+}
+
+function viewMemberProfile(id) { showToast('প্রোফাইল বিস্তারিত দেখতে লগইন করুন।', 'info'); }
+
+// ── Load committee ──
+async function loadCommittee() {
+  const grid = document.getElementById('committeeGrid');
+  if (!grid || grid.dataset.loaded) return;
+  grid.dataset.loaded = 'true';
+  let members = [];
+  try {
+    const res = await fetch('http://localhost:3001/api/committee/running', { signal: AbortSignal.timeout(2000) });
+    if (res.ok) { const d = await res.json(); members = d.committee || []; }
+  } catch(_) {}
+  if (!members.length) {
+    members = [
+      {name:'জনাব সাইফুল্লাহ',role:'সভাপতি',phone:'০১৭৩৭১৩১০৯৫',order:1},
+      {name:'মাওলানা ইমরান হোসাইন কাসেমী',role:'সহ-সভাপতি',phone:'০১৩১৭১২১৮২৬',order:2},
+      {name:'জনাব মুহিব্বুল্লাহ আজাদ',role:'সাধারণ সম্পাদক',phone:'০১৭১৭২৬৭০০৫',order:3},
+      {name:'জনাব মাসুম বিল্লাহ',role:'যুগ্ম সম্পাদক',phone:'০১৭৫০৮২৭৭৬০',order:4},
+      {name:'জনাব আনোয়ার হোসেন সেলিম',role:'কোষাধ্যক্ষ',phone:'০১৬৪৮২৪৮০০৬',order:5},
+      {name:'জনাব আবু সুফিয়ান',role:'সহকারী কোষাধ্যক্ষ',phone:'০১৭৪৩০৬৮০৬৩',order:6},
+      {name:'মাওলানা আব্দুল হান্নান',role:'শরিয়াহ পরামর্শক',phone:'০১৩০৮৭৫৭৬৯২',order:7},
+    ];
+  }
+  grid.innerHTML = members.sort((a,b)=>(a.order||0)-(b.order||0)).map(m => `
+    <div class="committee-card reveal">
+      <div class="member-avatar" style="background:${randomColor(m.name)};width:72px;height:72px;font-size:1.6rem;margin:0 auto 12px">${initial(m.name)}</div>
+      <h4>${m.name}</h4>
+      <span class="badge badge-green">${m.role}</span>
+      <div class="phone" style="margin-top:8px">${m.phone||''}</div>
+    </div>`).join('');
+  initReveal();
+}
+
+// ── Qard stats ──
+async function loadQardStats() {
+  try {
+    const res = await fetch('http://localhost:3001/api/charity/balance', {
+      headers: {'Authorization':'Bearer '+(localStorage.getItem('bf_token')||'')},
+      signal: AbortSignal.timeout(2000)
     });
-
-    // ── Packages data ──
-    const packages = [
-      {id:'pkg1',icon:'💰',name:'মাসিক সঞ্চয়',amount:'২,০০০+',period:'প্রতি মাস',desc:'প্রতি মাসে ন্যূনতম ২,০০০ টাকা সঞ্চয় করুন। প্রতি ২,০০০ টাকায় ১ ইউনিট। আনুপাতিক লভ্যাংশ পাবেন।',details:'মাসিক সঞ্চয় প্যাকেজে যোগ দিয়ে প্রতি মাসে নিয়মিত সঞ্চয় করুন। প্রতিটি ২,০০০ টাকায় ১ ইউনিট গণনা হবে। বার্ষিক মুনাফা আনুপাতিক হারে বিতরণ হবে। ১৫ তারিখের মধ্যে জমা না দিলে প্রতি ইউনিটে ১০০ টাকা বিলম্ব ফি।'},
-      {id:'pkg2',icon:'🏦',name:'এককালীন বিনিয়োগ',amount:'২,০০০+',period:'এককালীন',desc:'একসাথে যেকোনো পরিমাণ বিনিয়োগ করুন। আনুপাতিক লভ্যাংশ পাবেন। মূলধন সুরক্ষিত।',details:'এককালীন বিনিয়োগ প্যাকেজে যেকোনো পরিমাণ বিনিয়োগ করুন। ন্যূনতম ২,০০০ টাকা। বিনিয়োগকৃত অর্থ সক্রিয় ব্যবসায় খাটার দিন থেকে লভ্যাংশ গণনা শুরু। মূলধন সম্পূর্ণ ফেরতযোগ্য।'},
-      {id:'pkg3',icon:'📊',name:'প্রজেক্ট ইনভেস্ট',amount:'কাস্টম',period:'মেয়াদভিত্তিক',desc:'নির্দিষ্ট প্রজেক্টে বিনিয়োগ করুন। প্রজেক্টের মুনাফা অনুযায়ী লভ্যাংশ পাবেন।',details:'বিভিন্ন চলমান প্রজেক্টে বিনিয়োগের সুযোগ। প্রজেক্টের আয়-ব্যয়ের হিসাব আলাদাভাবে রক্ষণ করা হয়। মেয়াদ শেষে বিনিয়োগ ও লভ্যাংশ ফেরত।'},
-    ];
-
-    function loadPackages(){
-      const grid = document.getElementById('pkgGrid');
-      if(!grid) return;
-      grid.innerHTML = packages.map(p=>`
-        <div class="pkg-card" onclick="openPkgModal('${p.id}')">
-          <div class="pkg-icon">${p.icon}</div>
-          <h4>${p.name}</h4>
-          <div class="pkg-amount">${p.amount}</div>
-          <div class="pkg-period">${p.period}</div>
-          <p>${p.desc}</p>
-        </div>`).join('');
+    if (res.ok) {
+      const d = await res.json();
+      const el = document.getElementById('qardFund');
+      if (el) el.textContent = '৳ ' + (d.balance||0).toLocaleString('en-IN');
     }
+  } catch(_) {}
+}
 
-    function openPkgModal(id){
-      const p = packages.find(x=>x.id===id);
-      if(!p) return;
-      document.getElementById('pkgModalContent').innerHTML = `
-        <div style="font-size:40px;margin-bottom:12px;">${p.icon}</div>
-        <h3 style="color:var(--gold-light);font-size:20px;margin-bottom:8px;">${p.name}</h3>
-        <div style="font-size:28px;font-weight:700;color:var(--gold);margin-bottom:4px;">${p.amount}</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:16px;">${p.period}</div>
-        <p style="font-size:14px;color:rgba(255,255,255,0.8);line-height:1.9;">${p.details}</p>
-        <a href="../form.html" style="display:block;margin-top:20px;" class="apply-btn">📝 এই প্যাকেজে যোগ দিন →</a>`;
-      document.getElementById('pkgModal').classList.remove('hidden');
-    }
-    function closePkgModal(){ document.getElementById('pkgModal').classList.add('hidden'); }
+// ── Charity apply ──
+async function submitCharityApp(e) {
+  e.preventDefault();
+  const data = {
+    name: document.getElementById('chName').value.trim(),
+    fatherName: document.getElementById('chFather').value.trim(),
+    phone: document.getElementById('chPhone').value.trim(),
+    address: document.getElementById('chAddress').value.trim(),
+    type: document.getElementById('chType').value,
+    details: document.getElementById('chDetails').value.trim(),
+    submittedAt: new Date().toISOString()
+  };
+  try {
+    await fetch('http://localhost:3001/api/charity/apply', {
+      method: 'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(data), signal: AbortSignal.timeout(3000)
+    });
+  } catch(_) {}
+  document.getElementById('charityForm').reset();
+  showToast('আবেদন সফলভাবে জমা হয়েছে!', 'success');
+}
 
-    // ── Members grid ──
-    const committeeMembers = [
-      {name:'জনাব সাইফুল্লাহ',phone:'০১৭৩৭১৩১০৯৫',role:'সভাপতি',color:'#1D9E75'},
-      {name:'মাওলানা ইমরান হোসাইন কাসেমী',phone:'০১৩১৭১২১৮২৬',role:'সহ-সভাপতি',color:'#639922'},
-      {name:'জনাব মুহিব্বুল্লাহ আজাদ',phone:'০১৭১৭২৬৭০০৫',role:'সাধারণ সম্পাদক',color:'#BA7517'},
-      {name:'জনাব মাসুম বিল্লাহ',phone:'০১৭৫০৮২৭৭৬০',role:'যুগ্ম সম্পাদক',color:'#185FA5'},
-      {name:'জনাব আনোয়ার হোসেন সেলিম',phone:'০১৬৪৮২৪৮০০৬',role:'কোষাধ্যক্ষ',color:'#3B6D11'},
-      {name:'জনাব আবু সুফিয়ান',phone:'০১৭৪৩০৬৮০৬৩',role:'সহকারী কোষাধ্যক্ষ',color:'#0F6E56'},
-      {name:'মাওলানা আব্দুল হান্নান',phone:'০১৩০৮৭৫৭৬৯২',role:'শরিয়াহ পরামর্শক',color:'#854F0B'},
-    ];
+// ── Qard apply ──
+function openQardApply() {
+  const s = (typeof DB !== 'undefined') ? DB.getSession() : null;
+  if (!s) { showToast('লগইন করুন।','warning'); return; }
+  document.getElementById('qardModal')?.classList.remove('hidden');
+}
+async function submitQardApp() {
+  const s = (typeof DB !== 'undefined') ? DB.getSession() : null;
+  if (!s) return;
+  const amount = document.getElementById('qardAmount').value;
+  const reason = document.getElementById('qardReason').value.trim();
+  const months = document.getElementById('qardMonths').value;
+  if (!amount || !reason) { showToast('সব তথ্য দিন।','error'); return; }
+  try {
+    await fetch('http://localhost:3001/api/loans', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+(localStorage.getItem('bf_token')||'')},
+      body: JSON.stringify({ amount:+amount, reason, months:+months, startMonth: new Date().toISOString().slice(0,7) }),
+      signal: AbortSignal.timeout(3000)
+    });
+  } catch(_) {}
+  document.getElementById('qardModal')?.classList.add('hidden');
+  showToast('করজ আবেদন সফল। কমিটি পর্যালোচনা করবে।','success');
+}
 
-    let allMembersData = [];
-    function loadMembersGrid(){
-      const users = DB ? DB.getUsers() : [];
-      const members = users.filter(u=>u.role==='member'||u.role==='admin');
-      allMembersData = members.length ? members : committeeMembers.map((m,i)=>({id:'M-'+(i+1).toString().padStart(3,'0'),name:m.name,phone:m.phone,role:m.role,color:m.color}));
-      renderMembersGrid(allMembersData);
-    }
+// ── Calculator (reuse from main.js) ──
+function switchCalcMethod(m, btn) {
+  document.querySelectorAll('.calc-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('calcA').classList.toggle('hidden', m!=='A');
+  document.getElementById('calcB').classList.toggle('hidden', m!=='B');
+}
+function calcMethodA() {
+  const price=parseFloat(document.getElementById('calcAPrice')?.value)||0;
+  const travel=parseFloat(document.getElementById('calcATravel')?.value)||0;
+  const n=parseInt(document.getElementById('calcAInstall')?.value)||6;
+  const r=document.getElementById('calcAResult');
+  if(price<=0){r.classList.add('hidden');return;}
+  const cost=price+travel, profit=Math.round(cost*.1), total=cost+profit, m=Math.round(total/n), last=total-m*(n-1);
+  document.getElementById('crABase').textContent='৳ '+cost.toLocaleString('en-IN');
+  document.getElementById('crAProfit').textContent='৳ '+profit.toLocaleString('en-IN');
+  document.getElementById('crATotal').textContent='৳ '+total.toLocaleString('en-IN');
+  document.getElementById('crAMonthly').textContent='৳ '+m.toLocaleString('en-IN');
+  document.getElementById('crANote').textContent=`প্রথম ${n-1}টি ৳${m.toLocaleString('en-IN')}, শেষ কিস্তি ৳${last.toLocaleString('en-IN')}`;
+  r.classList.remove('hidden');
+}
+function calcMethodB() {
+  const price=parseFloat(document.getElementById('calcBPrice')?.value)||0;
+  const down=parseFloat(document.getElementById('calcBDown')?.value)||0;
+  const n=parseInt(document.getElementById('calcBInstall')?.value)||6;
+  const r=document.getElementById('calcBResult');
+  if(price<=0||price<=down){r.classList.add('hidden');return;}
+  const fin=price-down, profit=Math.round(fin*.1), sale=price+profit, rem=sale-down, m=Math.round(rem/n), last=rem-m*(n-1);
+  document.getElementById('crBBase').textContent='৳ '+price.toLocaleString('en-IN');
+  document.getElementById('crBDown').textContent='৳ '+down.toLocaleString('en-IN');
+  document.getElementById('crBFinanced').textContent='৳ '+fin.toLocaleString('en-IN');
+  document.getElementById('crBProfit').textContent='৳ '+profit.toLocaleString('en-IN');
+  document.getElementById('crBTotal').textContent='৳ '+sale.toLocaleString('en-IN');
+  document.getElementById('crBMonthly').textContent='৳ '+m.toLocaleString('en-IN');
+  document.getElementById('crBNote').textContent=`ডাউনপেমেন্ট বাদে ${n-1}টি ৳${m.toLocaleString('en-IN')}, শেষ কিস্তি ৳${last.toLocaleString('en-IN')}`;
+  r.classList.remove('hidden');
+}
 
-    function renderMembersGrid(data){
-      const grid = document.getElementById('lmMembersGrid');
-      if(!grid) return;
-      const colors = ['#1D9E75','#639922','#BA7517','#185FA5','#3B6D11','#0F6E56','#854F0B'];
-      grid.innerHTML = data.map((m,i)=>`
-        <div class="member-card-lm" onclick="showMemberDetail('${m.id||i}')">
-          <div class="member-avatar-lm" style="background:${m.color||colors[i%colors.length]};">${(m.name||'ব')[0]}</div>
-          <h4>${m.name||'—'}</h4>
-          <span class="role">${m.role||'সদস্য'}</span>
-          <div class="phone">${m.phone||''}</div>
-        </div>`).join('') || '<p style="color:rgba(255,255,255,0.4);">কোনো সদস্য নেই।</p>';
-    }
-
-    function filterMembers(){
-      const q = document.getElementById('mp-search').value.trim().toLowerCase();
-      if(!q){ renderMembersGrid(allMembersData); return; }
-      const filtered = allMembersData.filter(m=>
-        (m.name||'').toLowerCase().includes(q)||
-        (m.phone||'').includes(q)||
-        (m.id||'').toLowerCase().includes(q)||
-        (m.address||'').toLowerCase().includes(q)
-      );
-      renderMembersGrid(filtered);
-    }
-
-    function showMemberDetail(id){
-      const m = allMembersData.find(x=>(x.id||'').toString()===id.toString()) || allMembersData[id];
-      if(!m) return;
-      document.getElementById('memberModalContent').innerHTML = `
-        <div style="text-align:center;margin-bottom:16px;">
-          <div style="width:70px;height:70px;border-radius:50%;background:#1D9E75;display:flex;align-items:center;justify-content:center;font-size:26px;color:#fff;margin:0 auto 10px;">${(m.name||'ব')[0]}</div>
-          <h3 style="font-size:18px;color:#fff;">${m.name||'—'}</h3>
-          <span style="background:rgba(201,162,39,0.15);color:var(--gold);padding:3px 12px;border-radius:20px;font-size:12px;">${m.role||'সদস্য'}</span>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;">
-          ${m.phone?`<div>📱 মোবাইল: ${m.phone}</div>`:''}
-          ${m.email?`<div>📧 ইমেইল: ${m.email}</div>`:''}
-          ${m.address?`<div>🏠 ঠিকানা: ${m.address}</div>`:''}
-          ${m.memberID?`<div>🆔 সদস্য আইডি: ${m.memberID}</div>`:''}
-        </div>`;
-      document.getElementById('memberModal').classList.remove('hidden');
-    }
-
-    // ── Committee grid ──
-    function loadCommitteeGrid(){
-      const grid = document.getElementById('lmCommitteeGrid');
-      if(!grid) return;
-      grid.innerHTML = committeeMembers.map(m=>`
-        <div class="committee-card">
-          <div class="cm-role">${m.role}</div>
-          <div style="width:56px;height:56px;border-radius:50%;background:${m.color};display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;margin:0 auto 8px;">${m.name[0]}</div>
-          <h4>${m.name}</h4>
-          <div class="cm-phone">${m.phone}</div>
-        </div>`).join('');
-    }
-
-    // ── LM Calculators ──
-    function switchLMCalc(n){
-      document.getElementById('lm-calc-1').style.display = n===1?'block':'none';
-      document.getElementById('lm-calc-2').style.display = n===2?'block':'none';
-      document.getElementById('lm-calc-btn1').style.background = n===1?'linear-gradient(135deg,var(--gold),#A67C00)':'rgba(255,255,255,0.06)';
-      document.getElementById('lm-calc-btn2').style.background = n===2?'linear-gradient(135deg,var(--gold),#A67C00)':'rgba(255,255,255,0.06)';
-    }
-    function lmCalc1(){
-      const p=parseFloat(document.getElementById('lm1-price').value)||0;
-      const n=parseInt(document.getElementById('lm1-n').value)||6;
-      const res=document.getElementById('lm1-result');
-      if(!p){res.style.display='none';return;}
-      const t=p*1.1, l=p*0.1, k=Math.round(t/n);
-      res.style.display='grid';
-      document.getElementById('lm1-total').textContent='৳'+Math.round(t).toLocaleString('bn');
-      document.getElementById('lm1-labh').textContent='৳'+Math.round(l).toLocaleString('bn');
-      document.getElementById('lm1-kisti').textContent='৳'+k.toLocaleString('bn');
-    }
-    function lmCalc2(){
-      const c=parseFloat(document.getElementById('lm2-cost').value)||0;
-      const d=parseFloat(document.getElementById('lm2-down').value)||0;
-      const n=parseInt(document.getElementById('lm2-n').value)||6;
-      const res=document.getElementById('lm2-result');
-      if(!c){res.style.display='none';return;}
-      const fin=c-d, l=fin*0.1, t=c+l, rem=t-d, k=Math.round(rem/n);
-      res.style.display='grid';
-      document.getElementById('lm2-financed').textContent='৳'+Math.round(fin).toLocaleString('bn');
-      document.getElementById('lm2-labh').textContent='৳'+Math.round(l).toLocaleString('bn');
-      document.getElementById('lm2-total').textContent='৳'+Math.round(t).toLocaleString('bn');
-      document.getElementById('lm2-kisti').textContent='৳'+k.toLocaleString('bn');
-    }
-
-    // ── Qard Application ──
-    function submitQardApp(){
-      const session = DB ? DB.getSession() : null;
-      const alert = document.getElementById('qf-alert');
-      if(!session){
-        document.getElementById('qard-auth-warning').style.display='block';
-        return;
-      }
-      const reason=document.getElementById('qf-reason').value.trim();
-      const amount=parseFloat(document.getElementById('qf-amount').value)||0;
-      const months=document.getElementById('qf-months').value;
-      const guarantor=document.getElementById('qf-guarantor').value.trim();
-      if(!reason||!amount||!guarantor){
-        alert.style.display='block'; alert.className='alert alert-error';
-        alert.textContent='সব তথ্য পূরণ করুন।'; return;
-      }
-      if(amount>15000){
-        alert.style.display='block'; alert.className='alert alert-error';
-        alert.textContent='সর্বোচ্চ ১৫,০০০ টাকা।'; return;
-      }
-      const apps = JSON.parse(localStorage.getItem('bf_qard_apps')||'[]');
-      apps.push({id:'QH-'+String(apps.length+1).padStart(3,'0'),userId:session.id,name:session.name,reason,amount,months,guarantor,status:'pending',date:new Date().toISOString()});
-      localStorage.setItem('bf_qard_apps',JSON.stringify(apps));
-      alert.style.display='block'; alert.className='alert alert-success';
-      alert.textContent='আবেদন জমা হয়েছে। কমিটি শীঘ্রই যোগাযোগ করবে।';
-      document.getElementById('qf-reason').value='';
-      document.getElementById('qf-amount').value='';
-      document.getElementById('qf-guarantor').value='';
-    }
-
-    // ── Charity Application ──
-    function submitCharityApp(){
-      const name=document.getElementById('ch-name').value.trim();
-      const phone=document.getElementById('ch-phone').value.trim();
-      const reason=document.getElementById('ch-reason').value.trim();
-      const alert=document.getElementById('ch-alert');
-      if(!name||!phone||!reason){
-        alert.style.display='block'; alert.className='alert alert-error';
-        alert.textContent='নাম, মোবাইল ও কারণ বাধ্যতামূলক।'; return;
-      }
-      const apps=JSON.parse(localStorage.getItem('bf_charity_apps')||'[]');
-      apps.push({id:'CH-'+Date.now(),name,fname:document.getElementById('ch-fname').value,addr:document.getElementById('ch-addr').value,phone,email:document.getElementById('ch-email').value,reason,amount:document.getElementById('ch-amount').value,status:'pending',date:new Date().toISOString()});
-      localStorage.setItem('bf_charity_apps',JSON.stringify(apps));
-      alert.style.display='block'; alert.className='alert alert-success';
-      alert.textContent='আবেদন জমা হয়েছে। কমিটি শীঘ্রই পর্যালোচনা করবে।';
-      ['ch-name','ch-fname','ch-addr','ch-phone','ch-email','ch-reason','ch-amount'].forEach(id=>document.getElementById(id).value='');
-    }
-  </script>
+// ── URL hash tab ──
+document.addEventListener('DOMContentLoaded', () => {
+  const hash = location.hash.replace('#','');
+  const valid = ['objectives','packages','membership','installment','qard','charity','members','committee'];
+  if (valid.includes(hash)) {
+    const btn = document.querySelector(`[data-tab="${hash}"]`);
+    if (btn) switchTab(hash, btn);
+  }
+});
+</script>
 </body>
 </html>

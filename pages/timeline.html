@@ -1,406 +1,217 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="bn" data-theme="light">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>টাইমলাইন — বারাকাহ ফাইন্যান্স</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700&family=Noto+Sans+Bengali:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../style/style.css"/>
-  <link rel="stylesheet" href="../style/navbar_style.css"/>
-  <link rel="stylesheet" href="../style/notice_bar.css"/>
-  <style>
-    :root{--gold:#C9A227;--gold-light:#F5D061;--bg:#0a1a0e;--card-bg:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);}
-    *{box-sizing:border-box;margin:0;padding:0;}
-    body{background:var(--bg);color:#e8f5e9;font-family:'Noto Serif Bengali',serif;min-height:100vh;}
-
-    .timeline-page{padding-top:100px;min-height:100vh;}
-    .timeline-content{max-width:720px;margin:0 auto;padding:30px 5% 60px;}
-
-    /* ── Post cards ── */
-    .post-card{
-      background:var(--card-bg);border:1px solid var(--border);
-      border-radius:16px;margin-bottom:20px;overflow:hidden;
-      transition:box-shadow 0.2s;
-    }
-    .post-card:hover{box-shadow:0 6px 25px rgba(0,0,0,0.25);border-color:rgba(201,162,39,0.15);}
-
-    /* Post header */
-    .post-header{
-      display:flex;align-items:center;gap:12px;
-      padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.06);
-    }
-    .post-avatar{
-      width:44px;height:44px;border-radius:50%;flex-shrink:0;
-      background:linear-gradient(135deg,#C9A227,#A67C00);
-      display:flex;align-items:center;justify-content:center;
-      font-size:18px;font-weight:700;color:#fff;overflow:hidden;
-    }
-    .post-avatar img{width:100%;height:100%;object-fit:cover;}
-    .post-meta{flex:1;}
-    .post-meta .post-author{font-size:14px;font-weight:600;color:#fff;}
-    .post-meta .post-date{font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;}
-    .post-type-badge{
-      font-size:10px;padding:3px 10px;border-radius:20px;
-      background:rgba(201,162,39,0.15);color:var(--gold);
-    }
-
-    /* Post body */
-    .post-body{padding:16px 18px;}
-    .post-body .post-text{font-size:14px;color:rgba(255,255,255,0.85);line-height:1.9;white-space:pre-line;}
-    .post-body .post-img{
-      margin-top:12px;border-radius:10px;overflow:hidden;
-      max-height:350px;background:#050d07;
-    }
-    .post-body .post-img img{width:100%;object-fit:cover;}
-    .post-body .post-link{
-      display:block;margin-top:10px;padding:10px 14px;
-      background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
-      border-radius:8px;color:var(--gold);font-size:12px;text-decoration:none;
-      transition:background 0.2s;
-    }
-    .post-body .post-link:hover{background:rgba(201,162,39,0.1);}
-
-    /* Facebook embed */
-    .fb-post-wrap{padding:10px 18px;text-align:center;}
-
-    /* Reactions */
-    .post-reactions{
-      display:flex;align-items:center;gap:0;padding:4px 14px;
-      border-top:1px solid rgba(255,255,255,0.06);
-    }
-    .react-btn{
-      display:flex;align-items:center;gap:5px;padding:8px 12px;
-      background:none;border:none;color:rgba(255,255,255,0.5);
-      cursor:pointer;font-size:12px;font-family:'Noto Serif Bengali',serif;
-      border-radius:6px;transition:all 0.15s;
-    }
-    .react-btn:hover{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.85);}
-    .react-btn.reacted{color:var(--gold);}
-    .react-emoji{font-size:16px;}
-    .react-count{font-size:11px;}
-    .react-sep{width:1px;height:20px;background:rgba(255,255,255,0.08);margin:0 4px;}
-
-    /* Comments */
-    .post-comments{padding:0 18px 14px;border-top:1px solid rgba(255,255,255,0.06);}
-    .comment-item{display:flex;gap:8px;margin-top:10px;}
-    .comment-avatar{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
-    .comment-body{background:rgba(255,255,255,0.05);border-radius:10px;padding:8px 12px;flex:1;}
-    .comment-body .comment-author{font-size:11px;color:var(--gold);font-weight:600;margin-bottom:2px;}
-    .comment-body .comment-text{font-size:12px;color:rgba(255,255,255,0.8);}
-    .comment-input-row{display:flex;gap:8px;margin-top:10px;}
-    .comment-input{
-      flex:1;padding:8px 12px;background:rgba(255,255,255,0.05);
-      border:1px solid rgba(255,255,255,0.1);border-radius:8px;
-      color:#fff;font-size:12px;font-family:'Noto Serif Bengali',serif;
-    }
-    .comment-input:focus{outline:none;border-color:rgba(201,162,39,0.4);}
-    .comment-submit{padding:8px 14px;background:var(--gold);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px;}
-    .anon-name-input{
-      padding:8px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
-      border-radius:8px;color:#fff;font-size:12px;font-family:'Noto Serif Bengali',serif;
-      width:140px;
-    }
-
-    /* Write post (admin only) */
-    .write-post-wrap{
-      background:var(--card-bg);border:1px solid rgba(201,162,39,0.2);
-      border-radius:16px;padding:18px;margin-bottom:20px;display:none;
-    }
-    .write-post-wrap.visible{display:block;}
-    .write-post-wrap textarea{
-      width:100%;padding:10px 14px;background:rgba(255,255,255,0.05);
-      border:1px solid rgba(255,255,255,0.1);border-radius:8px;
-      color:#fff;font-size:13px;font-family:'Noto Serif Bengali',serif;
-      resize:vertical;min-height:80px;
-    }
-    .write-post-wrap textarea:focus{outline:none;border-color:rgba(201,162,39,0.4);}
-    .write-post-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
-    .wp-btn{padding:8px 16px;border:1px solid rgba(255,255,255,0.1);border-radius:8px;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.7);cursor:pointer;font-size:12px;font-family:'Noto Serif Bengali',serif;}
-    .wp-btn.primary{background:linear-gradient(135deg,var(--gold),#A67C00);border:none;color:#fff;}
-
-    /* Facebook section header */
-    .fb-section-header{
-      background:rgba(24,119,242,0.1);border:1px solid rgba(24,119,242,0.2);
-      border-radius:10px;padding:12px 16px;margin-bottom:16px;
-      font-size:12px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:8px;
-    }
-
-    /* Load more */
-    .load-more-btn{
-      display:block;width:100%;padding:12px;margin-top:10px;
-      background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
-      border-radius:10px;color:rgba(255,255,255,0.6);cursor:pointer;
-      font-size:13px;font-family:'Noto Serif Bengali',serif;transition:all 0.2s;
-    }
-    .load-more-btn:hover{background:rgba(255,255,255,0.08);color:#fff;}
-
-    @media(max-width:640px){
-      .timeline-content{padding:20px 3% 40px;}
-    }
-  </style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>টাইমলাইন | বারাকাহ ফাইন্যান্স</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@300;400;500;600;700;800&family=Noto+Serif+Bengali:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../style/design-system.css"/>
+  <link rel="stylesheet" href="../style/landing.css"/>
+  <link rel="stylesheet" href="../style/pages.css"/>
 </head>
 <body>
-  <!-- NAV -->
-  <nav id="mainNav">
-    <a href="../index.html" class="logo">
-      <div class="logo-icon"><img src="../image/logo.png" alt="logo" onerror="this.parentElement.innerHTML='<span style=font-size:20px;font-weight:700;color:#C9A227>ব</span>'"/></div>
-      <div class="logo-text"><strong>বারাকাহ ফাইন্যান্স – Barakah Finance</strong><span>সুদমুক্ত লেনদেনে সমৃদ্ধি সবার</span></div>
+<nav id="mainNav">
+  <div class="nav-inner">
+    <a href="../index.html" class="nav-logo">
+      <div class="nav-logo-img"><img src="../image/logo.png" alt="লোগো"/></div>
+      <div class="nav-logo-text"><span class="nav-logo-name">বারাকাহ ফাইন্যান্স</span><span class="nav-logo-slogan">সুদমুক্ত লেনদেনে সমৃদ্ধি সবার</span></div>
     </a>
     <ul class="nav-links">
-      <li><a href="../index.html">হোম</a></li>
-      <li><a href="timeline.html" style="color:var(--gold-light);">টাইমলাইন ✓</a></li>
-      <li><a href="gallery.html">গ্যালারি</a></li>
-      <li><a href="learn-more.html">আরও জানুন</a></li>
-      <li id="nav-login-btn"><a onclick="window.location='../index.html'" class="nav-cta">লগইন</a></li>
-      <li style="display:flex;align-items:center;"><div class="dk-tog" id="dkTog" onclick="toggleDarkMode()"></div></li>
+      <li><a href="timeline.html" class="nav-link active">📰 টাইমলাইন</a></li>
+      <li><a href="gallery.html" class="nav-link">🖼️ গ্যালারি</a></li>
+      <li><a href="learn-more.html" class="nav-link">ℹ️ আরও জানুন</a></li>
+      <li><a href="shop.html" class="nav-link">🛒 শপ</a></li>
     </ul>
-    <button class="hamburger" id="hamburger" onclick="document.getElementById('mobileMenuT').classList.toggle('active')"><span></span><span></span><span></span></button>
-  </nav>
-  <div class="nav-mobile" id="mobileMenuT">
-    <a href="../index.html">🏠 হোম</a>
-    <a href="gallery.html">🖼️ গ্যালারি</a>
-    <a href="learn-more.html">📚 আরও জানুন</a>
-  </div>
-
-  <!-- NOTICE BAR -->
-  <div class="notice-bar" style="position:sticky;top:80px;z-index:97;">
-    <div class="notice-label">📢 নোটিশ</div>
-    <div class="notice-scroll-wrap"><div id="notice-track">লোড হচ্ছে...</div></div>
-  </div>
-
-  <div class="timeline-page">
-    <div class="timeline-content">
-
-      <!-- Admin Write Post (shown only to admin) -->
-      <div class="write-post-wrap" id="writePostWrap">
-        <div style="font-size:13px;color:var(--gold);margin-bottom:10px;">✏️ নতুন পোস্ট লিখুন</div>
-        <textarea id="wp-text" placeholder="কিছু লিখুন..."></textarea>
-        <div class="write-post-actions">
-          <button class="wp-btn" onclick="addWpImage()">🖼️ ছবি</button>
-          <input type="url" id="wp-img-url" placeholder="ছবির URL" style="padding:8px 10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:12px;flex:1;display:none;">
-          <button class="wp-btn primary" onclick="publishPost()">📤 প্রকাশ করুন</button>
+    <div class="nav-controls">
+      <button class="nav-theme-btn" id="themeToggle"><span id="themeIcon">🌙</span></button>
+      <div class="nav-auth" id="navAuth">
+        <button class="btn btn-outline btn-sm" onclick="openAuthModal('login')">লগইন</button>
+        <button class="btn btn-primary btn-sm" onclick="openAuthModal('signup')">সাইনআপ</button>
+      </div>
+      <div class="nav-user hidden" id="navUser">
+        <div class="nav-user-avatar" id="navUserAvatar" onclick="toggleUserMenu()">অ</div>
+        <div class="nav-user-menu hidden" id="userMenu">
+          <div class="user-menu-header"><div class="user-menu-name" id="userMenuName">ব্যবহারকারী</div><div class="user-menu-role" id="userMenuRole">গ্রাহক</div></div>
+          <a href="dashboard.html" class="user-menu-item">📊 ড্যাশবোর্ড</a>
+          <a href="profile.html" class="user-menu-item">👤 প্রোফাইল</a>
+          <div id="adminMenuLinks" class="hidden"><a href="../admin/panel.html" class="user-menu-item" style="color:var(--clr-gold-500)">🛡️ অ্যাডমিন</a></div>
+          <button class="user-menu-item danger" onclick="doLogout()">🚪 লগআউট</button>
         </div>
       </div>
-
-      <!-- Facebook Page Embed (optional) -->
-      <div id="fbSection" style="display:none;">
-        <div class="fb-section-header">📘 ফেসবুক পেজ পোস্ট (অ্যাডমিন প্যানেল থেকে Facebook Page URL সেট করুন)</div>
-        <div id="fbEmbedContainer"></div>
-      </div>
-
-      <!-- Manual Posts Feed -->
-      <div id="postsFeed"></div>
-      <button class="load-more-btn" id="loadMoreBtn" onclick="loadMorePosts()" style="display:none;">আরও লোড করুন</button>
-
+      <button class="nav-hamburger" id="hamburgerBtn"><span></span><span></span><span></span></button>
     </div>
   </div>
+  <div class="nav-mobile" id="mobileMenu">
+    <a href="timeline.html" class="mob-link">📰 টাইমলাইন</a>
+    <a href="gallery.html" class="mob-link">🖼️ গ্যালারি</a>
+    <a href="learn-more.html" class="mob-link">ℹ️ আরও জানুন</a>
+    <a href="shop.html" class="mob-link">🛒 শপ</a>
+  </div>
+</nav>
+<div class="notice-bar" id="noticeBar">
+  <div class="notice-label"><span class="notice-icon">📢</span><span class="notice-txt">নোটিশ</span></div>
+  <div class="notice-track-wrap"><div class="notice-track" id="noticeTrack"></div></div>
+</div>
 
-  <script src="../js/db.js"></script>
-  <script src="../js/notice.js"></script>
-  <script>
-    function toggleDarkMode(){
-      document.body.classList.toggle('dark-mode');
-      const t=document.getElementById('dkTog');if(t)t.classList.toggle('on');
-      localStorage.setItem('bf_dark',document.body.classList.contains('dark-mode')?'1':'0');
-    }
-    if(localStorage.getItem('bf_dark')==='1'){document.body.classList.add('dark-mode');const t=document.getElementById('dkTog');if(t)t.classList.add('on');}
+<div class="inner-hero">
+  <div class="container">
+    <nav class="breadcrumb"><a href="../index.html">হোম</a><span class="breadcrumb-sep">›</span><span>টাইমলাইন</span></nav>
+    <h1 class="inner-hero-title">📰 টাইমলাইন</h1>
+    <p class="inner-hero-sub">সংবাদ, ঘোষণা ও সংগঠনের আপডেট</p>
+  </div>
+</div>
 
-    // ── Data helpers ──
-    function getPosts(){ return JSON.parse(localStorage.getItem('bf_posts')||'[]'); }
-    function savePosts(p){ localStorage.setItem('bf_posts',JSON.stringify(p)); }
-    function getSession(){ return DB?DB.getSession():null; }
-    function isAdmin(){ const s=getSession(); return s&&(s.role==='admin'||s.role==='super_admin'); }
+<div class="container section">
+  <div style="max-width:760px;margin:0 auto">
+    <!-- Facebook embed section (optional) -->
+    <div id="fbPageEmbed" class="hidden" style="margin-bottom:24px">
+      <div style="background:var(--bg-surface);border-radius:16px;border:1px solid var(--border-light);overflow:hidden">
+        <div id="fbIframeWrap"></div>
+      </div>
+    </div>
 
-    // ── Page state ──
-    const POSTS_PER_PAGE=8;
-    let postsShown=0;
+    <!-- Manual posts -->
+    <div id="timelinePostsWrap">
+      <div class="empty-state"><div class="spinner spinner-lg"></div></div>
+    </div>
+  </div>
+</div>
 
-    // ── Init ──
-    document.addEventListener('DOMContentLoaded',()=>{
-      if(isAdmin()) document.getElementById('writePostWrap').classList.add('visible');
+<footer class="footer"><div class="footer-bottom"><div class="container footer-bottom-inner"><span>© ২০২৬ বারাকাহ ফাইন্যান্স</span><span>সুদমুক্ত লেনদেনে সমৃদ্ধি সবার 🌙</span></div></div></footer>
+<div class="toast-container" id="toastContainer"></div>
 
-      // Facebook embed
-      const settings=DB?DB.getSettings():{};
-      if(settings.fbPageUrl){
-        document.getElementById('fbSection').style.display='block';
-        const encUrl=encodeURIComponent(settings.fbPageUrl);
-        document.getElementById('fbEmbedContainer').innerHTML=`
-          <iframe src="https://www.facebook.com/plugins/page.php?href=${encUrl}&tabs=timeline&width=680&height=500&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true&appId"
-          style="width:100%;max-width:680px;height:500px;border:none;overflow:hidden;border-radius:12px;"
-          scrolling="no" frameborder="0" allowfullscreen allow="autoplay;clipboard-write;encrypted-media;picture-in-picture;web-share"></iframe>`;
-      }
+<script src="../js/db.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/app.js"></script>
+<script src="../js/notice.js"></script>
+<script>
+const REACTIONS = ['👍','❤️','😮','🤲','🎉'];
 
-      renderPosts();
-    });
+document.addEventListener('DOMContentLoaded', loadPosts);
 
-    // ── Render posts ──
-    function renderPosts(reset=false){
-      if(reset) postsShown=0;
-      const posts=getPosts().sort((a,b)=>new Date(b.date)-new Date(a.date));
-      const feed=document.getElementById('postsFeed');
-      const chunk=posts.slice(postsShown, postsShown+POSTS_PER_PAGE);
+async function loadPosts() {
+  const wrap = document.getElementById('timelinePostsWrap');
+  let posts = [];
+  try {
+    const res = await fetch('http://localhost:3001/api/notices/posts', { signal: AbortSignal.timeout(3000) });
+    if (res.ok) { const d = await res.json(); posts = d.posts || d; }
+  } catch(_) {}
+  if (!posts.length && typeof DB !== 'undefined') {
+    posts = DB.get && DB.get('bf_posts') || [];
+  }
+  // Sample data if none
+  if (!posts.length) {
+    posts = [
+      { id:'p1', title:'বারাকাহ ফাইন্যান্স যাত্রা শুরু', content:'আলহামদুলিল্লাহ! বারাকাহ ফাইন্যান্স আনুষ্ঠানিকভাবে তাদের কার্যক্রম শুরু করেছে। ৩০ জন সদস্য নিয়ে এই সুদমুক্ত আর্থিক প্রতিষ্ঠানের যাত্রা শুরু হলো।\n\nআমাদের লক্ষ্য — সমাজ থেকে সুদের অভিশাপ দূর করা।', author:'বারাকাহ ফাইন্যান্স', date:'2026-01-01T10:00:00', reactions:{},  comments:[] },
+      { id:'p2', title:'প্রথম কিস্তি বিতরণ সফল', content:'আলহামদুলিল্লাহ! আমাদের প্রথম কিস্তি সফলভাবে বিতরণ করা হয়েছে। একজন সদস্যকে একটি মোটরসাইকেল কিস্তিতে দেওয়া হয়েছে।', author:'জনাব মুহিব্বুল্লাহ আজাদ', date:'2026-02-15T14:30:00', reactions:{}, comments:[] },
+    ];
+  }
+  // Newest first
+  posts = posts.sort((a,b) => new Date(b.date) - new Date(a.date));
+  wrap.innerHTML = posts.map(p => renderPost(p)).join('');
+  loadFBEmbed();
+}
 
-      if(reset) feed.innerHTML='';
-      if(!posts.length && !postsShown){
-        feed.innerHTML='<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.3);font-size:13px;">এখনো কোনো পোস্ট নেই।</div>';
-        document.getElementById('loadMoreBtn').style.display='none';
-        return;
-      }
+function renderPost(p) {
+  const rvCounts = {};
+  REACTIONS.forEach(r => { rvCounts[r] = (p.reactions?.[r] || 0); });
+  const saved = JSON.parse(localStorage.getItem('bf_reactions_'+p.id)||'{}');
+  return `
+  <div class="timeline-post" id="post-${p.id}">
+    <div class="tp-header">
+      <div class="tp-avatar">${(p.author||'ব')[0]}</div>
+      <div>
+        <div class="tp-name">${p.author||'বারাকাহ ফাইন্যান্স'}</div>
+        <div class="tp-date">${fmtDatetime(p.date)}</div>
+      </div>
+      ${p.badge ? `<span class="badge badge-green ml-auto">${p.badge}</span>` : ''}
+    </div>
+    <div class="tp-body">
+      ${p.title ? `<h3 style="margin-bottom:8px;font-size:1.1rem">${p.title}</h3>` : ''}
+      <div class="tp-text">${p.content||''}</div>
+      ${p.image ? `<img src="${p.image}" alt="" class="tp-image" loading="lazy"/>` : ''}
+    </div>
+    <div class="tp-reactions">
+      ${REACTIONS.map(r => `
+        <button class="tp-react-btn${saved[r]?' active':''}" onclick="react('${p.id}','${r}')" id="rbtn-${p.id}-${r.codePointAt(0)}">
+          ${r} <span id="rcnt-${p.id}-${r.codePointAt(0)}">${rvCounts[r]||0}</span>
+        </button>`).join('')}
+      <button class="tp-react-btn ml-auto" onclick="toggleComment('${p.id}')">💬 মন্তব্য</button>
+    </div>
+    <div class="tp-comments hidden" id="comments-${p.id}" style="padding:12px 20px;border-top:1px solid var(--border-light)">
+      <div id="clist-${p.id}">${renderComments(p.comments||[])}</div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <input type="text" class="form-input" id="cinput-${p.id}" placeholder="মন্তব্য লিখুন..." style="flex:1"/>
+        <button class="btn btn-primary btn-sm" onclick="addComment('${p.id}')">পোস্ট</button>
+      </div>
+    </div>
+  </div>`;
+}
 
-      chunk.forEach(post=>{
-        feed.appendChild(createPostEl(post));
-        postsShown++;
-      });
+function renderComments(arr) {
+  if (!arr.length) return '<p style="font-size:.8rem;color:var(--text-muted)">কোনো মন্তব্য নেই।</p>';
+  return arr.map(c=>`
+    <div style="display:flex;gap:10px;margin-bottom:10px">
+      <div style="width:32px;height:32px;border-radius:50%;background:var(--clr-primary-500);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0">${(c.name||'ব')[0]}</div>
+      <div style="background:var(--bg-surface-2);padding:8px 12px;border-radius:12px;flex:1">
+        <div style="font-size:.75rem;font-weight:700;color:var(--text-primary)">${c.name||'বেনামী'}</div>
+        <div style="font-size:.82rem;color:var(--text-secondary)">${c.text}</div>
+      </div>
+    </div>`).join('');
+}
 
-      document.getElementById('loadMoreBtn').style.display=(postsShown<posts.length)?'block':'none';
-    }
+function fmtDatetime(s) {
+  try { return new Date(s).toLocaleString('bn-BD',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'}); } catch { return s; }
+}
 
-    function loadMorePosts(){ renderPosts(false); }
+function react(postId, emoji) {
+  const saved = JSON.parse(localStorage.getItem('bf_reactions_'+postId)||'{}');
+  const key = emoji.codePointAt(0);
+  const btn = document.getElementById(`rbtn-${postId}-${key}`);
+  const cnt = document.getElementById(`rcnt-${postId}-${key}`);
+  if (saved[emoji]) {
+    // Unreact
+    delete saved[emoji];
+    btn?.classList.remove('active');
+    if (cnt) cnt.textContent = Math.max(0, parseInt(cnt.textContent||0) - 1);
+  } else {
+    saved[emoji] = true;
+    btn?.classList.add('active');
+    if (cnt) cnt.textContent = parseInt(cnt.textContent||0) + 1;
+  }
+  localStorage.setItem('bf_reactions_'+postId, JSON.stringify(saved));
+}
 
-    // ── Create post element ──
-    const REACTIONS=['👍','❤️','😊','😮','😢','😡'];
-    function createPostEl(post){
-      const div=document.createElement('div');
-      div.className='post-card';
-      div.id='post-'+post.id;
-      const mySession=getSession();
-      const myReactions=JSON.parse(localStorage.getItem('bf_reactions_'+post.id)||'[]');
-      const allReactions=post.reactions||[];
-      const comments=post.comments||[];
+function toggleComment(id) {
+  document.getElementById('comments-'+id)?.classList.toggle('hidden');
+}
 
-      // Count reactions per type
-      const rCounts={};
-      allReactions.forEach(r=>rCounts[r.type]=(rCounts[r.type]||0)+1);
-      const topReactions=REACTIONS.filter(r=>rCounts[r]>0).slice(0,3);
+function addComment(postId) {
+  const session = typeof DB !== 'undefined' ? DB.getSession() : null;
+  const inp = document.getElementById('cinput-'+postId);
+  const text = inp?.value.trim();
+  if (!text) return;
+  const name = session?.name || prompt('আপনার নাম লিখুন:') || 'বেনামী';
+  const comment = { id:'c-'+Date.now(), name, text, date: new Date().toISOString() };
+  const clist = document.getElementById('clist-'+postId);
+  if (clist) {
+    const div = document.createElement('div');
+    div.innerHTML = renderComments([comment]);
+    clist.appendChild(div.firstElementChild);
+  }
+  inp.value = '';
+}
 
-      div.innerHTML=`
-        <div class="post-header">
-          <div class="post-avatar">ব</div>
-          <div class="post-meta">
-            <div class="post-author">বারাকাহ ফাইন্যান্স</div>
-            <div class="post-date">${formatDate(post.date)}</div>
-          </div>
-          <span class="post-type-badge">${post.type==='fb'?'📘 Facebook':'✍️ পোস্ট'}</span>
-        </div>
-        <div class="post-body">
-          <div class="post-text">${escHtml(post.text||'')}</div>
-          ${post.imgUrl?`<div class="post-img"><img src="${escHtml(post.imgUrl)}" alt="পোস্ট ছবি" loading="lazy" onerror="this.parentElement.style.display='none'"></div>`:''}
-          ${post.linkUrl?`<a class="post-link" href="${escHtml(post.linkUrl)}" target="_blank" rel="noopener">🔗 ${escHtml(post.linkText||post.linkUrl)}</a>`:''}
-        </div>
-        <div class="post-reactions">
-          <div style="display:flex;gap:2px;flex:1;flex-wrap:wrap;">
-            ${REACTIONS.map(r=>`<button class="react-btn${myReactions.includes(r)?'  reacted':''}" onclick="toggleReaction('${post.id}','${r}',this)">
-              <span class="react-emoji">${r}</span>
-              <span class="react-count" id="rc-${post.id}-${r.codePointAt(0)}">${rCounts[r]||''}</span>
-            </button>`).join('')}
-          </div>
-          ${topReactions.length?`<div style="font-size:11px;color:rgba(255,255,255,0.3);">${topReactions.join('')} ${allReactions.length}</div>`:''}
-        </div>
-        <div class="post-comments" id="comments-${post.id}">
-          ${comments.map(c=>`
-            <div class="comment-item">
-              <div class="comment-avatar">${(c.author||'?')[0]}</div>
-              <div class="comment-body">
-                <div class="comment-author">${escHtml(c.author)}</div>
-                <div class="comment-text">${escHtml(c.text)}</div>
-              </div>
-            </div>`).join('')}
-          <div class="comment-input-row">
-            ${mySession?'':`<input class="anon-name-input" id="anon-name-${post.id}" placeholder="আপনার নাম">`}
-            <input class="comment-input" id="comment-${post.id}" placeholder="মন্তব্য করুন..." onkeydown="if(event.key==='Enter')submitComment('${post.id}')">
-            <button class="comment-submit" onclick="submitComment('${post.id}')">পাঠান</button>
-          </div>
-        </div>`;
-      return div;
-    }
-
-    // ── Reactions ──
-    function toggleReaction(postId, emoji, btn){
-      const posts=getPosts();
-      const idx=posts.findIndex(p=>p.id===postId);
-      if(idx<0) return;
-      const session=getSession();
-      const storKey='bf_reactions_'+postId;
-      const myR=JSON.parse(localStorage.getItem(storKey)||'[]');
-      const emojiCode=emoji.codePointAt(0);
-
-      if(!posts[idx].reactions) posts[idx].reactions=[];
-      const already=myR.includes(emoji);
-
-      if(already){
-        // Remove
-        const i=posts[idx].reactions.findIndex(r=>r.userId===(session?.id||'anon_'+emoji)&&r.type===emoji);
-        if(i>=0) posts[idx].reactions.splice(i,1);
-        myR.splice(myR.indexOf(emoji),1);
-        btn.classList.remove('reacted');
-      } else {
-        posts[idx].reactions.push({userId:session?.id||'anon',type:emoji,date:new Date().toISOString()});
-        myR.push(emoji);
-        btn.classList.add('reacted');
-      }
-      localStorage.setItem(storKey,JSON.stringify(myR));
-      savePosts(posts);
-      const cnt=posts[idx].reactions.filter(r=>r.type===emoji).length;
-      const cntEl=document.getElementById(`rc-${postId}-${emojiCode}`);
-      if(cntEl) cntEl.textContent=cnt||'';
-    }
-
-    // ── Comments ──
-    function submitComment(postId){
-      const session=getSession();
-      const input=document.getElementById('comment-'+postId);
-      const text=input.value.trim();
-      if(!text) return;
-      let author='';
-      if(session){ author=session.name||session.username||'ব্যবহারকারী'; }
-      else {
-        const anonInput=document.getElementById('anon-name-'+postId);
-        author=anonInput?anonInput.value.trim():'অজ্ঞাত';
-        if(!author){ alert('আপনার নাম লিখুন।'); return; }
-      }
-      const posts=getPosts();
-      const idx=posts.findIndex(p=>p.id===postId);
-      if(idx<0) return;
-      if(!posts[idx].comments) posts[idx].comments=[];
-      const comment={id:'c-'+Date.now(),author,text,date:new Date().toISOString()};
-      posts[idx].comments.push(comment);
-      savePosts(posts);
-      input.value='';
-      // Append to DOM
-      const commentsEl=document.getElementById('comments-'+postId);
-      const inputRow=commentsEl.querySelector('.comment-input-row');
-      const newComment=document.createElement('div');
-      newComment.className='comment-item';
-      newComment.innerHTML=`<div class="comment-avatar">${author[0]}</div><div class="comment-body"><div class="comment-author">${escHtml(author)}</div><div class="comment-text">${escHtml(text)}</div></div>`;
-      commentsEl.insertBefore(newComment,inputRow);
-    }
-
-    // ── Write post (admin) ──
-    function addWpImage(){
-      const i=document.getElementById('wp-img-url');
-      i.style.display=i.style.display==='none'?'block':'none';
-    }
-    function publishPost(){
-      const text=document.getElementById('wp-text').value.trim();
-      const imgUrl=document.getElementById('wp-img-url').value.trim();
-      if(!text) return;
-      const posts=getPosts();
-      posts.unshift({id:'post-'+Date.now(),text,imgUrl:imgUrl||'',type:'manual',date:new Date().toISOString(),reactions:[],comments:[]});
-      savePosts(posts);
-      document.getElementById('wp-text').value='';
-      document.getElementById('wp-img-url').value='';
-      document.getElementById('wp-img-url').style.display='none';
-      renderPosts(true);
-    }
-
-    // ── Helpers ──
-    function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-    function formatDate(d){
-      try{
-        return new Date(d).toLocaleDateString('bn-BD',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});
-      }catch{return d;}
-    }
-  </script>
+function loadFBEmbed() {
+  const settings = typeof DB !== 'undefined' ? DB.getSettings?.() || {} : {};
+  const fbUrl = settings.fbPageUrl;
+  if (!fbUrl) return;
+  const wrap = document.getElementById('fbPageEmbed');
+  const iframe = document.getElementById('fbIframeWrap');
+  if (!wrap || !iframe) return;
+  wrap.classList.remove('hidden');
+  iframe.innerHTML = `<iframe src="https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(fbUrl)}&tabs=timeline&width=760&height=500&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true&appId" width="100%" height="500" style="border:none;overflow:hidden;display:block" scrolling="no" frameborder="0" allow="encrypted-media"></iframe>`;
+}
+</script>
 </body>
 </html>

@@ -1,186 +1,156 @@
-<!-- C:\Project\Barakah_Finance\pages\shop.html -->
-
 <!DOCTYPE html>
-<html lang="bn">
-
+<html lang="bn" data-theme="light">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>বারাকাহ ফাইন্যান্স — পণ্য কিনুন</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700&family=Noto+Sans+Bengali:wght@300;400;500;600&display=swap"
-        rel="stylesheet" />
-    <link rel="stylesheet" href="./style/shop.css" />
-
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>শপ | বারাকাহ ফাইন্যান্স</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@300;400;500;600;700;800&family=Noto+Serif+Bengali:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../style/design-system.css"/>
+  <link rel="stylesheet" href="../style/landing.css"/>
+  <link rel="stylesheet" href="../style/pages.css"/>
 </head>
-
 <body>
-
-    <!-- NAV -->
-    <nav class="top-nav">
-        <a href="../index.html" class="nav-brand">
-            <div class="logo-circle">ব</div>
-            <span>বারাকাহ ফাইন্যান্স</span>
-        </a>
-        <div class="nav-actions">
-            <a href="../index.html">🏠 হোম</a>
-            <a href="../form.html">📋 আবেদন</a>
-            <a href="#" class="btn-cart" onclick="toggleCart(event)" style="position:relative;">
-                🛒 কার্ট
-                <span class="cart-count" id="cartCount">0</span>
-            </a>
+<nav id="mainNav">
+  <div class="nav-inner">
+    <a href="../index.html" class="nav-logo">
+      <div class="nav-logo-img"><img src="../image/logo.png" alt="লোগো"/></div>
+      <div class="nav-logo-text"><span class="nav-logo-name">বারাকাহ ফাইন্যান্স</span><span class="nav-logo-slogan">সুদমুক্ত লেনদেনে সমৃদ্ধি সবার</span></div>
+    </a>
+    <ul class="nav-links">
+      <li><a href="timeline.html" class="nav-link">📰 টাইমলাইন</a></li>
+      <li><a href="gallery.html" class="nav-link">🖼️ গ্যালারি</a></li>
+      <li><a href="learn-more.html" class="nav-link">ℹ️ আরও জানুন</a></li>
+      <li><a href="shop.html" class="nav-link active">🛒 শপ</a></li>
+    </ul>
+    <div class="nav-controls">
+      <button class="nav-theme-btn" id="themeToggle"><span id="themeIcon">🌙</span></button>
+      <div class="nav-auth" id="navAuth">
+        <button class="btn btn-outline btn-sm" onclick="openAuthModal('login')">লগইন</button>
+        <button class="btn btn-primary btn-sm" onclick="openAuthModal('signup')">সাইনআপ</button>
+      </div>
+      <div class="nav-user hidden" id="navUser">
+        <div class="nav-user-avatar" id="navUserAvatar" onclick="toggleUserMenu()">অ</div>
+        <div class="nav-user-menu hidden" id="userMenu">
+          <div class="user-menu-header"><div class="user-menu-name" id="userMenuName">ব্যবহারকারী</div><div class="user-menu-role" id="userMenuRole">গ্রাহক</div></div>
+          <a href="dashboard.html" class="user-menu-item">📊 ড্যাশবোর্ড</a>
+          <a href="profile.html" class="user-menu-item">👤 প্রোফাইল</a>
+          <div id="adminMenuLinks" class="hidden"><a href="../admin/panel.html" class="user-menu-item" style="color:var(--clr-gold-500)">🛡️ অ্যাডমিন</a></div>
+          <button class="user-menu-item danger" onclick="doLogout()">🚪 লগআউট</button>
         </div>
-    </nav>
+      </div>
+      <button class="nav-hamburger" id="hamburgerBtn"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+  <div class="nav-mobile" id="mobileMenu">
+    <a href="timeline.html" class="mob-link">📰 টাইমলাইন</a><a href="gallery.html" class="mob-link">🖼️ গ্যালারি</a>
+    <a href="learn-more.html" class="mob-link">ℹ️ আরও জানুন</a><a href="shop.html" class="mob-link">🛒 শপ</a>
+  </div>
+</nav>
+<div class="notice-bar" id="noticeBar">
+  <div class="notice-label"><span class="notice-icon">📢</span><span class="notice-txt">নোটিশ</span></div>
+  <div class="notice-track-wrap"><div class="notice-track" id="noticeTrack"></div></div>
+</div>
 
-    <!-- HERO -->
-    <div class="shop-hero">
-        <h1>🛒 কিস্তিতে পণ্য কিনুন — <em>১০% লাভে সহজ কিস্তি</em></h1>
-        <p>শরিয়াহসম্মত উপায়ে পণ্য ক্রয় করুন। মাত্র ১০% লাভে ৬ সমান কিস্তিতে পরিশোধ করুন।</p>
-        <div class="hero-chips">
-            <span class="hero-chip">✅ সুদমুক্ত</span>
-            <span class="hero-chip">📦 ৬ কিস্তি সুবিধা</span>
-            <span class="hero-chip">🤝 শরিয়াহসম্মত</span>
-            <span class="hero-chip">💳 বিনা জামানতে (সদস্যদের জন্য)</span>
+<div class="inner-hero">
+  <div class="container">
+    <nav class="breadcrumb"><a href="../index.html">হোম</a><span class="breadcrumb-sep">›</span><span>শপ</span></nav>
+    <h1 class="inner-hero-title">🛒 কিস্তিতে পণ্য কিনুন</h1>
+    <p class="inner-hero-sub">মাত্র ১০% লাভে সহজ কিস্তিতে — সম্পূর্ণ শরিয়াহ সম্মত</p>
+  </div>
+</div>
+
+<div class="container shop-wrap" style="padding-top:24px">
+  <!-- Search + filters -->
+  <div class="shop-filters">
+    <div class="search-input-wrap" style="flex:1;min-width:240px">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="search-input" id="shopSearch" placeholder="পণ্য খুঁজুন..." oninput="filterProducts()"/>
+    </div>
+    <div id="shopCatBtns" style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="shop-cat-btn active" data-cat="" onclick="setCategory('',this)">সব পণ্য</button>
+    </div>
+    <select class="filter-select" id="shopSort" onchange="filterProducts()">
+      <option value="">ক্রমানুসারে</option>
+      <option value="price-asc">মূল্য: কম থেকে বেশি</option>
+      <option value="price-desc">মূল্য: বেশি থেকে কম</option>
+    </select>
+  </div>
+
+  <!-- Product grid -->
+  <div class="shop-grid" id="shopGrid">
+    <div class="empty-state" style="grid-column:1/-1"><div class="spinner spinner-lg"></div></div>
+  </div>
+
+  <!-- Load more -->
+  <div class="text-center mt-8 hidden" id="loadMoreWrap">
+    <button class="btn btn-outline btn-lg" onclick="loadMoreProducts()">আরও দেখুন</button>
+  </div>
+</div>
+
+<!-- Product Detail Modal -->
+<div class="modal-overlay hidden" id="productModal">
+  <div class="modal modal-lg" id="productModalBox">
+    <div class="modal-head">
+      <h3 id="pmName">পণ্যের নাম</h3>
+      <button class="modal-close" onclick="closeProductModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="pm-grid">
+        <div class="pm-left">
+          <div class="pm-img-main" id="pmImgMain" style="background:var(--bg-surface-2);border-radius:12px;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;font-size:5rem;margin-bottom:8px">📦</div>
+          <div class="pm-img-thumbs" id="pmImgThumbs" style="display:flex;gap:8px;flex-wrap:wrap"></div>
         </div>
-    </div>
-
-    <!-- MY ORDERS STATUS (shown if user has orders) -->
-    <div id="myOrdersBar" class="hidden" style="margin:16px 5% 0; max-width:1280px;">
-        <div class="status-track">
-            <h4>📦 আপনার সর্বশেষ অর্ডার</h4>
-            <div id="latestOrderInfo" style="font-size:13px; color:var(--text-muted); margin-bottom:12px;"></div>
-            <div class="track-steps" id="trackSteps"></div>
-        </div>
-    </div>
-
-    <!-- FILTER BAR -->
-    <div class="filter-bar">
-        <span class="filter-label">ক্যাটাগরি:</span>
-        <button class="fcat active" onclick="setFilter('all',this)">সকল</button>
-        <div id="catFilters"></div>
-        <input type="text" class="search-box" placeholder="🔍 পণ্য খুঁজুন..." id="searchInput"
-            oninput="renderProducts()" />
-    </div>
-
-    <!-- MAIN -->
-    <div class="shop-main">
-        <div class="sort-row">
-            <span id="productCount">লোড হচ্ছে...</span>
-            <select class="sort-sel" id="sortSel" onchange="renderProducts()">
-                <option value="default">সাজান: ডিফল্ট</option>
-                <option value="price-asc">মূল্য: কম থেকে বেশি</option>
-                <option value="price-desc">মূল্য: বেশি থেকে কম</option>
-                <option value="name">নাম অনুযায়ী</option>
-            </select>
-        </div>
-        <div class="products-grid" id="productsGrid"></div>
-    </div>
-
-    <!-- FOOTER -->
-    <div class="shop-footer">
-        বারাকাহ ফাইন্যান্স © ২০২৬ | আদিতমারী, লালমনিরহাট |
-        <a href="../index.html">হোমে ফিরুন</a>
-    </div>
-
-    <!-- ═══ PRODUCT DETAIL MODAL ═══ -->
-    <div class="overlay" id="detailModal" onclick="if(event.target===this)closeDetail()">
-        <div class="modal-box" style="max-width:800px;">
-            <div style="display:flex;justify-content:flex-end;padding:14px 14px 0;">
-                <button onclick="closeDetail()"
-                    style="background:none;border:none;font-size:22px;cursor:pointer;color:#888;">✕</button>
+        <div class="pm-right">
+          <div class="pm-cat" id="pmCat" style="font-size:.75rem;color:var(--clr-primary-500);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px"></div>
+          <div class="pm-price" id="pmPrice" style="font-size:2rem;font-weight:800;color:var(--clr-primary-500);margin-bottom:8px">৳ ০</div>
+          <div class="pm-install" id="pmInstall" style="font-size:.85rem;color:var(--text-muted);margin-bottom:12px"></div>
+          <div class="pm-desc" id="pmDesc" style="font-size:.9rem;color:var(--text-secondary);line-height:1.8;margin-bottom:16px"></div>
+          <div class="pm-stock" id="pmStock"></div>
+          <div class="pm-actions" style="display:flex;flex-direction:column;gap:8px;margin-top:16px">
+            <div class="form-group" id="pmInstallSelect">
+              <label class="form-label">কিস্তির সংখ্যা</label>
+              <select class="form-select" id="pmInstallNum" onchange="updateInstallment()">
+                <option value="3">৩ মাস</option><option value="6" selected>৬ মাস</option>
+                <option value="9">৯ মাস</option><option value="12">১২ মাস</option>
+              </select>
             </div>
-            <div class="detail-head">
-                <div class="detail-imgs">
-                    <div class="main-img" id="mainImgBox">
-                        <span id="mainImgEmoji">📦</span>
-                    </div>
-                    <div class="thumb-row" id="thumbRow"></div>
-                </div>
-                <div class="detail-info">
-                    <div class="detail-cat" id="detailCat"></div>
-                    <div class="detail-name" id="detailName"></div>
-                    <div class="detail-price-box">
-                        <div class="detail-price" id="detailPrice"></div>
-                        <div class="emi-breakdown" id="emiBreakdown"></div>
-                    </div>
-                    <div class="detail-desc" id="detailDesc"></div>
-                    <div style="font-size:12px; color:var(--text-muted);" id="detailStock"></div>
-                </div>
-            </div>
-            <div class="detail-actions">
-                <button class="btn-detail" onclick="closeDetail()">← ফিরে যান</button>
-                <button class="btn-order" id="detailOrderBtn" onclick="openOrderFromDetail()">🛒 অর্ডার করুন</button>
-            </div>
+            <div style="background:var(--bg-surface-2);padding:12px;border-radius:12px;font-size:.9rem;color:var(--text-secondary)" id="pmCalcResult"></div>
+            <button class="btn btn-primary btn-lg btn-block" id="pmOrderBtn" onclick="orderProduct()">🛒 কিস্তিতে অর্ডার করুন</button>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
+</div>
 
-    <!-- ═══ ORDER MODAL ═══ -->
-    <div class="overlay" id="orderModal" onclick="if(event.target===this)closeOrder()">
-        <div class="modal-box" style="max-width:560px;">
-            <div class="order-head">
-                <h3>📝 পণ্য ক্রয়ের আবেদন</h3>
-                <button class="close-btn" onclick="closeOrder()">✕</button>
-            </div>
-            <div class="order-body">
-                <div class="aalert hidden" id="orderAlert"></div>
-
-                <!-- Order Summary -->
-                <div class="order-summary" id="orderSummary"></div>
-
-                <div class="of">
-                    <label>আপনার নাম *</label>
-                    <input class="oi" id="ord-name" placeholder="পূর্ণ নাম বাংলায়" />
-                </div>
-                <div class="o2col">
-                    <div class="of">
-                        <label>মোবাইল নম্বর *</label>
-                        <input class="oi" id="ord-phone" placeholder="01XXXXXXXXX" inputmode="numeric" />
-                    </div>
-                    <div class="of">
-                        <label>এনআইডি / সদস্য আইডি *</label>
-                        <input class="oi" id="ord-nid" placeholder="NID বা BF-XXX" />
-                    </div>
-                </div>
-                <div class="of">
-                    <label>ঠিকানা *</label>
-                    <input class="oi" id="ord-address" placeholder="গ্রাম, পোস্ট, উপজেলা, জেলা" />
-                </div>
-                <div class="of">
-                    <label>স্বাক্ষী / জামিনদারের নাম ও মোবাইল</label>
-                    <input class="oi" id="ord-witness" placeholder="স্বাক্ষীর নাম ও নম্বর (ঐচ্ছিক)" />
-                </div>
-                <div class="of">
-                    <label>অতিরিক্ত মন্তব্য / প্রয়োজনীয় তথ্য</label>
-                    <textarea class="oi" id="ord-note" rows="2" placeholder="বিশেষ রং, সাইজ বা অন্য তথ্য..."></textarea>
-                </div>
-                <div
-                    style="background:#fffbeb;border:1px solid rgba(201,162,39,0.3);border-radius:8px;padding:10px;font-size:12px;color:#92400e;margin-bottom:14px;">
-                    ⚠️ কোষাধ্যক্ষের কাছে নথিপত্র জমা দিতে হবে। পণ্যের সত্যতা যাচাইয়ের জন্য প্রতিনিধির যাতায়াত খরচ
-                    ক্রেতা বহন করবেন। কমিটির সর্বসম্মত সিদ্ধান্তে অনুমোদন দেওয়া হবে।
-                </div>
-                <button class="submit-btn" onclick="submitOrder()">✅ আবেদন জমা দিন</button>
-            </div>
-        </div>
+<!-- Order Confirm Modal -->
+<div class="modal-overlay hidden" id="orderModal">
+  <div class="modal modal-sm">
+    <div class="modal-head"><h3>✅ অর্ডার নিশ্চিত করুন</h3><button class="modal-close" onclick="document.getElementById('orderModal').classList.add('hidden')">✕</button></div>
+    <div class="modal-body">
+      <div id="orderSummary" style="font-size:.9rem;color:var(--text-secondary);line-height:2"></div>
+      <div class="form-group mt-4">
+        <label class="form-label">ডেলিভারি ঠিকানা</label>
+        <textarea class="form-textarea" id="orderAddress" rows="2" placeholder="আপনার সম্পূর্ণ ঠিকানা লিখুন..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">বিশেষ নির্দেশনা <small class="text-muted">(ঐচ্ছিক)</small></label>
+        <textarea class="form-textarea" id="orderNote" rows="2" placeholder="কোনো বিশেষ নির্দেশনা থাকলে লিখুন..."></textarea>
+      </div>
     </div>
-
-    <!-- ═══ CART SIDEBAR ═══ -->
-    <div class="cart-sidebar" id="cartSidebar">
-        <div class="cart-header">
-            <h3>🛒 আমার কার্ট</h3>
-            <button class="close-btn" onclick="toggleCart(event)">✕</button>
-        </div>
-        <div class="cart-items" id="cartItems"></div>
-        <div class="cart-footer">
-            <div class="cart-total">
-                <span>মোট:</span>
-                <span id="cartTotal">৳০</span>
-            </div>
-            <button class="checkout-btn" onclick="checkoutCart()">✅ চেকআউট করুন</button>
-        </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('orderModal').classList.add('hidden')">বাতিল</button>
+      <button class="btn btn-primary btn-sm" onclick="confirmOrder()">অর্ডার জমা দিন</button>
     </div>
+  </div>
+</div>
 
-    <script src="js/shop.js"></script>
+<footer class="footer"><div class="footer-bottom"><div class="container footer-bottom-inner"><span>© ২০২৬ বারাকাহ ফাইন্যান্স</span><span>সুদমুক্ত লেনদেনে সমৃদ্ধি সবার 🌙</span></div></div></footer>
+<div class="toast-container" id="toastContainer"></div>
+<script src="../js/db.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/app.js"></script>
+<script src="../js/notice.js"></script>
+<script src="../js/shop.js"></script>
 </body>
-
 </html>
