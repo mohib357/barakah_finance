@@ -1,76 +1,316 @@
-<!-- C:\Project\Barakah_Finance\pages\profile.html -->
- 
 <!DOCTYPE html>
-<html lang="bn">
-
+<html lang="bn" data-theme="light">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>বারাকাহ ফাইন্যান্স — আমার প্রোফাইল</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700&family=Noto+Sans+Bengali:wght@300;400;500;600&display=swap"
-        rel="stylesheet" />
-    <link rel="stylesheet" href="../pages/style/profile.css">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>প্রোফাইল | বারাকাহ ফাইন্যান্স</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@300;400;500;600;700;800&family=Noto+Serif+Bengali:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../style/design-system.css"/>
+  <link rel="stylesheet" href="../style/landing.css"/>
+  <link rel="stylesheet" href="../style/pages.css"/>
+  <!-- Cropper.js -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.1/dist/cropper.min.css"/>
 </head>
-
 <body>
-    <div class="topbar">
-        <h1>👤 আমার প্রোফাইল</h1>
-        <div style="display:flex;gap:16px;align-items:center;">
-            <a href="../index.html">🏠 হোম</a>
-            <a href="dashboard.html">📊 ড্যাশবোর্ড</a>
-            <a href="#" onclick="doLogout()" style="color:#fca5a5;">🚪 লগআউট</a>
+<nav id="mainNav" style="height:60px">
+  <div class="nav-inner" style="height:60px">
+    <a href="../index.html" class="nav-logo">
+      <div class="nav-logo-img" style="width:40px;height:40px"><img src="../image/logo.png" alt="লোগো"/></div>
+      <div class="nav-logo-text"><span class="nav-logo-name" style="font-size:.9rem">বারাকাহ ফাইন্যান্স</span></div>
+    </a>
+    <div class="nav-controls">
+      <button class="nav-theme-btn" id="themeToggle"><span id="themeIcon">🌙</span></button>
+      <div class="nav-user" id="navUser">
+        <div class="nav-user-avatar" id="navUserAvatar" onclick="toggleUserMenu()">অ</div>
+        <div class="nav-user-menu hidden" id="userMenu">
+          <div class="user-menu-header"><div class="user-menu-name" id="userMenuName">ব্যবহারকারী</div><div class="user-menu-role" id="userMenuRole">গ্রাহক</div></div>
+          <a href="dashboard.html" class="user-menu-item">📊 ড্যাশবোর্ড</a>
+          <div id="adminMenuLinks" class="hidden"><a href="../admin/panel.html" class="user-menu-item" style="color:var(--clr-gold-500)">🛡️ অ্যাডমিন</a></div>
+          <button class="user-menu-item danger" onclick="doLogout()">🚪 লগআউট</button>
         </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="notice-bar" id="noticeBar" style="top:60px">
+  <div class="notice-label"><span class="notice-icon">📢</span><span class="notice-txt">নোটিশ</span></div>
+  <div class="notice-track-wrap"><div class="notice-track" id="noticeTrack"></div></div>
+</div>
+
+<div class="container" style="padding-top:110px;padding-bottom:60px;max-width:900px">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:28px">
+    <a href="dashboard.html" class="btn btn-ghost btn-sm">← ড্যাশবোর্ড</a>
+    <h1 style="font-size:1.6rem;font-family:var(--font-serif)">👤 প্রোফাইল সম্পাদনা</h1>
+    <div style="margin-left:auto">
+      <span style="font-size:.85rem;color:var(--text-muted)">সম্পূর্ণতা: </span>
+      <span id="profilePctBadge" class="badge badge-warning">০%</span>
+    </div>
+  </div>
+
+  <!-- Progress bar -->
+  <div class="progress" style="margin-bottom:28px">
+    <div class="progress-fill" id="profileProgressFill" style="width:0%"></div>
+  </div>
+
+  <!-- Profile Tabs -->
+  <div class="tabs" id="profileTabs">
+    <button class="tab-btn active" onclick="switchProfileTab('basic',this)">📋 মূল তথ্য</button>
+    <button class="tab-btn" onclick="switchProfileTab('address',this)">📍 ঠিকানা</button>
+    <button class="tab-btn" onclick="switchProfileTab('photo',this)">📸 ছবি ও স্বাক্ষর</button>
+    <button class="tab-btn" onclick="switchProfileTab('social',this)">🔗 সামাজিক মাধ্যম</button>
+    <button class="tab-btn" onclick="switchProfileTab('security',this)">🔒 নিরাপত্তা</button>
+  </div>
+
+  <!-- ① BASIC INFO -->
+  <div class="tab-panel active" id="tab-basic">
+    <div class="card">
+      <div class="card-title">📋 মূল ব্যক্তিগত তথ্য</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">প্রথম নাম (বাংলা) <span class="req">*</span></label><input class="form-input" id="pfFirstNameBn" placeholder="মুহিব্বুল্লাহ"/></div>
+        <div class="form-group"><label class="form-label">প্রথম নাম (ইংরেজি)</label><input class="form-input" id="pfFirstNameEn" placeholder="Muhibbullah"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">শেষ নাম (বাংলা)</label><input class="form-input" id="pfLastNameBn" placeholder="আজাদ"/></div>
+        <div class="form-group"><label class="form-label">শেষ নাম (ইংরেজি)</label><input class="form-input" id="pfLastNameEn" placeholder="Azad"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">পিতার নাম (বাংলা)</label><input class="form-input" id="pfFatherBn" placeholder="আব্দুল করিম"/></div>
+        <div class="form-group"><label class="form-label">পিতার নাম (ইংরেজি)</label><input class="form-input" id="pfFatherEn" placeholder="Abdul Karim"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">মাতার নাম (বাংলা)</label><input class="form-input" id="pfMotherBn" placeholder="ফাতেমা বেগম"/></div>
+        <div class="form-group"><label class="form-label">মাতার নাম (ইংরেজি)</label><input class="form-input" id="pfMotherEn" placeholder="Fatema Begum"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">জন্ম তারিখ</label><input type="date" class="form-input" id="pfDob"/></div>
+        <div class="form-group">
+          <label class="form-label">লিঙ্গ</label>
+          <select class="form-select" id="pfGender">
+            <option value="">বেছে নিন</option>
+            <option value="male">পুরুষ</option>
+            <option value="female">মহিলা</option>
+            <option value="other">অন্যান্য</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">পেশা</label>
+          <select class="form-select" id="pfProfession" onchange="handleProfessionChange()">
+            <option value="">বেছে নিন</option>
+            <option>ব্যবসায়ী</option><option>কৃষক</option><option>শিক্ষক</option>
+            <option>ডাক্তার</option><option>ইঞ্জিনিয়ার</option><option>ছাত্র</option>
+            <option>গৃহিণী</option><option>সরকারি চাকরিজীবী</option><option>বেসরকারি চাকরিজীবী</option>
+            <option value="other">অন্যান্য</option>
+          </select>
+        </div>
+        <div class="form-group hidden" id="pfProfessionOtherGroup">
+          <label class="form-label">পেশা (উল্লেখ করুন)</label>
+          <input class="form-input" id="pfProfessionOther" placeholder="আপনার পেশা লিখুন"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">এনআইডি / জন্ম নিবন্ধন নং</label><input class="form-input" id="pfNid" placeholder="১২৩৪৫৬৭৮৯০"/></div>
+        <div class="form-group"><label class="form-label">রক্তের গ্রুপ</label>
+          <select class="form-select" id="pfBlood">
+            <option value="">বেছে নিন</option>
+            <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+            <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Phone numbers -->
+      <div class="form-group">
+        <label class="form-label">মোবাইল নম্বর</label>
+        <div id="phoneList" style="display:flex;flex-direction:column;gap:8px"></div>
+        <button class="btn btn-ghost btn-sm mt-2" onclick="addPhoneField()" style="margin-top:8px">+ আরও নম্বর যোগ করুন</button>
+      </div>
+    </div>
+    <div class="text-center mt-4"><button class="btn btn-primary btn-lg" onclick="saveBasicInfo()">💾 সংরক্ষণ করুন</button></div>
+  </div>
+
+  <!-- ② ADDRESS -->
+  <div class="tab-panel" id="tab-address">
+    <div class="card">
+      <div class="card-title">📍 বর্তমান ঠিকানা</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">দেশ</label>
+          <select class="form-select" id="adCountry" onchange="loadDivisions()">
+            <option value="BD">বাংলাদেশ 🇧🇩</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">বিভাগ <span class="req">*</span></label>
+          <select class="form-select" id="adDivision" onchange="loadDistricts()">
+            <option value="">বেছে নিন</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">জেলা <span class="req">*</span></label>
+          <select class="form-select" id="adDistrict" onchange="loadUpazilas()">
+            <option value="">বেছে নিন</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">উপজেলা/থানা <span class="req">*</span></label>
+          <select class="form-select" id="adUpazila" onchange="loadUnions()">
+            <option value="">বেছে নিন</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">ইউনিয়ন</label>
+          <select class="form-select" id="adUnion" onchange="loadPostOffices()">
+            <option value="">বেছে নিন</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">পোস্ট অফিস</label>
+          <select class="form-select" id="adPostOffice" onchange="setPostCode()">
+            <option value="">বেছে নিন</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">পোস্ট কোড</label><input class="form-input" id="adPostCode" readonly placeholder="অটো পূরণ"/></div>
+        <div class="form-group"><label class="form-label">পাড়া/গ্রাম/বাসা নং (বাংলা)</label><input class="form-input" id="adVillageBn" placeholder="মহল্লা, বাসা/ফ্ল্যাট নং"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">পাড়া/গ্রাম/বাসা নং (ইংরেজি)</label><input class="form-input" id="adVillageEn" placeholder="Village, House/Flat No"/></div>
     </div>
 
-    <div class="container">
-        <!-- প্রোফাইল কার্ড -->
-        <div class="card">
-            <div class="avatar-wrap">
-                <div class="avatar" id="prof-avatar">ব</div>
-                <div class="user-name" id="prof-name">লোড হচ্ছে...</div>
-                <div class="user-role"><span class="badge" id="prof-role-badge">ব্যবহারকারী</span></div>
-                <div style="font-size:12px;color:#888;margin-top:6px;" id="prof-id">—</div>
-            </div>
-            <div style="font-size:12px;color:#555;margin-bottom:4px;">প্রোফাইল সম্পন্নতা: <span id="prof-pct"
-                    style="color:#065F46;font-weight:700;">0%</span></div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="prof-progress" style="width:0%"></div>
-            </div>
+    <div class="card mt-4">
+      <div class="card-title">🏠 স্থায়ী ঠিকানা</div>
+      <div class="form-check mb-4" style="font-size:.9rem">
+        <input type="checkbox" id="sameAsCurrent" onchange="copyCurrent()"/>
+        <label for="sameAsCurrent">বর্তমান ঠিকানার মতো</label>
+      </div>
+      <div id="permAddressFields">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">বিভাগ</label><select class="form-select" id="paDiv"><option value="">বেছে নিন</option></select></div>
+          <div class="form-group"><label class="form-label">জেলা</label><select class="form-select" id="paDist"><option value="">বেছে নিন</option></select></div>
         </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">উপজেলা</label><select class="form-select" id="paUpa"><option value="">বেছে নিন</option></select></div>
+          <div class="form-group"><label class="form-label">গ্রাম/বাসা নং</label><input class="form-input" id="paVillage" placeholder="গ্রাম/বাসা নং"/></div>
+        </div>
+      </div>
+    </div>
+    <div class="text-center mt-4"><button class="btn btn-primary btn-lg" onclick="saveAddress()">💾 সংরক্ষণ করুন</button></div>
+  </div>
 
-        <!-- এডিট ফর্ম -->
-        <div class="card">
-            <div class="card-title">✏️ প্রোফাইল সম্পাদনা</div>
-            <div class="form-grid">
-                <div class="form-group"><label>নাম *</label><input class="form-input" id="pf-name"
-                        placeholder="পূর্ণ নাম" /></div>
-                <div class="form-group"><label>ইউজারনেম</label><input class="form-input" id="pf-uname" disabled /></div>
-                <div class="form-group"><label>মোবাইল</label><input class="form-input" id="pf-phone" disabled /></div>
-                <div class="form-group"><label>ইমেইল</label><input class="form-input" id="pf-email" type="email"
-                        placeholder="email@example.com" /></div>
-                <div class="form-group"><label>জন্ম তারিখ</label><input class="form-input" id="pf-dob" type="date" />
-                </div>
-                <div class="form-group"><label>পেশা</label><input class="form-input" id="pf-job" placeholder="পেশা" />
-                </div>
-                <div class="form-group" style="grid-column:span 2"><label>ঠিকানা</label><input class="form-input"
-                        id="pf-address" placeholder="বিস্তারিত ঠিকানা" /></div>
-                <div class="form-group"><label>এনআইডি নম্বর</label><input class="form-input" id="pf-nid"
-                        placeholder="NID" /></div>
-                <div class="form-group"><label>রেফার করেছেন</label><input class="form-input" id="pf-referral"
-                        disabled /></div>
-            </div>
-            <div class="form-group"><label>নতুন পাসওয়ার্ড (পরিবর্তন করতে চাইলে)</label><input class="form-input"
-                    id="pf-pass" type="password" placeholder="নতুন পাসওয়ার্ড (ঐচ্ছিক)" /></div>
-            <button class="btn" onclick="saveProfile()">✅ সংরক্ষণ করুন</button>
+  <!-- ③ PHOTO & SIGNATURE -->
+  <div class="tab-panel" id="tab-photo">
+    <div class="card">
+      <div class="card-title">📸 প্রোফাইল ছবি</div>
+      <p class="text-muted mb-4" style="font-size:.85rem">সাইজ: ৩০০×২৮০ পিক্সেল, সর্বোচ্চ ২ MB, সাদা ব্যাকগ্রাউন্ড পছন্দনীয়।</p>
+      <div style="display:flex;align-items:flex-start;gap:24px;flex-wrap:wrap">
+        <div>
+          <div id="photoPreview" style="width:120px;height:112px;border-radius:12px;background:var(--bg-surface-2);border:2px dashed var(--border-color);display:flex;align-items:center;justify-content:center;font-size:3rem;overflow:hidden">
+            <span>📷</span>
+          </div>
+          <div style="font-size:.72rem;color:var(--text-muted);margin-top:6px;text-align:center">৩০০×২৮০ px</div>
         </div>
+        <div style="flex:1">
+          <label class="btn btn-outline btn-sm" style="cursor:pointer">📁 ছবি বেছে নিন <input type="file" id="photoInput" accept="image/*" onchange="openCropper('photo')" style="display:none"/></label>
+          <p style="font-size:.8rem;color:var(--text-muted);margin-top:8px">যেকোনো সাইজের ছবি আপলোড করুন — অটো রিসাইজ হবে।</p>
+        </div>
+      </div>
     </div>
 
-    <div class="toast" id="toast"></div>
+    <div class="card mt-4">
+      <div class="card-title">✍️ স্বাক্ষর</div>
+      <p class="text-muted mb-4" style="font-size:.85rem">সাইজ: ৩০০×৮০ পিক্সেল, সর্বোচ্চ ১০০ KB।</p>
+      <div style="display:flex;align-items:flex-start;gap:24px;flex-wrap:wrap">
+        <div>
+          <div id="signPreview" style="width:150px;height:40px;border-radius:8px;background:var(--bg-surface-2);border:2px dashed var(--border-color);display:flex;align-items:center;justify-content:center;font-size:.8rem;color:var(--text-muted);overflow:hidden">স্বাক্ষর</div>
+          <div style="font-size:.72rem;color:var(--text-muted);margin-top:4px;text-align:center">৩০০×৮০ px</div>
+        </div>
+        <div style="flex:1">
+          <label class="btn btn-outline btn-sm" style="cursor:pointer">📁 স্বাক্ষর বেছে নিন <input type="file" id="signInput" accept="image/*" onchange="openCropper('signature')" style="display:none"/></label>
+          <p style="font-size:.8rem;color:var(--text-muted);margin-top:8px">স্বচ্ছ বা সাদা ব্যাকগ্রাউন্ডে স্বাক্ষরের ছবি।</p>
+        </div>
+      </div>
+    </div>
 
-    <script src="./js/profile.js"></script>
+    <div class="card mt-4">
+      <div class="card-title">🪪 এনআইডি কার্ড আপলোড</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">এনআইডি সামনের পৃষ্ঠা</label>
+          <div id="nidFrontPreview" style="width:200px;height:120px;border-radius:8px;background:var(--bg-surface-2);border:2px dashed var(--border-color);display:flex;align-items:center;justify-content:center;font-size:2rem;overflow:hidden">🪪</div>
+          <label class="btn btn-ghost btn-sm mt-2" style="cursor:pointer;margin-top:8px">আপলোড <input type="file" id="nidFrontInput" accept="image/*,application/pdf" onchange="previewNid('front',this)" style="display:none"/></label>
+        </div>
+        <div class="form-group">
+          <label class="form-label">এনআইডি পেছনের পৃষ্ঠা</label>
+          <div id="nidBackPreview" style="width:200px;height:120px;border-radius:8px;background:var(--bg-surface-2);border:2px dashed var(--border-color);display:flex;align-items:center;justify-content:center;font-size:2rem;overflow:hidden">🪪</div>
+          <label class="btn btn-ghost btn-sm mt-2" style="cursor:pointer;margin-top:8px">আপলোড <input type="file" id="nidBackInput" accept="image/*,application/pdf" onchange="previewNid('back',this)" style="display:none"/></label>
+        </div>
+      </div>
+    </div>
+    <div class="text-center mt-4"><button class="btn btn-primary btn-lg" onclick="savePhotos()">💾 সংরক্ষণ করুন</button></div>
+  </div>
 
+  <!-- ④ SOCIAL MEDIA -->
+  <div class="tab-panel" id="tab-social">
+    <div class="card">
+      <div class="card-title">🔗 সামাজিক মাধ্যম লিংক <small class="text-muted">(ঐচ্ছিক)</small></div>
+      <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:16px">লিংকগুলো আপনার পাবলিক প্রোফাইলে দেখাবে।</p>
+      <div id="socialList" style="display:flex;flex-direction:column;gap:10px"></div>
+      <button class="btn btn-ghost btn-sm mt-4" onclick="addSocialField()" style="margin-top:12px">+ সামাজিক মাধ্যম যোগ করুন</button>
+    </div>
+    <div class="text-center mt-4"><button class="btn btn-primary btn-lg" onclick="saveSocial()">💾 সংরক্ষণ করুন</button></div>
+  </div>
+
+  <!-- ⑤ SECURITY -->
+  <div class="tab-panel" id="tab-security">
+    <div class="card">
+      <div class="card-title">🔑 ইউজারনেম পরিবর্তন</div>
+      <div class="form-group">
+        <label class="form-label">নতুন ইউজারনেম</label>
+        <div class="input-check-wrap">
+          <input class="form-input" id="secUsername" placeholder="নতুন ইউজারনেম" oninput="checkUnameAvail()"/>
+          <span class="input-check-icon" id="secUnameStatus"></span>
+        </div>
+        <p class="form-hint" id="secUnameHint"></p>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="changeUsername()">ইউজারনেম পরিবর্তন করুন</button>
+    </div>
+
+    <div class="card mt-4">
+      <div class="card-title">🔒 পাসওয়ার্ড পরিবর্তন</div>
+      <div class="form-group"><label class="form-label">বর্তমান পাসওয়ার্ড</label>
+        <div class="input-pass-wrap"><input type="password" class="form-input" id="secOldPass" placeholder="••••••••"/><button type="button" class="pass-eye" onclick="togglePass('secOldPass')">👁</button></div>
+      </div>
+      <div class="form-group"><label class="form-label">নতুন পাসওয়ার্ড</label>
+        <div class="input-pass-wrap"><input type="password" class="form-input" id="secNewPass" placeholder="কমপক্ষে ৮ অক্ষর"/><button type="button" class="pass-eye" onclick="togglePass('secNewPass')">👁</button></div>
+      </div>
+      <div class="form-group"><label class="form-label">নতুন পাসওয়ার্ড নিশ্চিত</label>
+        <div class="input-pass-wrap"><input type="password" class="form-input" id="secConfPass" placeholder="পাসওয়ার্ড আবার দিন"/><button type="button" class="pass-eye" onclick="togglePass('secConfPass')">👁</button></div>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="changePassword()">পাসওয়ার্ড পরিবর্তন করুন</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cropper Modal -->
+<div class="modal-overlay hidden" id="cropperModal">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3 id="cropperTitle">ছবি ক্রপ করুন</h3><button class="modal-close" onclick="closeCropper()">✕</button></div>
+    <div class="modal-body" style="max-height:60vh;overflow:hidden">
+      <img id="cropperImg" src="" alt="" style="max-width:100%;display:block"/>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeCropper()">বাতিল</button>
+      <button class="btn btn-primary btn-sm" onclick="applyCrop()">✅ ক্রপ করুন</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.1/dist/cropper.min.js"></script>
+<script src="../js/db.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/app.js"></script>
+<script src="../js/notice.js"></script>
+<script src="../js/profile.js"></script>
 </body>
-
 </html>
