@@ -1,0 +1,1835 @@
+// ═══════════════════════════════════════════════════════════════════════════
+//  BARAKAH FINANCE — Prisma Schema
+//  PostgreSQL + Prisma ORM
+//  All models reflect the 65-page Website.txt specification.
+//  Financial records use Decimal (not Float) for ACID-safe arithmetic.
+//  NO hard-delete on financial records — use status/cancellation fields.
+// ═══════════════════════════════════════════════════════════════════════════
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// All system roles — a single User record may carry multiple Role records
+enum UserSystemRole {
+  USER         // Registered but no special role
+  MEMBER       // Financial member (savings/investment)
+  CUSTOMER     // Product installment buyer
+  INVESTOR     // External/internal investor
+  GUARANTOR    // Acts as guarantor for customers
+  WITNESS      // Witness on documents
+  STAFF        // Operational staff
+  ADMIN        // Admin (limited super access)
+  SUPER_ADMIN  // Full system control
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum Religion {
+  ISLAM
+  HINDUISM
+  CHRISTIANITY
+  BUDDHISM
+  OTHER
+}
+
+enum BloodGroup {
+  A_POSITIVE
+  A_NEGATIVE
+  B_POSITIVE
+  B_NEGATIVE
+  AB_POSITIVE
+  AB_NEGATIVE
+  O_POSITIVE
+  O_NEGATIVE
+  UNKNOWN
+}
+
+/// Application lifecycle status
+enum ApplicationStatus {
+  DRAFT
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  CANCELLED
+  PAYMENT_PENDING
+  COMPLETED
+}
+
+/// Payment transaction statuses
+enum PaymentStatus {
+  PENDING
+  INITIATED
+  PAID
+  PARTIALLY_PAID
+  FAILED
+  CANCELLED
+  REFUNDED
+  REVERSED
+}
+
+/// Installment/due statuses
+enum InstallmentStatus {
+  UPCOMING
+  DUE
+  PARTIALLY_PAID
+  PAID
+  OVERDUE
+  WAIVED
+  CANCELLED
+}
+
+/// Qard-e-Hasana lifecycle
+enum QardStatus {
+  APPLIED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  DISBURSED
+  ACTIVE
+  PARTIALLY_PAID
+  OVERDUE
+  COMPLETED
+  CANCELLED
+}
+
+/// KYC verification lifecycle
+enum KYCStatus {
+  NOT_SUBMITTED
+  SUBMITTED
+  UNDER_REVIEW
+  VERIFIED
+  REJECTED
+  RESUBMISSION_REQUIRED
+}
+
+/// Investment participation types
+enum InvestType {
+  MONTHLY_SAVINGS
+  ONETIME_INVESTMENT
+  PROJECT_INVESTMENT
+}
+
+/// Profit calculation methods for product sales
+enum ProfitMethod {
+  FULL_COST_BASED     // Method A: Selling Price = Cost + (Cost × Profit%)
+  FINANCED_AMOUNT     // Method B: Profit on financed portion only (Shariah-preferred)
+  CUSTOM              // Method C: Admin sets fixed amount or custom %
+}
+
+/// Fund types — must never co-mingle
+enum FundType {
+  GENERAL
+  INVESTMENT_BUSINESS
+  QARD_HASANA
+  CHARITY
+  ORGANIZATION
+}
+
+/// Ledger entry direction
+enum LedgerType {
+  INCOME
+  EXPENSE
+  TRANSFER
+  REVERSAL
+  ADJUSTMENT
+}
+
+/// Payment methods
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  BKASH
+  NAGAD
+  ROCKET
+  CARD
+  ONLINE_GATEWAY
+  OTHER
+}
+
+/// Project lifecycle
+enum ProjectStatus {
+  OPEN          // Accepting investors
+  ACTIVE        // Running
+  CLOSED        // Completed
+  CANCELLED
+}
+
+/// Asset status
+enum AssetStatus {
+  ACTIVE
+  DISPOSED
+  TRANSFERRED
+  UNDER_MAINTENANCE
+}
+
+/// Review moderation status
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  HIDDEN
+}
+
+/// Post types for timeline
+enum PostType {
+  MANUAL
+  FACEBOOK_EMBED
+  ANNOUNCEMENT
+  NEWS
+}
+
+/// SMS sending status
+enum SMSStatus {
+  SENT
+  FAILED
+  PENDING
+}
+
+/// Receipt status — once issued, a receipt can only be CANCELLED, never deleted
+enum ReceiptStatus {
+  ISSUED
+  CANCELLED
+  INVALIDATED
+}
+
+enum WithdrawalType {
+  PARTIAL
+  FULL
+  EMERGENCY
+}
+
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PAID
+  CANCELLED
+}
+
+enum CommitteeStatus {
+  ACTIVE
+  EXPIRED
+  DISSOLVED
+}
+
+enum NoticeStyle {
+  NORMAL
+  BOLD
+  ITALIC
+  COLORED
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  CANCEL
+  REVERSE
+  APPROVE
+  REJECT
+  LOGIN
+  LOGOUT
+  PERMISSION_CHANGE
+  SETTING_CHANGE
+  BACKUP
+  RESTORE
+  PASSWORD_CHANGE
+  OTP_VERIFY
+  TWO_FA_ENABLE
+  TWO_FA_DISABLE
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MASTER 1: USER & IDENTITY
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Single source of truth for every person in the system.
+/// Roles are tracked via UserRole junction; one person can have many roles.
+model User {
+  id                String         @id @default(cuid())
+  // ── Identity ──
+  firstName         String
+  firstNameEn       String?        // English version
+  lastName          String?
+  lastNameEn        String?
+  username          String         @unique
+  // ── Contact ──
+  phone             String?        @unique
+  email             String?        @unique
+  // ── Account ──
+  passwordHash      String
+  systemRole        UserSystemRole @default(USER)
+  isVerified        Boolean        @default(false)
+  isActive          Boolean        @default(true)
+  isLocked          Boolean        @default(false)
+  lockReason        String?
+  // ── Profile completeness ──
+  profileComplete   Int            @default(0)   // 0-100
+  // ── Referral ──
+  referredById      String?
+  referredBy        User?          @relation("Referral", fields: [referredById], references: [id])
+  referrals         User[]         @relation("Referral")
+  // ── Username policy ──
+  usernameChangedAt DateTime?
+  usernameChangeCount Int          @default(0)
+  // ── 2FA ──
+  twoFAEnabled      Boolean        @default(false)
+  twoFASecret       String?        // TOTP secret (encrypted at rest)
+  // ── Timestamps ──
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  lastLoginAt       DateTime?
+  passwordChangedAt DateTime?
+
+  // ── Relations ──
+  profile           UserProfile?
+  kyc               UserKYC?
+  roles             UserRole[]
+  member            Member?
+  customer          Customer?
+  otpRecords        OTPRecord[]
+  usernameHistory   UsernameHistory[]
+  sessions          UserSession[]
+  savingsRecords    SavingsRecord[]
+  withdrawalRequests WithdrawalRequest[]
+  qardApplications  QardApplication[]   @relation("QardBorrower")
+  guaranteedQards   QardApplication[]   @relation("QardGuarantor")
+  socialLinks       SocialLink[]
+  auditLogs         AuditLog[]          @relation("AuditUser")
+  collectedPayments Payment[]           @relation("PaymentCollector")
+  sentSMS           SMSRecord[]
+  charityApplications CharityApplication[]
+  reviews           Review[]
+  posts             Post[]
+  notificationsReceived Notification[]
+  permissions       UserPermission[]
+  profitDistributions ProfitDistributionMember[]
+  capitalMovements  CapitalMovement[]
+
+  @@index([phone])
+  @@index([email])
+  @@index([username])
+  @@index([systemRole])
+}
+
+/// Extended personal / public profile data
+model UserProfile {
+  id                String     @id @default(cuid())
+  userId            String     @unique
+  user              User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // ── Names (bilingual) ──
+  fatherName        String?
+  fatherNameEn      String?
+  motherName        String?
+  motherNameEn      String?
+
+  // ── Demographics ──
+  dateOfBirth       DateTime?
+  gender            Gender?
+  religion          Religion?
+  bloodGroup        BloodGroup?
+  occupation        String?
+  occupationOther   String?
+
+  // ── Address (present) ──
+  division          String?
+  district          String?
+  upazila           String?
+  union             String?
+  postOffice        String?
+  postCode          String?
+  village           String?
+  villageEn         String?
+
+  // ── Address (permanent) ──
+  permDivision      String?
+  permDistrict      String?
+  permUpazila       String?
+  permUnion         String?
+  permPostOffice    String?
+  permPostCode      String?
+  permVillage       String?
+  permVillageEn     String?
+  sameAsPresentAddress Boolean @default(false)
+
+  // ── Photo ──
+  photoUrl          String?    // stored at /uploads/photos/{userId}.webp
+  photoUpdatedAt    DateTime?
+
+  // ── Signature ──
+  signatureUrl      String?    // stored at /uploads/signatures/{userId}.webp
+
+  // ── Phone numbers (multiple allowed) ──
+  phones            UserPhone[]
+
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+}
+
+/// Multiple phone numbers per user
+model UserPhone {
+  id          String      @id @default(cuid())
+  profileId   String
+  profile     UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  countryCode String      @default("+880")
+  number      String
+  isPrimary   Boolean     @default(false)
+  isVerified  Boolean     @default(false)
+
+  @@index([profileId])
+}
+
+/// Social media links for a user
+model SocialLink {
+  id       String @id @default(cuid())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  platform String // facebook, whatsapp, linkedin, instagram, etc.
+  url      String
+  displayName String?
+
+  @@index([userId])
+}
+
+/// KYC data — sensitive, access-controlled separately from public profile
+model UserKYC {
+  id                  String    @id @default(cuid())
+  userId              String    @unique
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  nidNumber           String?   // National ID or Birth Registration
+  nidType             String?   // "nid" | "birth_cert"
+  nidFrontUrl         String?
+  nidBackUrl          String?
+
+  status              KYCStatus @default(NOT_SUBMITTED)
+  submittedAt         DateTime?
+  reviewedAt          DateTime?
+  reviewedBy          String?
+  rejectionReason     String?
+  verificationNotes   String?
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+/// Role assignments — allows one person to hold multiple roles simultaneously
+model UserRole {
+  id         String         @id @default(cuid())
+  userId     String
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       UserSystemRole
+  grantedBy  String?
+  grantedAt  DateTime       @default(now())
+  revokedAt  DateTime?
+  isActive   Boolean        @default(true)
+
+  @@unique([userId, role])
+  @@index([userId])
+}
+
+/// Session management — track active sessions for security
+model UserSession {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token       String   @unique
+  ipAddress   String?
+  userAgent   String?
+  deviceInfo  String?
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime
+  lastSeenAt  DateTime @default(now())
+  isRevoked   Boolean  @default(false)
+
+  @@index([userId])
+  @@index([token])
+}
+
+/// OTP records for signup, password reset, 2FA
+model OTPRecord {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phone       String?
+  email       String?
+  code        String   // hashed OTP
+  purpose     String   // "signup" | "password_reset" | "2fa" | "login"
+  expiresAt   DateTime
+  usedAt      DateTime?
+  isUsed      Boolean  @default(false)
+  attempts    Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@index([phone])
+  @@index([email])
+}
+
+/// Username change history (policy: max changes, 60-day cooldown)
+model UsernameHistory {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  oldUsername String
+  newUsername String
+  changedAt   DateTime @default(now())
+  changedBy   String?  // admin override is recorded
+
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MASTER 2: MEMBER & SAVINGS
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Member profile — linked to User, tracks financial participation
+model Member {
+  id                String      @id @default(cuid())
+  userId            String      @unique
+  user              User        @relation(fields: [userId], references: [id])
+  memberID          String      @unique  // 6-digit: BF-000001
+
+  // ── Invest type ──
+  investType        InvestType  @default(MONTHLY_SAVINGS)
+  investAmount      Decimal     @default(0) @db.Decimal(18, 2)
+
+  // ── Dates ──
+  joinDate          DateTime    @default(now())
+  activationDate    DateTime?   // date membership was activated after payment
+
+  // ── Nominee ──
+  nomineeName       String?
+  nomineeNameEn     String?
+  nomineeRelation   String?
+  nomineePhone      String?
+  nomineeDivision   String?
+  nomineeDistrict   String?
+  nomineeUpazila    String?
+  nomineeVillage    String?
+  nomineeGender     Gender?
+
+  // ── Calculated fields (updated by triggers/background jobs) ──
+  totalDeposit      Decimal     @default(0) @db.Decimal(18, 2)
+  units             Decimal     @default(0) @db.Decimal(18, 4)
+  // Principal tracking — separate from profit
+  principalAmount   Decimal     @default(0) @db.Decimal(18, 2)
+  profitEarned      Decimal     @default(0) @db.Decimal(18, 2)
+
+  // ── Status ──
+  status            ApplicationStatus @default(PENDING)
+  approvedBy        String?
+  approvedAt        DateTime?
+  rejectedReason    String?
+
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  createdBy         String?
+
+  // ── Relations ──
+  savingsRecords    SavingsRecord[]
+  payOrders         PayOrder[]
+  memberApplications MemberApplication[]
+  projectInvestments ProjectMember[]
+  capitalMovements  CapitalMovement[]
+
+  @@index([memberID])
+  @@index([status])
+}
+
+/// Membership application (submitted by user before approval)
+model MemberApplication {
+  id              String            @id @default(cuid())
+  userId          String
+  memberId        String?
+  member          Member?           @relation(fields: [memberId], references: [id])
+  investType      InvestType
+  investAmount    Decimal           @default(0) @db.Decimal(18, 2)
+  investProjectId String?
+  formFee         Decimal           @default(100) @db.Decimal(18, 2)
+  status          ApplicationStatus @default(PENDING)
+  submittedAt     DateTime          @default(now())
+  reviewedBy      String?
+  reviewedAt      DateTime?
+  rejectionReason String?
+  notes           String?
+  paymentId       String?           // payment for form fee + initial deposit
+  payment         Payment?          @relation(fields: [paymentId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+}
+
+/// Monthly/periodic savings records — each row = one payment instance
+/// IMMUTABLE once status = PAID. Use reversal entries for corrections.
+model SavingsRecord {
+  id              String            @id @default(cuid())
+  memberId        String
+  member          Member            @relation(fields: [memberId], references: [id])
+  userId          String
+  user            User              @relation(fields: [userId], references: [id])
+
+  month           String            // "YYYY-MM" (e.g. "2026-08")
+  dueAmount       Decimal           @db.Decimal(18, 2)
+  paidAmount      Decimal           @default(0) @db.Decimal(18, 2)
+  remainingAmount Decimal           @db.Decimal(18, 2)
+  lateFee         Decimal           @default(0) @db.Decimal(18, 2)
+
+  dueDate         DateTime          // e.g. 15th of the month
+  warnDate        DateTime          // e.g. 10th of the month
+  paidDate        DateTime?
+
+  status          InstallmentStatus @default(UPCOMING)
+  paymentMethod   PaymentMethod?
+  receiptId       String?
+  receipt         Receipt?          @relation(fields: [receiptId], references: [id])
+
+  // ── Capital activation (for profit calculation) ──
+  activatedAt     DateTime?         // date this deposit was deployed in business
+
+  notes           String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  collectedBy     String?
+
+  @@unique([memberId, month])
+  @@index([memberId])
+  @@index([status])
+  @@index([month])
+}
+
+/// Tracks every movement of member capital for day-weighted profit calculation
+model CapitalMovement {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  memberId        String?
+  member          Member?  @relation(fields: [memberId], references: [id])
+
+  amount          Decimal  @db.Decimal(18, 2)  // positive = deposit, negative = withdrawal
+  movementType    String   // "DEPOSIT" | "WITHDRAWAL" | "PROFIT_CREDIT" | "LOSS_DEBIT"
+
+  depositDate     DateTime
+  activationDate  DateTime? // when capital became active in business
+  deactivationDate DateTime? // when capital was withdrawn/returned
+  activeDays      Int?
+
+  relatedProjectId String?
+  relatedProductId String?
+  units           Decimal  @db.Decimal(18, 4)
+
+  notes           String?
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+  @@index([memberId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MASTER 3: CUSTOMER & PRODUCT INSTALLMENTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Customer/Client profile for product installment buyers.
+/// A Customer can also be a Member — linked via userId.
+model Customer {
+  id              String   @id @default(cuid())
+  userId          String?  @unique  // null if non-member customer
+  user            User?    @relation(fields: [userId], references: [id])
+  clientID        String   @unique  // sequential C-000001
+
+  // ── Personal info (duplicated here for standalone customers who aren't Users) ──
+  name            String
+  nameEn          String?
+  fatherName      String?
+  phone           String
+  address         String?
+  dateOfBirth     DateTime?
+  nidNumber       String?
+  photoUrl        String?
+  signatureUrl    String?
+  nidFrontUrl     String?
+  nidBackUrl      String?
+
+  status          String   @default("active") // active | inactive
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+
+  // ── Relations ──
+  orders          Order[]
+  guaranteedBy    OrderGuarantor[]
+
+  @@index([clientID])
+  @@index([phone])
+}
+
+/// Product catalog item
+model Product {
+  id              String   @id @default(cuid())
+  productCode     String   @unique
+  name            String
+  nameEn          String?
+  category        String
+  description     String?
+  descriptionEn   String?
+
+  purchasePrice   Decimal  @db.Decimal(18, 2)
+  sellingPrice    Decimal? @db.Decimal(18, 2)  // null = calculated on order
+
+  stockQty        Int      @default(0)
+  isActive        Boolean  @default(true)
+  isFeatured      Boolean  @default(false)
+  outOfStock      Boolean  @default(false)
+
+  // ── Profit method for this product (overrides global default) ──
+  profitMethod    ProfitMethod @default(FINANCED_AMOUNT)
+  profitRate      Decimal      @default(10) @db.Decimal(5, 2) // percentage
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+
+  images          ProductImage[]
+  orders          Order[]
+
+  @@index([category])
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  type      String  @default("image") // "image" | "video"
+  altText   String?
+  sortOrder Int     @default(0)
+
+  @@index([productId])
+}
+
+/// A product installment order — one per product per customer transaction
+model Order {
+  id                String        @id @default(cuid())
+  orderNumber       String        @unique   // ORD-2026-000001
+  customerId        String
+  customer          Customer      @relation(fields: [customerId], references: [id])
+  productId         String
+  product           Product       @relation(fields: [productId], references: [id])
+
+  // ── Pricing snapshot (stored permanently with order) ──
+  purchaseCost      Decimal       @db.Decimal(18, 2)
+  downPayment       Decimal       @default(0) @db.Decimal(18, 2)
+  financedAmount    Decimal       @db.Decimal(18, 2)  // purchaseCost - downPayment
+  profitAmount      Decimal       @db.Decimal(18, 2)
+  totalPayable      Decimal       @db.Decimal(18, 2)  // purchaseCost + profitAmount
+  profitMethod      ProfitMethod
+  profitRate        Decimal       @db.Decimal(5, 2)
+
+  // ── Installment plan ──
+  totalInstallments Int
+  installmentAmount Decimal       @db.Decimal(18, 2)  // per installment (rounded)
+  lastInstallmentAdjustment Decimal @default(0) @db.Decimal(18, 2) // rounding residual
+  orderDate         DateTime      @default(now())
+  firstInstallmentDate DateTime   // date first installment is due
+  lastInstallmentDate DateTime    // expected final payment date
+
+  // ── Stock reservation ──
+  stockReservedAt   DateTime?
+  stockConfirmedAt  DateTime?
+  deliveredAt       DateTime?
+
+  // ── Status & approval ──
+  status            ApplicationStatus @default(PENDING)
+  approvedBy        String?
+  approvedAt        DateTime?
+  rejectionReason   String?
+
+  // ── Financial summary (updated on each payment) ──
+  totalPaid         Decimal       @default(0) @db.Decimal(18, 2)
+  totalRemaining    Decimal       @db.Decimal(18, 2)
+  currentDue        Decimal       @default(0) @db.Decimal(18, 2)
+
+  notes             String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  createdBy         String?
+
+  installments      Installment[]
+  guarantors        OrderGuarantor[]
+  witnesses         OrderWitness[]
+  payments          Payment[]
+
+  @@index([customerId])
+  @@index([status])
+  @@index([orderDate])
+}
+
+/// Installment schedule — auto-generated on order confirmation.
+/// Rounding residual goes to the LAST installment.
+model Installment {
+  id                  String            @id @default(cuid())
+  orderId             String
+  order               Order             @relation(fields: [orderId], references: [id])
+  installmentNumber   Int
+  dueDate             DateTime
+  graceDate           DateTime          // warnDate = dueDate - graceDays
+  dueAmount           Decimal           @db.Decimal(18, 2)
+  paidAmount          Decimal           @default(0) @db.Decimal(18, 2)
+  remainingAmount     Decimal           @db.Decimal(18, 2)
+  lateFee             Decimal           @default(0) @db.Decimal(18, 2)
+  status              InstallmentStatus @default(UPCOMING)
+  paidDate            DateTime?
+  receiptId           String?
+  receipt             Receipt?          @relation(fields: [receiptId], references: [id])
+  notes               String?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@unique([orderId, installmentNumber])
+  @@index([orderId])
+  @@index([status])
+  @@index([dueDate])
+}
+
+/// Guarantor linked to an order (must be an existing Member)
+model OrderGuarantor {
+  id          String   @id @default(cuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id])
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id])
+  userId      String   // the guarantor's user id
+  name        String   // snapshot at time of guarantee
+  phone       String
+  memberID    String?
+  signatureUrl String?
+  addedAt     DateTime @default(now())
+
+  @@index([orderId])
+  @@index([userId])
+}
+
+/// Witness linked to an order
+model OrderWitness {
+  id           String  @id @default(cuid())
+  orderId      String
+  order        Order   @relation(fields: [orderId], references: [id])
+  name         String
+  fatherName   String?
+  phone        String
+  address      String?
+  nidNumber    String?
+  signatureUrl String?
+  addedAt      DateTime @default(now())
+
+  @@index([orderId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MASTER 4: PAYMENTS & RECEIPTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Every financial payment ever made.
+/// IMMUTABLE record — never hard-delete.
+/// Corrections use linked Reversal records.
+model Payment {
+  id              String        @id @default(cuid())
+  paymentNumber   String        @unique  // auto-generated unique ID
+  receiptId       String?       @unique
+  receipt         Receipt?      @relation(fields: [receiptId], references: [id])
+
+  // ── Who paid, for what ──
+  payerUserId     String?
+  payerName       String?       // for non-user payers (anonymous charity donations etc.)
+  payerPhone      String?
+
+  // ── What this payment covers ──
+  purpose         String        // "savings" | "installment" | "form_fee" | "qard_repayment" | "charity" | "other"
+  relatedEntityType String?     // "savings_record" | "installment" | "order" | "qard" | "membership_application"
+  relatedEntityId   String?
+
+  amount          Decimal       @db.Decimal(18, 2)
+  paymentMethod   PaymentMethod @default(CASH)
+  referenceNumber String?       // mobile banking transaction ID / bank ref
+  status          PaymentStatus @default(PENDING)
+
+  collectedById   String?
+  collectedBy     User?         @relation("PaymentCollector", fields: [collectedById], references: [id])
+  collectedAt     DateTime      @default(now())
+
+  // ── Reversal link (if this payment was reversed) ──
+  reversalId      String?
+  reversalReason  String?
+  reversedAt      DateTime?
+  reversedBy      String?
+
+  // ── Allocation (how payment was applied) ──
+  allocationDetails Json?       // { installmentId, amount }[]
+
+  notes           String?
+  transactionDate DateTime      @default(now())
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  memberApplications MemberApplication[]
+
+  @@index([payerUserId])
+  @@index([purpose])
+  @@index([status])
+  @@index([transactionDate])
+}
+
+/// Receipt registry — IMMUTABLE.
+/// Once issued, a receipt number is NEVER reused.
+/// If wrong, create a CANCELLED entry and issue a new receipt.
+model Receipt {
+  id              String        @id @default(cuid())
+  receiptNumber   String        @unique  // M-0001 (member) or C-0001 (client) or I-0001 (income) etc.
+  receiptType     String        // "MEMBER" | "CLIENT" | "INCOME" | "EXPENSE" | "QARD" | "CHARITY"
+  status          ReceiptStatus @default(ISSUED)
+
+  // If cancelled:
+  cancelledAt     DateTime?
+  cancelledBy     String?
+  cancellationReason String?
+  replacedByReceiptId String?    // new receipt number that replaced this
+
+  issuedAt        DateTime      @default(now())
+  issuedBy        String?
+
+  payment         Payment?
+  savings         SavingsRecord[]
+  installments    Installment[]
+
+  @@index([receiptNumber])
+  @@index([receiptType])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MASTER 5: ACCOUNTS, INCOME & EXPENSE
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Financial accounts (Cash, Bank, bKash, Nagad, etc.)
+/// Each account tracks its own balance separately
+model FinancialAccount {
+  id              String        @id @default(cuid())
+  name            String        @unique  // "Cash", "bKash", "Nagad", "Bank - Dutch Bangla"
+  accountType     String        // "cash" | "bank" | "mobile_banking" | "other"
+  bankName        String?
+  accountNumber   String?
+  openingBalance  Decimal       @default(0) @db.Decimal(18, 2)
+  currentBalance  Decimal       @default(0) @db.Decimal(18, 2)
+  isActive        Boolean       @default(true)
+  sortOrder       Int           @default(0)
+  // ── Reconciliation ──
+  lastReconciledAt DateTime?
+  lastReconciledBy String?
+  reconciledBalance Decimal?    @db.Decimal(18, 2)
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  incomeEntries   IncomeEntry[]
+  expenseEntries  ExpenseEntry[]
+  transfersFrom   FundTransfer[] @relation("TransferFrom")
+  transfersTo     FundTransfer[] @relation("TransferTo")
+}
+
+/// Income categories
+model IncomeCategory {
+  id          String        @id @default(cuid())
+  name        String        @unique
+  description String?
+  isActive    Boolean       @default(true)
+  hasHistory  Boolean       @default(false)  // flag: cannot delete if true
+  createdAt   DateTime      @default(now())
+  entries     IncomeEntry[]
+}
+
+/// Income entry — soft-delete only (deleted = true)
+model IncomeEntry {
+  id              String         @id @default(cuid())
+  receiptNumber   String         @unique
+  categoryId      String
+  category        IncomeCategory @relation(fields: [categoryId], references: [id])
+  amount          Decimal        @db.Decimal(18, 2)
+  date            DateTime
+  description     String?
+  paymentMethod   PaymentMethod  @default(CASH)
+  accountId       String?
+  account         FinancialAccount? @relation(fields: [accountId], references: [id])
+
+  // ── Soft delete with audit ──
+  isDeleted       Boolean        @default(false)
+  deletedAt       DateTime?
+  deletedBy       String?
+  deleteReason    String?
+  deletedDoc      String?
+
+  collectedBy     String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([categoryId])
+  @@index([date])
+}
+
+/// Expense categories (hierarchical: category → subcategory)
+model ExpenseCategory {
+  id            String           @id @default(cuid())
+  name          String
+  description   String?
+  parentId      String?
+  parent        ExpenseCategory? @relation("SubCategories", fields: [parentId], references: [id])
+  children      ExpenseCategory[] @relation("SubCategories")
+  isActive      Boolean          @default(true)
+  hasHistory    Boolean          @default(false)
+  createdAt     DateTime         @default(now())
+  entries       ExpenseEntry[]
+}
+
+/// Expense entry — soft-delete only
+model ExpenseEntry {
+  id              String          @id @default(cuid())
+  receiptNumber   String          @unique
+  categoryId      String
+  category        ExpenseCategory @relation(fields: [categoryId], references: [id])
+  amount          Decimal         @db.Decimal(18, 2)
+  date            DateTime
+  description     String?
+  paymentMethod   PaymentMethod   @default(CASH)
+  accountId       String?
+  account         FinancialAccount? @relation(fields: [accountId], references: [id])
+
+  isDeleted       Boolean         @default(false)
+  deletedAt       DateTime?
+  deletedBy       String?
+  deleteReason    String?
+
+  addedBy         String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([categoryId])
+  @@index([date])
+}
+
+/// General ledger — every financial movement recorded here.
+/// Auto-populated by application logic; never edited directly.
+model LedgerEntry {
+  id              String      @id @default(cuid())
+  entryType       LedgerType
+  fundType        FundType    @default(GENERAL)
+  category        String?
+  description     String?
+  amount          Decimal     @db.Decimal(18, 2)
+  date            DateTime
+  // ── Reference to source record ──
+  sourceType      String?     // "income" | "expense" | "payment" | "qard" | "transfer"
+  sourceId        String?
+  // ── Double-entry pointers ──
+  debitAccountId  String?
+  creditAccountId String?
+  // ── Metadata ──
+  addedBy         String?
+  isManual        Boolean     @default(false)
+  isReversed      Boolean     @default(false)
+  reversalOf      String?
+  createdAt       DateTime    @default(now())
+
+  @@index([fundType])
+  @@index([entryType])
+  @@index([date])
+  @@index([sourceId])
+}
+
+/// Fund-to-fund transfers (NOT income or expense)
+model FundTransfer {
+  id              String           @id @default(cuid())
+  fromAccountId   String
+  fromAccount     FinancialAccount @relation("TransferFrom", fields: [fromAccountId], references: [id])
+  toAccountId     String
+  toAccount       FinancialAccount @relation("TransferTo", fields: [toAccountId], references: [id])
+  amount          Decimal          @db.Decimal(18, 2)
+  reason          String?
+  date            DateTime
+  transferredBy   String?
+  createdAt       DateTime         @default(now())
+
+  @@index([fromAccountId])
+  @@index([toAccountId])
+}
+
+/// Pay order rules — templates for recurring payment obligations
+model PayOrderRule {
+  id           String    @id @default(cuid())
+  name         String    @unique
+  description  String?
+  amount       Decimal   @default(0) @db.Decimal(18, 2)
+  isRecurring  Boolean   @default(false)
+  period       String?   // "monthly" | "quarterly" | "annual" | "once"
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  payOrders    PayOrder[]
+}
+
+/// Pay orders — assigned payment obligations per member/customer
+model PayOrder {
+  id              String       @id @default(cuid())
+  ruleId          String
+  rule            PayOrderRule @relation(fields: [ruleId], references: [id])
+  memberId        String?
+  member          Member?      @relation(fields: [memberId], references: [id])
+  orderId         String?      // for installment pay orders
+
+  amount          Decimal      @db.Decimal(18, 2)
+  dueDate         DateTime
+  warnDate        DateTime
+  lateFeeAmount   Decimal      @default(0) @db.Decimal(18, 2)
+  status          InstallmentStatus @default(UPCOMING)
+
+  assignedBy      String?
+  assignedAt      DateTime     @default(now())
+  removedAt       DateTime?
+  removedBy       String?
+  removeReason    String?
+
+  @@index([memberId])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MASTER 6: PROJECTS & PROFIT
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Project {
+  id                String        @id @default(cuid())
+  projectCode       String        @unique
+  name              String
+  description       String?
+  projectType       String?       // "product_finance" | "real_estate" | "trade" etc.
+  location          String?
+  targetAmount      Decimal       @db.Decimal(18, 2)
+  raisedAmount      Decimal       @default(0) @db.Decimal(18, 2)
+  maxInvestors      Int?
+
+  startDate         DateTime?
+  endDate           DateTime?
+  status            ProjectStatus @default(OPEN)
+
+  // ── Financial summary (updated by background jobs) ──
+  totalRevenue      Decimal       @default(0) @db.Decimal(18, 2)
+  totalExpense      Decimal       @default(0) @db.Decimal(18, 2)
+  netProfit         Decimal       @default(0) @db.Decimal(18, 2)
+  totalInvestors    Int           @default(0)
+
+  closedAt          DateTime?
+  closedBy          String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  createdBy         String?
+
+  members           ProjectMember[]
+  distributions     ProfitDistribution[]
+
+  @@index([status])
+}
+
+/// Members/investors in a specific project
+model ProjectMember {
+  id                String   @id @default(cuid())
+  projectId         String
+  project           Project  @relation(fields: [projectId], references: [id])
+  memberId          String
+  member            Member   @relation(fields: [memberId], references: [id])
+  investedAmount    Decimal  @db.Decimal(18, 2)
+  units             Decimal  @db.Decimal(18, 4)
+  joinedAt          DateTime @default(now())
+  exitedAt          DateTime?
+  profitShare       Decimal  @default(0) @db.Decimal(18, 2)
+  status            String   @default("active") // active | exited
+
+  @@unique([projectId, memberId])
+  @@index([projectId])
+  @@index([memberId])
+}
+
+/// Fixed assets
+model FixedAsset {
+  id              String      @id @default(cuid())
+  assetCode       String      @unique
+  name            String
+  category        String?
+  description     String?
+  purchaseDate    DateTime
+  purchaseValue   Decimal     @db.Decimal(18, 2)
+  currentValue    Decimal     @db.Decimal(18, 2)
+  location        String?
+  responsibleUserId String?
+  status          AssetStatus @default(ACTIVE)
+  disposalDate    DateTime?
+  disposalReason  String?
+  notes           String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([status])
+}
+
+/// Profit distribution cycle — triggered by admin after calculating net profit
+model ProfitDistribution {
+  id                  String    @id @default(cuid())
+  projectId           String?
+  project             Project?  @relation(fields: [projectId], references: [id])
+  periodFrom          DateTime
+  periodTo            DateTime
+  description         String?
+
+  // ── Revenue inputs ──
+  businessRevenue     Decimal   @db.Decimal(18, 2)
+  costOfGoods         Decimal   @default(0) @db.Decimal(18, 2)
+  operationalExpense  Decimal   @default(0) @db.Decimal(18, 2)
+  netProfit           Decimal   @db.Decimal(18, 2)
+
+  // ── Allocations (percentages stored at distribution time) ──
+  memberSharePct      Decimal   @db.Decimal(5, 2)  // e.g. 60.00
+  charitySharePct     Decimal   @db.Decimal(5, 2)  // e.g. 5.00
+  orgSharePct         Decimal   @db.Decimal(5, 2)  // e.g. 35.00
+
+  memberPoolAmount    Decimal   @db.Decimal(18, 2)
+  charityAmount       Decimal   @db.Decimal(18, 2)
+  orgAmount           Decimal   @db.Decimal(18, 2)
+
+  status              String    @default("preview") // preview | committed | reversed
+  committedAt         DateTime?
+  committedBy         String?
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  memberShares        ProfitDistributionMember[]
+}
+
+/// Each member's share in a profit distribution cycle
+model ProfitDistributionMember {
+  id                  String             @id @default(cuid())
+  distributionId      String
+  distribution        ProfitDistribution @relation(fields: [distributionId], references: [id])
+  userId              String
+  user                User               @relation(fields: [userId], references: [id])
+
+  activeCapital       Decimal            @db.Decimal(18, 2)
+  units               Decimal            @db.Decimal(18, 4)
+  weightedCapital     Decimal            @db.Decimal(18, 2)
+  activeDays          Int
+  profitShare         Decimal            @db.Decimal(18, 2)
+  isPaid              Boolean            @default(false)
+  paidAt              DateTime?
+
+  @@unique([distributionId, userId])
+  @@index([distributionId])
+}
+
+/// Withdrawal requests from members
+model WithdrawalRequest {
+  id              String           @id @default(cuid())
+  userId          String
+  user            User             @relation(fields: [userId], references: [id])
+  withdrawalType  WithdrawalType
+  requestedAmount Decimal          @db.Decimal(18, 2)
+  reason          String?
+  isEmergency     Boolean          @default(false)
+  status          WithdrawalStatus @default(PENDING)
+  noticePeriodDays Int             @default(30)
+  requestedAt     DateTime         @default(now())
+  effectiveDate   DateTime?
+  reviewedBy      String?
+  reviewedAt      DateTime?
+  rejectionReason String?
+  paymentId       String?
+  notes           String?
+
+  @@index([userId])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MASTER 7: QARD-E-HASANA
+// ─────────────────────────────────────────────────────────────────────────────
+
+model QardApplication {
+  id                String      @id @default(cuid())
+  qardCode          String      @unique  // QH-001
+  borrowerUserId    String
+  borrower          User        @relation("QardBorrower", fields: [borrowerUserId], references: [id])
+
+  // ── Borrower KYC snapshot ──
+  borrowerName      String
+  borrowerPhone     String
+  borrowerAddress   String?
+  borrowerNID       String?
+  borrowerPhotoUrl  String?
+
+  // ── Guarantor ──
+  guarantorUserId   String?
+  guarantor         User?       @relation("QardGuarantor", fields: [guarantorUserId], references: [id])
+  guarantorName     String?
+  guarantorPhone    String?
+
+  // ── Witnesses (stored as JSON since structure is simple) ──
+  witnesses         Json?       // [{ name, fatherName, phone, address, nid }]
+
+  // ── Financials ──
+  requestedAmount   Decimal     @db.Decimal(18, 2)
+  approvedAmount    Decimal?    @db.Decimal(18, 2)
+  disbursedAmount   Decimal?    @db.Decimal(18, 2)
+  repaymentMonths   Int
+  disbursedAt       DateTime?
+  repaymentStartDate DateTime?
+  repaymentEndDate   DateTime?
+
+  // ── Status ──
+  status            QardStatus  @default(APPLIED)
+  reason            String?     // why qard is needed
+
+  // ── Approval chain ──
+  reviewedBy        String?
+  reviewedAt        DateTime?
+  approvedBy        String?
+  approvedAt        DateTime?
+  rejectionReason   String?
+
+  // ── Financial summary ──
+  totalPaid         Decimal     @default(0) @db.Decimal(18, 2)
+  totalRemaining    Decimal     @default(0) @db.Decimal(18, 2)
+
+  isNonMember       Boolean     @default(false)  // for future expansion
+
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  createdBy         String?
+
+  installments      QardInstallment[]
+
+  @@index([borrowerUserId])
+  @@index([status])
+}
+
+model QardInstallment {
+  id                String      @id @default(cuid())
+  qardId            String
+  qard              QardApplication @relation(fields: [qardId], references: [id])
+  installmentNumber Int
+  dueDate           DateTime
+  warnDate          DateTime
+  dueAmount         Decimal     @db.Decimal(18, 2)
+  paidAmount        Decimal     @default(0) @db.Decimal(18, 2)
+  remainingAmount   Decimal     @db.Decimal(18, 2)
+  status            InstallmentStatus @default(UPCOMING)
+  paidDate          DateTime?
+  receiptId         String?
+  notes             String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@unique([qardId, installmentNumber])
+  @@index([qardId])
+  @@index([dueDate])
+}
+
+/// Qard fund management — track inflows/outflows of the dedicated Qard fund
+model QardFundMovement {
+  id            String   @id @default(cuid())
+  movementType  String   // "CREDIT" | "DEBIT" | "RETURN"
+  amount        Decimal  @db.Decimal(18, 2)
+  fromFundType  FundType?
+  toFundType    FundType?
+  reason        String?
+  notes         String?
+  recordedBy    String?
+  date          DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  @@index([movementType])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MASTER 8: CHARITY
+// ─────────────────────────────────────────────────────────────────────────────
+
+model CharityCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  fundraising CharityFundraising[]
+  expenditure CharityExpenditure[]
+}
+
+/// Charity income/donations
+model CharityFundraising {
+  id              String          @id @default(cuid())
+  receiptNumber   String          @unique
+  categoryId      String
+  category        CharityCategory @relation(fields: [categoryId], references: [id])
+  donorName       String?
+  donorPhone      String?
+  donorUserId     String?
+  isAnonymous     Boolean         @default(false)
+  amount          Decimal         @db.Decimal(18, 2)
+  paymentMethod   PaymentMethod   @default(CASH)
+  date            DateTime
+  description     String?
+  isLateFee       Boolean         @default(false)  // late fees → charity only
+  relatedLateFeeEntityId String?
+  recordedBy      String?
+  createdAt       DateTime        @default(now())
+
+  @@index([categoryId])
+  @@index([date])
+}
+
+/// Charity expenditure
+model CharityExpenditure {
+  id              String          @id @default(cuid())
+  receiptNumber   String          @unique
+  categoryId      String
+  category        CharityCategory @relation(fields: [categoryId], references: [id])
+  recipientName   String?
+  recipientPhone  String?
+  amount          Decimal         @db.Decimal(18, 2)
+  paymentMethod   PaymentMethod   @default(CASH)
+  date            DateTime
+  description     String?
+  addedBy         String?
+  createdAt       DateTime        @default(now())
+
+  @@index([categoryId])
+  @@index([date])
+}
+
+/// Public charity assistance applications
+model CharityApplication {
+  id              String            @id @default(cuid())
+  userId          String?
+  user            User?             @relation(fields: [userId], references: [id])
+  applicantName   String
+  fatherName      String?
+  address         String?
+  phone           String
+  email           String?
+  reason          String
+  amountRequested Decimal?          @db.Decimal(18, 2)
+  status          ApplicationStatus @default(PENDING)
+  reviewedBy      String?
+  reviewedAt      DateTime?
+  rejectionReason String?
+  createdAt       DateTime          @default(now())
+
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MASTER 9: COMMITTEE
+// ─────────────────────────────────────────────────────────────────────────────
+
+model CommitteeSession {
+  id            String   @id @default(cuid())
+  sessionName   String   // e.g. "2026-2028 Committee"
+  sessionStart  DateTime
+  sessionEnd    DateTime
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  members       CommitteeMember[]
+}
+
+model CommitteeMember {
+  id              String           @id @default(cuid())
+  sessionId       String
+  session         CommitteeSession @relation(fields: [sessionId], references: [id])
+  userId          String?
+  memberID        String?
+  // snapshot at time of assignment
+  name            String
+  phone           String?
+  designation     String           // সভাপতি, সম্পাদক, কোষাধ্যক্ষ etc.
+  sortOrder       Int              @default(0)
+  photoUrl        String?
+  status          CommitteeStatus  @default(ACTIVE)
+  joinedAt        DateTime         @default(now())
+  leftAt          DateTime?
+
+  @@index([sessionId])
+  @@index([userId])
+}
+
+/// Configurable committee rules and approval requirements
+model CommitteeRule {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  requiresApproval Boolean @default(true)
+  minApprovers    Int      @default(1)
+  appliesTo       String   // "membership" | "qard" | "large_transaction" | "project" | "investment"
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MASTER 10: SMS
+// ─────────────────────────────────────────────────────────────────────────────
+
+model SMSTemplate {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  category    String   // "payment_received" | "due_reminder" | "overdue" | "membership_approved" etc.
+  template    String   // supports {name}, {amount}, {due_date}, {member_id} etc.
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SMSRecord {
+  id          String    @id @default(cuid())
+  phone       String
+  message     String
+  status      SMSStatus @default(PENDING)
+  sentAt      DateTime?
+  failedAt    DateTime?
+  failReason  String?
+  sentById    String?
+  sentBy      User?     @relation(fields: [sentById], references: [id])
+  templateId  String?
+  relatedType String?   // "member" | "customer" | "qard" | "committee" | "system"
+  relatedId   String?
+  count       Int       @default(1)  // how many SMS units this message consumed
+  createdAt   DateTime  @default(now())
+
+  @@index([phone])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model SMSRecharge {
+  id          String   @id @default(cuid())
+  amount      Int      // number of SMS units added
+  cost        Decimal? @db.Decimal(18, 2)
+  rechargedAt DateTime @default(now())
+  rechargedBy String?
+  note        String?
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MASTER 11: WEBSITE / CMS
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Notice {
+  id          String      @id @default(cuid())
+  text        String
+  style       NoticeStyle @default(NORMAL)
+  color       String?     // hex color for font
+  bgColor     String?     // hex color for bg
+  fontBold    Boolean     @default(false)
+  fontItalic  Boolean     @default(false)
+  fontSize    Int?
+  isActive    Boolean     @default(true)
+  sortOrder   Int         @default(0)
+  validFrom   DateTime?
+  validUntil  DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  createdBy   String?
+}
+
+model Badge {
+  id            String  @id @default(cuid())
+  key           String  @unique  // "members", "savings", "loans", "services" etc.
+  label         String
+  labelEn       String?
+  icon          String?           // emoji or icon name
+  value         String?           // static value override
+  dataSource    String?           // "computed" | "manual" — "computed" = pull from DB
+  isVisible     Boolean @default(true)
+  publicVisible Boolean @default(true)  // show without login
+  memberVisible Boolean @default(true)  // show to logged-in members
+  isClickable   Boolean @default(true)
+  targetUrl     String?
+  sortOrder     Int     @default(0)
+  // ── Style controls ──
+  titleFontSize   Int?
+  valueFontSize   Int?
+  titleColor      String?
+  valueColor      String?
+  bgColor         String?
+  borderColor     String?
+  fontBold        Boolean @default(false)
+  fontStyle       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Review {
+  id          String       @id @default(cuid())
+  userId      String?
+  user        User?        @relation(fields: [userId], references: [id])
+  name        String       // name snapshot (or manual for anonymous)
+  phone       String?      // for anonymous reviews
+  content     String
+  rating      Int          @default(5)   // 1-5 stars
+  status      ReviewStatus @default(PENDING)
+  approvedBy  String?
+  approvedAt  DateTime?
+  rejectionReason String?
+  createdAt   DateTime     @default(now())
+
+  @@index([status])
+}
+
+/// Timeline posts (manual + Facebook embeds)
+model Post {
+  id          String    @id @default(cuid())
+  authorId    String?
+  author      User?     @relation(fields: [authorId], references: [id])
+  title       String?
+  content     String
+  type        PostType  @default(MANUAL)
+  fbPostUrl   String?   // for Facebook embed
+  imageUrl    String?
+  isPublished Boolean   @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  reactions   PostReaction[]
+  comments    PostComment[]
+
+  @@index([type])
+  @@index([isPublished])
+}
+
+model PostReaction {
+  id          String   @id @default(cuid())
+  postId      String
+  post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId      String?  // null for anonymous
+  name        String?  // for anonymous
+  type        String   @default("like")  // like | love | care etc.
+  createdAt   DateTime @default(now())
+
+  @@index([postId])
+}
+
+model PostComment {
+  id          String   @id @default(cuid())
+  postId      String
+  post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId      String?
+  name        String?  // for anonymous
+  content     String
+  isApproved  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([postId])
+}
+
+/// Gallery items
+model GalleryItem {
+  id          String   @id @default(cuid())
+  type        String   // "photo" | "video" | "event"
+  title       String?
+  description String?
+  url         String
+  thumbnailUrl String?
+  eventDate   DateTime?
+  isPublished Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  uploadedBy  String?
+  createdAt   DateTime @default(now())
+
+  @@index([type])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MASTER 12: SETTINGS, PERMISSIONS, AUDIT
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Single row of global system settings (id = "global")
+/// All no-code-configurable settings live here.
+model SystemSettings {
+  id                    String   @id @default("global")
+
+  // ── Organization ──
+  siteName              String   @default("বারাকাহ ফাইন্যান্স")
+  siteNameEn            String   @default("Barakah Finance")
+  slogan                String   @default("সুদমুক্ত লেনদেনে সমৃদ্ধি সবার")
+  sloganEn              String   @default("Prosperity Through Interest-Free Transactions")
+  phone                 String?
+  email                 String?
+  address               String?
+  website               String?
+  logoUrl               String?
+  fbPageUrl             String?
+
+  // ── Financial rules ──
+  unitValue             Decimal  @default(2000) @db.Decimal(18, 2)
+  profitMarginDefault   Decimal  @default(10) @db.Decimal(5, 2)  // %
+  defaultProfitMethod   ProfitMethod @default(FINANCED_AMOUNT)
+  memberProfitSharePct  Decimal  @default(60) @db.Decimal(5, 2)
+  charitySharePct       Decimal  @default(5)  @db.Decimal(5, 2)
+  orgSharePct           Decimal  @default(35) @db.Decimal(5, 2)
+
+  // ── Savings rules ──
+  monthlySavingsAmount  Decimal  @default(2000) @db.Decimal(18, 2)
+  savingsDueDay         Int      @default(15)   // 15th of each month
+  savingsWarnDay        Int      @default(10)   // show warning from 10th
+  lateFeePerUnit        Decimal  @default(100)  @db.Decimal(18, 2)
+
+  // ── Installment rules ──
+  installmentGraceDays  Int      @default(5)
+  defaultInstallmentMonths Int   @default(6)
+
+  // ── Qard rules ──
+  maxQardAmount         Decimal  @default(15000) @db.Decimal(18, 2)
+  maxGuarantorClients   Int      @default(3)
+
+  // ── Membership ──
+  formFee               Decimal  @default(100) @db.Decimal(18, 2)
+  registrationOpen      Boolean  @default(true)
+
+  // ── Username policy ──
+  usernameChangeCooldownDays Int  @default(60)
+  usernameMaxChanges    Int      @default(3)  // after 1 year: super admin only
+
+  // ── Withdrawal policy ──
+  withdrawalNoticeDays  Int      @default(30)
+  emergencyWithdrawalRequiresCommittee Boolean @default(true)
+  fullWithdrawalNoticeDays Int   @default(60)
+
+  // ── SMS ──
+  smsApiKey             String?
+  smsApiUrl             String?
+  smsSenderId           String?
+  smsRemainingBalance   Int      @default(0)
+
+  // ── Backup ──
+  backupEnabled         Boolean  @default(true)
+  backupIntervalHours   Int      @default(1)
+  backupRetentionDays   Int      @default(60)
+  lastBackupAt          DateTime?
+
+  // ── 2FA ──
+  superAdminRequires2FA Boolean  @default(true)
+  adminRequires2FA      Boolean  @default(false)
+
+  // ── UI ──
+  noticeScrollSpeed     Int      @default(30)
+  defaultLanguage       String   @default("bn")
+
+  updatedAt             DateTime @updatedAt
+  updatedBy             String?
+}
+
+/// History of configuration changes for Super Admin auditing
+model SettingsHistory {
+  id            String   @id @default(cuid())
+  settingKey    String
+  previousValue String?  // JSON-serialized old value
+  newValue      String?  // JSON-serialized new value
+  changedBy     String
+  reason        String?
+  changedAt     DateTime @default(now())
+
+  @@index([settingKey])
+  @@index([changedAt])
+}
+
+/// Granular permission per user per module per action
+/// Overrides role-based defaults at the individual level
+model UserPermission {
+  id         String  @id @default(cuid())
+  userId     String
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module     String  // "members" | "clients" | "accounts" | "qard" | "projects" etc.
+  action     String  // "view" | "create" | "edit" | "cancel" | "approve" | "export" | "print"
+  isGranted  Boolean @default(false)
+  grantedBy  String?
+  grantedAt  DateTime @default(now())
+
+  @@unique([userId, module, action])
+  @@index([userId])
+}
+
+/// Global immutable audit log — no delete, no edit
+model AuditLog {
+  id          String      @id @default(cuid())
+  userId      String?
+  user        User?       @relation("AuditUser", fields: [userId], references: [id])
+  action      AuditAction
+  module      String
+  recordId    String?
+  oldValue    Json?
+  newValue    Json?
+  reason      String?
+  ipAddress   String?
+  userAgent   String?
+  sessionId   String?
+  createdAt   DateTime    @default(now())
+
+  @@index([userId])
+  @@index([module])
+  @@index([action])
+  @@index([createdAt])
+  @@index([recordId])
+}
+
+/// Live activity feed — real-time monitoring (short retention)
+model ActivityFeed {
+  id          String   @id @default(cuid())
+  userId      String?
+  userName    String?
+  action      String
+  module      String
+  detail      String?
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([module])
+}
+
+/// Push/in-app notifications
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  body        String
+  type        String   // "due_reminder" | "payment_received" | "approval" | "info"
+  isRead      Boolean  @default(false)
+  readAt      DateTime?
+  relatedType String?
+  relatedId   String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+}

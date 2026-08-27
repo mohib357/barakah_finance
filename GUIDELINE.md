@@ -1,546 +1,551 @@
-# বারাকাহ ফাইন্যান্স — সম্পূর্ণ পরিচালনা গাইডলাইন
-> সুদমুক্ত লেনদেনে সমৃদ্ধি সবার
+# বারাকাহ ফাইন্যান্স — সম্পূর্ণ টেকনিক্যাল গাইডলাইন
+# Barakah Finance — Complete Technical Guideline
+
+> **ভাষা / Language:** এই গাইডলাইনটি বাংলা ও ইংরেজি উভয় ভাষায় লেখা হয়েছে।
 
 ---
 
-## সূচিপত্র
+## ১. সিস্টেম ওভারভিউ / System Overview
 
-1. [প্রয়োজনীয় সফটওয়্যার](#১-প্রয়োজনীয-সফটওয়্যার)
-2. [প্রথমবার সেটআপ](#২-প্রথমবার-সেটআপ)
-3. [সার্ভার চালু করা](#৩-সার্ভার-চালু-করা)
-4. [ওয়েবসাইটের অংশসমূহ](#৪-ওয়েবসাইটের-অংশসমূহ)
-5. [অ্যাডমিন প্যানেলে লগইন](#৫-অ্যাডমিন-প্যানেলে-লগইন)
-6. [অ্যাডমিন প্যানেল — সম্পূর্ণ মেনু গাইড](#৬-অ্যাডমিন-প্যানেল--সম্পূর্ণ-মেনু-গাইড)
-7. [সদস্য অনুমোদন প্যানেল (admin.html)](#৭-সদস্য-অনুমোদন-প্যানেল)
-8. [ব্যবহারকারীর ড্যাশবোর্ড](#৮-ব্যবহারকারীর-ড্যাশবোর্ড)
-9. [SMS সার্ভিস](#৯-sms-সার্ভিস)
-10. [ই-কমার্স শপ](#১০-ই-কমার্স-শপ)
-11. [ডেটা ব্যাকআপ ও নিরাপত্তা](#১১-ডেটা-ব্যাকআপ-ও-নিরাপত্তা)
-12. [সমস্যা সমাধান](#১২-সমস্যা-সমাধান)
-13. [API রেফারেন্স](#১৩-api-রেফারেন্স)
+বারাকাহ ফাইন্যান্স একটি শরিয়াহ-সম্মত আর্থিক ব্যবস্থাপনা প্ল্যাটফর্ম। এটি তিনটি প্রধান অংশে বিভক্ত:
 
----
+| অংশ | পাথ | বিবরণ |
+|-----|-----|--------|
+| পাবলিক ওয়েবসাইট | `/` | যেকোনো ভিজিটর দেখতে পারবে |
+| ব্যবহারকারী ড্যাশবোর্ড | `/dashboard` | নিবন্ধিত সদস্য/ব্যবহারকারী |
+| অ্যাডমিন প্যানেল | `/admin` | Admin ও Super Admin |
 
-## ১. প্রয়োজনীয় সফটওয়্যার
-
-ওয়েবসাইটটি চালাতে নিচের সফটওয়্যারগুলো লাগবে:
-
-| সফটওয়্যার | ডাউনলোড লিংক | নোট |
-|---|---|---|
-| **Node.js** (v16+) | https://nodejs.org | ইনস্টল করলে npm আপনাআপনি আসে |
-| যেকোনো ব্রাউজার | Chrome / Firefox / Edge | সাইট দেখার জন্য |
-
-> আপনার কম্পিউটারে Node.js v24.18.0 ইতিমধ্যে ইনস্টল আছে।
-
----
-
-## ২. প্রথমবার সেটআপ
-
-শুধুমাত্র **একবার** করতে হবে:
+**Public URL Structure (clean slugs — no file extensions):**
 
 ```
-1. Windows Explorer বা File Manager খুলুন।
-2. এই ফোল্ডারে যান: C:\Project\barakah_finance\backend
-3. ওই ফোল্ডারে Command Prompt বা Terminal খুলুন।
-   (ফোল্ডারে Shift + Right Click → "Open command window here")
-4. নিচের কমান্ডটি টাইপ করুন এবং Enter দিন:
-
-   npm install
-
-5. সফল হলে দেখাবে: "up to date, audited 125 packages"
+barakahfinancebd.com/           → Landing Page
+barakahfinancebd.com/gallery    → Gallery
+barakahfinancebd.com/timeline   → Timeline / Posts
+barakahfinancebd.com/learn-more → About / Info pages
+barakahfinancebd.com/shop       → E-Commerce
+barakahfinancebd.com/shop/mobile → Product category
+barakahfinancebd.com/dashboard  → User Dashboard
+barakahfinancebd.com/profile    → User Profile
+barakahfinancebd.com/admin      → Admin Panel
+barakahfinancebd.com/{username} → Public member profile (e.g. /mohib357)
 ```
 
 ---
 
-## ৩. সার্ভার চালু করা
+## ২. টেকনোলজি স্ট্যাক / Technology Stack
 
-**প্রতিবার ওয়েবসাইট ব্যবহার করার আগে সার্ভার চালু রাখতে হবে।**
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 14 (App Router) |
+| Language | TypeScript |
+| Frontend | React 18, Tailwind CSS, Shadcn UI / Radix Primitives |
+| Database | PostgreSQL (ACID-compliant relational DB) |
+| ORM | Prisma ORM |
+| Auth | NextAuth.js v4 (Credentials + JWT) |
+| 2FA | otplib (TOTP) + SMS OTP (bulksmsbd.net) |
+| Password | bcryptjs (salt rounds = 12) |
+| Validation | Zod |
+| Charts | Chart.js + react-chartjs-2 |
+| Image | sharp (server-side resize/compress) |
+| Print | react-to-print |
+| Icons | Lucide React |
 
-### পদ্ধতি ১ — সাধারণ (Recommended)
+---
+
+## ৩. ডাটাবেস আর্কিটেকচার / Database Architecture
+
+### ৩.১ কোথায় ও কিভাবে ডাটা সংরক্ষণ হয়
 
 ```
-1. C:\Project\barakah_finance\backend ফোল্ডারে Terminal/CMD খুলুন।
-2. কমান্ড দিন:
-
-   node server.js
-
-3. নিচের বার্তা দেখলে সার্ভার চালু:
-   ✅ বারাকাহ ফাইন্যান্স সার্ভার চালু: http://localhost:3001
-   📊 API: http://localhost:3001/api/health
+PostgreSQL Database
+└── schema: public
+    ├── Users            — সব ব্যবহারকারীর মূল পরিচয়
+    ├── UserProfile      — বিস্তারিত ব্যক্তিগত তথ্য
+    ├── UserKYC          — NID, ছবি (সংবেদনশীল, আলাদা access)
+    ├── UserRole         — একাধিক role একজনের
+    ├── UserSession      — সক্রিয় session ট্র্যাকিং
+    ├── OTPRecord        — OTP hash সহ TTL
+    ├── Member           — সদস্যের আর্থিক অংশগ্রহণ
+    ├── SavingsRecord    — প্রতি মাসের সঞ্চয়
+    ├── CapitalMovement  — মূলধনের প্রতিটি পরিবর্তন (profit calculation)
+    ├── Customer         — পণ্য কিস্তির গ্রাহক
+    ├── Product          — পণ্য ক্যাটালগ
+    ├── Order            — কিস্তি অর্ডার (price snapshot সহ)
+    ├── Installment      — প্রতিটি কিস্তি schedule
+    ├── Payment          — প্রতিটি পেমেন্ট (immutable)
+    ├── Receipt          — রসিদ রেজিস্ট্রি (immutable)
+    ├── FinancialAccount — Cash/Bank/bKash/Nagad/Rocket আলাদা
+    ├── IncomeEntry      — আয়ের রেকর্ড
+    ├── ExpenseEntry     — ব্যয়ের রেকর্ড
+    ├── LedgerEntry      — সাধারণ খাতা (auto-populated)
+    ├── FundTransfer     — ফান্ড-টু-ফান্ড transfer
+    ├── Project          — বিনিয়োগ প্রকল্প
+    ├── FixedAsset       — স্থায়ী সম্পত্তি
+    ├── ProfitDistribution — লাভ বণ্টন cycle
+    ├── QardApplication  — করজে হাসানা আবেদন ও schedule
+    ├── CharityFundraising / CharityExpenditure
+    ├── CommitteeSession / CommitteeMember
+    ├── SMSRecord / SMSTemplate
+    ├── Notice / Badge / Review / Post / GalleryItem
+    ├── SystemSettings   — সিঙ্গেল রো সিস্টেম কনফিগ
+    ├── UserPermission   — granular permission override
+    ├── AuditLog         — immutable audit trail
+    └── ActivityFeed     — live activity monitor
 ```
 
-### পদ্ধতি ২ — স্বয়ংক্রিয় পুনরায় চালু (Development)
+### ৩.২ গুরুত্বপূর্ণ নিয়ম / Critical Rules
+
+1. **আর্থিক রেকর্ড হার্ড-ডিলিট করা যাবে না।** Payment, Receipt, Installment, Savings, QardApplication — এগুলো কখনো `DELETE` হবে না। ভুল হলে Reversal বা Cancellation entry করতে হবে।
+2. **Receipt Number পুনরায় ব্যবহার করা যাবে না।** Receipt cancelled হলে নতুন নম্বর তৈরি হবে।
+3. **Decimal arithmetic:** সব আর্থিক calculation `Decimal.js` ব্যবহার করবে — JavaScript-এর floating-point ব্যবহার করবে না।
+4. **Transaction atomicity:** একটি payment সফল না হলে ledger entry হবে না। Prisma transaction (`$transaction()`) ব্যবহার করতে হবে।
+5. **Late fee → Charity fund:** বিলম্ব ফি সংগঠনের আয় হবে না, শুধুমাত্র Charity fund-এ যাবে।
+
+### ৩.৩ ডাটাবেস সংযোগ
+
+`.env.local` ফাইলে:
+```env
+DATABASE_URL="postgresql://USERNAME:PASSWORD@localhost:5432/barakah_finance?schema=public"
+```
+
+---
+
+## ৪. সিস্টেমে প্রবেশের নির্দেশিকা / Login & Access Guide
+
+### ৪.১ সবাই একই লগইন পেজ ব্যবহার করবে: `/login`
+
+| ব্যবহারকারীর ধরন | Default Credentials | Login করার পর |
+|------------------|--------------------|--------------:|
+| Super Admin | username: `admin`, password: `admin1234` | → `/admin` |
+| Admin | admin তৈরি করে দেবে | → `/admin` |
+| Member | নিজে signup → OTP verify → `/dashboard` |
+| Customer | Member হতে পারে, অথবা আলাদা | → `/dashboard` |
+| সাধারণ User | Signup করে verify করলে | → `/dashboard` |
+
+> ⚠️ **প্রথম লগইনের পরেই `admin` ব্যবহারকারীর পাসওয়ার্ড পরিবর্তন করুন।**
+
+### ৪.২ Super Admin → 2FA বাধ্যতামূলক
+
+Super Admin লগইনের পর TOTP বা SMS OTP দিয়ে verify করতে হবে। `/login/2fa` পেজে নিয়ে যাবে।
+
+**TOTP Setup (Google Authenticator):**
+1. Admin Panel → Settings → Security → Setup 2FA
+2. QR code স্ক্যান করুন (Google Authenticator / Authy)
+3. একটি 6-digit কোড দিয়ে confirm করুন
+
+---
+
+## ৫. ব্যবহারকারীর রোডম্যাপ / User Roadmap
+
+### ৫.১ নতুন সদস্য হওয়ার প্রক্রিয়া
 
 ```
+1. barakahfinancebd.com → "সদস্য হতে আবেদন করুন"
+2. Signup → Phone/Email + Password
+3. OTP verify (SMS)
+4. Profile তৈরি (নাম, ঠিকানা, ছবি, NID)
+5. Form fill করুন (5-step): Personal → Nominee → Investment → Photo/Sign → Review
+6. Submit → Pending (Admin review)
+7. Admin approve করলে → Payment request
+8. Payment (bKash/Nagad/Bank/Cash)
+9. Member ID activate → SMS confirmation
+```
+
+### ৫.২ পণ্য কিস্তিতে কেনার প্রক্রিয়া
+
+```
+1. /shop → পণ্য browse করুন
+2. Login থাকলে → "কিস্তিতে কিনুন" → Application
+3. KYC verified থাকতে হবে
+4. Admin/Committee → approve
+5. Down payment করুন
+6. Installment schedule auto-generate
+7. প্রতি মাসে নির্দিষ্ট তারিখে কিস্তি দিন
+8. Dashboard-এ due দেখতে পারবেন
+```
+
+### ৫.৩ করজে হাসানার প্রক্রিয়া
+
+```
+1. Dashboard → "Apply Qard-e-Hasana"  (অথবা /learn-more → করজে হাসানা)
+2. কারণ, পরিমাণ, জামিনদার (Member) উল্লেখ করুন
+3. Committee review → Admin approve
+4. Disbursement → বিকাশ/ক্যাশ
+5. পরবর্তী মাস থেকে কিস্তিতে পরিশোধ
+6. QH-001, QH-002... serial code
+```
+
+### ৫.৪ অ্যাডমিনের কাজের তালিকা
+
+```
+Admin Dashboard
+├── Pending Membership Applications → Review → Approve/Reject
+├── Pending KYC → Review NID → Verify/Reject
+├── Pending Orders → Approve installment plan
+├── Pending Qard Applications → Committee approval
+├── Collect Payments → Member/Client এর আইডি দিয়ে
+├── Add Income/Expense
+├── Generate Reports → A4 print / PDF / Excel
+├── Send SMS (individual/group/bulk)
+├── Manage Products (add/edit/stock)
+├── Website Content (notices, badges, reviews, gallery)
+└── Settings (profit %, late fee, unit value, SMS API)
+```
+
+---
+
+## ৬. লোকাল সার্ভারে চালানো / Local Development Setup
+
+### ৬.১ Prerequisites
+
+- Node.js ≥ 18.17.0
+- PostgreSQL ≥ 14 (locally or Docker)
+- npm ≥ 9
+
+### ৬.২ Step-by-step
+
+```powershell
+# ১. নতুন Next.js প্রজেক্টে যান
+cd C:\Project\barakah_finance\nextjs
+
+# ২. Dependencies install করুন
+npm install
+
+# ৩. Environment variables তৈরি করুন
+Copy-Item .env.example .env.local
+# .env.local ফাইলে DATABASE_URL, NEXTAUTH_SECRET, JWT_SECRET সেট করুন
+
+# ৪. PostgreSQL এ database তৈরি করুন
+# psql -U postgres -c "CREATE DATABASE barakah_finance;"
+
+# ৫. Prisma schema migrate করুন
+npm run db:push      # development-এ (creates tables directly)
+# অথবা
+npm run db:migrate   # migration file তৈরি করে (production-safe)
+
+# ৬. Default data seed করুন
+npm run db:seed
+
+# ৭. Development server চালু করুন
 npm run dev
-```
-(nodemon ব্যবহার করে — ফাইল পরিবর্তনে স্বয়ংক্রিয় রিস্টার্ট হয়)
+# → http://localhost:3000 খুলবে
 
-### সার্ভার বন্ধ করা
-```
-Terminal-এ Ctrl + C চাপুন।
+# ৮. (Optional) Prisma Studio — DB দেখার GUI
+npm run db:studio
+# → http://localhost:5555
 ```
 
-### সার্ভার চালু আছে কিনা যাচাই করুন
-ব্রাউজারে যান: **http://localhost:3001/api/health**
-দেখাবে: `{"status":"ok","message":"বারাকাহ ফাইন্যান্স API চলছে"}`
+### ৬.৩ ডাটা কোথায় সংরক্ষণ হয়
+
+- **Database:** PostgreSQL এ, টেবিল আকারে। ডিফল্টভাবে: `localhost:5432/barakah_finance`
+- **Uploaded files:** `nextjs/public/uploads/` ফোল্ডারে (photos, signatures, NID scans)
+  - Profile photos: `public/uploads/photos/{userId}.webp`
+  - Signatures: `public/uploads/signatures/{userId}.webp`
+  - NID: `public/uploads/kyc/{userId}-nid-front.webp`
+- **Backups:** `nextjs/backups/` ফোল্ডারে, `backup_YYYY-MM-DD_HH-MM-SS.sql` নামে
+- **Logs:** Console / structured logging (Phase 2-তে log file/service যুক্ত হবে)
+
+> **Legacy system:** পুরনো Express.js + LowDB সিস্টেম `backend/db/data.json`-এ সব কিছু রাখে। নতুন Next.js সিস্টেমে migration-এর সময় এই JSON ফাইল থেকে ডাটা import করতে হবে।
 
 ---
 
-## ৪. ওয়েবসাইটের অংশসমূহ
+## ৭. অনলাইনে পাবলিশ করার নির্দেশিকা / Deployment Guide (Namecheap cPanel)
 
-সার্ভার চালু রাখলে ব্রাউজারে নিচের URL গুলোতে যেতে পারবেন:
+### ৭.১ Prerequisites
 
-| পেইজ | URL | কারা ব্যবহার করবে |
-|---|---|---|
-| **মূল পাবলিক পেইজ** | http://localhost:3001 | সবার জন্য উন্মুক্ত |
-| **মূল পাবলিক পেইজ (সরাসরি)** | http://localhost:3001/index.html | সবার জন্য |
-| **সদস্য আবেদন ফরম** | http://localhost:3001/form.html | নতুন সদস্যদের জন্য |
-| **ব্যবহারকারী ড্যাশবোর্ড** | http://localhost:3001/pages/dashboard.html | লগইন করা ব্যবহারকারী |
-| **ব্যবহারকারী প্রোফাইল** | http://localhost:3001/pages/profile.html | লগইন করা ব্যবহারকারী |
-| **কিস্তি হিসাব** | http://localhost:3001/pages/ledger.html | লগইন করা ব্যবহারকারী |
-| **শপ/ই-কমার্স** | http://localhost:3001/pages/shop.html | লগইন করা ব্যবহারকারী |
-| **গ্যালারি** | http://localhost:3001/pages/gallery.html | সবার জন্য |
-| **টাইমলাইন** | http://localhost:3001/pages/timeline.html | সবার জন্য |
-| **আরও জানুন** | http://localhost:3001/pages/learn-more.html | সবার জন্য |
-| **অ্যাডমিন প্যানেল (মেইন)** | http://localhost:3001/admin/panel.html | শুধু অ্যাডমিন |
-| **সদস্য আবেদন অনুমোদন** | http://localhost:3001/admin/admin.html | শুধু অ্যাডমিন/কমিটি |
-| **শপ অ্যাডমিন** | http://localhost:3001/admin/shop_admin.html | শুধু অ্যাডমিন |
+- Namecheap cPanel অ্যাক্সেস (আপনাদের আছে)
+- Domain: `barakahfinancebd.com`
+- PostgreSQL database (cPanel → MySQL Databases-এ PostgreSQL থাকলে; না থাকলে Railway.app বা Supabase ব্যবহার করুন)
 
----
-
-## ৫. অ্যাডমিন প্যানেলে লগইন
-
-### ডিফল্ট সুপার অ্যাডমিন তথ্য
-
-| তথ্য | মান |
-|---|---|
-| **ইউজারনেম** | `admin` |
-| **পাসওয়ার্ড** | `admin1234` |
-| **ইমেইল** | admin@barakah.com |
-| **ফোন** | 01700000000 |
-
-> **গুরুত্বপূর্ণ:** প্রথমবার লগইনের পরেই পাসওয়ার্ড পরিবর্তন করুন।
-
-### লগইন করার ধাপ
+### ৭.২ Option A — cPanel Node.js Selector (সহজ পদ্ধতি)
 
 ```
-১. ব্রাউজারে যান: http://localhost:3001/admin/panel.html
-২. লগইন বক্সে ইউজারনেম: admin লিখুন।
-৩. পাসওয়ার্ড: admin1234 লিখুন।
-৪. "লগইন" বাটনে ক্লিক করুন।
-৫. সফল হলে ড্যাশবোর্ড দেখাবে।
+১. cPanel → "Setup Node.js App"
+২. Node.js version: 18.x বা 20.x সিলেক্ট করুন
+৩. Application root: /home/username/nextjs
+৪. Application startup file: server.js
+   (Next.js-এর জন্য custom server.js লাগবে অথবা pm2 ব্যবহার করুন)
+৫. Application URL: barakahfinancebd.com
+৬. Environment variables সেট করুন:
+   NODE_ENV=production
+   DATABASE_URL=postgresql://...
+   NEXTAUTH_SECRET=...
+   NEXTAUTH_URL=https://barakahfinancebd.com
+   JWT_SECRET=...
+   SMS_API_KEY=...
 ```
 
-### পাসওয়ার্ড পরিবর্তন
-
-```
-১. অ্যাডমিন প্যানেলে লগইন করুন।
-২. বাম সাইডবার → Basic Settings → Admin Management
-৩. নিজের অ্যাকাউন্ট খুঁজুন।
-৪. Edit করে নতুন পাসওয়ার্ড সেট করুন।
-```
-
-### সদস্য আবেদন অনুমোদন প্যানেলে লগইন
-
-```
-১. URL: http://localhost:3001/admin/admin.html
-২. ভূমিকা (Role) সিলেক্ট করুন (সভাপতি / সম্পাদক / কমিটি ইত্যাদি)
-৩. পাসওয়ার্ড: admin123 দিন।
-৪. লগইন বাটনে ক্লিক করুন।
+**Build step:**
+```bash
+npm install
+npm run db:migrate:prod
+npm run db:seed
+npm run build
+npm start
 ```
 
----
+### ৭.৩ Option B — Railway.app বা Render.com (প্রস্তাবিত)
 
-## ৬. অ্যাডমিন প্যানেল — সম্পূর্ণ মেনু গাইড
+যদি cPanel-এ Node.js সমস্যা হয়:
 
-URL: **http://localhost:3001/admin/panel.html**
+1. **Database:** Railway.app → New Project → PostgreSQL → Connection URL কপি করুন
+2. **App:** Railway.app → New → GitHub Repo → Deploy
+3. **Environment Variables:** Railway dashboard থেকে সেট করুন
+4. **Custom Domain:** barakahfinancebd.com → CNAME → Railway URL পয়েন্ট করুন
 
----
+### ৭.৪ Namecheap DNS Settings
 
-### ড্যাশবোর্ড (Dashboard)
-সংগঠনের সামগ্রিক চিত্র এখানে দেখা যাবে:
-- মোট সদস্য, ফান্ড, আয়, ব্যয়, ডিউ
-- SMS ব্যালেন্স
-- আজকের জন্মদিন
-- পেন্ডিং অনুমোদন
-
----
-
-### Basic Settings
-#### Admin Management
-- **Create Admin:** নতুন অ্যাডমিন/স্টাফ তৈরি করুন।
-  নাম, ইউজারনেম, পাসওয়ার্ড, ইমেইল, পদবী দিয়ে সেভ করুন।
-- **Manage Page Access:** কোন অ্যাডমিন কোন মেনু দেখতে পাবে তা নির্ধারণ করুন।
-  অ্যাডমিন সিলেক্ট করুন → টিক বক্সে পারমিশন দিন/উঠান → Save।
-- **Active/Deactivate:** যেকোনো অ্যাকাউন্ট লক বা আনলক করুন।
-
-#### Economy Information
-সংগঠনের নাম, স্লোগান, ঠিকানা, ইমেইল, ওয়েবসাইট, লোগো পরিবর্তন করুন।
-
-#### Economy Calendar
-তারিখভিত্তিক নোটিশ সেট করুন যা হোম পেইজে দেখাবে।
-
----
-
-### Member (সদস্য)
-#### Member List
-- সকল সদস্যের তালিকা টেবিল আকারে।
-- যেকোনো সদস্যের নামে ক্লিক করলে বিস্তারিত প্রোফাইল।
-- সার্চ ও ফিল্টার সুবিধা আছে।
-
-#### Add New Member
-ম্যানুয়ালি নতুন সদস্য যুক্ত করুন:
 ```
-১. নাম, পিতার নাম, ঠিকানা, মোবাইল, জন্ম তারিখ পূরণ করুন।
-২. নমিনির তথ্য দিন।
-৩. "Save & Continue" ক্লিক করুন।
-৪. বিনিয়োগের ধরন সিলেক্ট করুন (মাসিক সঞ্চয় / এককালীন / প্রজেক্ট)।
-৫. সেভ করুন।
+Type    | Host  | Value
+--------|-------|---------------------------
+A       | @     | [Server IP]
+A       | www   | [Server IP]
+CNAME   | api   | [Railway/Render URL]
 ```
 
-#### Applications (সদস্য আবেদন)
-অনলাইনে আবেদন করা সদস্যদের তালিকা। Pending আবেদন অনুমোদন বা বাতিল করুন।
+### ৭.৫ SSL / HTTPS
+
+- cPanel → Let's Encrypt SSL → Force HTTPS চালু করুন
+- অথবা Cloudflare Proxy ব্যবহার করুন (বিনামূল্যে SSL + CDN + DDoS protection)
 
 ---
 
-### Client/Product (গ্রাহক ও পণ্য কিস্তি)
-#### Client List
-কিস্তিতে পণ্য নেওয়া গ্রাহকদের তালিকা। ক্লিক করে বিস্তারিত দেখুন।
+## ৮. সিকিউরিটি সিস্টেম / Security System
 
-#### Client Fund
-পণ্য কিস্তি সেবার মোট ফান্ড পরিমাণ নির্ধারণ করুন (ডিফল্ট: ১০ লক্ষ টাকা)।
+### ৮.১ Authentication Security
 
-#### Paid Clients / Due Clients
-- Paid: যাদের সব কিস্তি পরিশোধ হয়েছে।
-- Due: যাদের কিস্তি বাকি আছে। A4 প্রিন্ট করা যাবে।
+| Feature | Implementation |
+|---------|---------------|
+| Password hashing | bcrypt (12 salt rounds) |
+| JWT expiry | 7 days |
+| Session revocation | UserSession table |
+| Super Admin 2FA | TOTP (otplib) — mandatory |
+| OTP hashing | bcrypt (8 rounds) |
+| OTP TTL | 10 minutes |
+| OTP max attempts | 5 before invalidation |
+| Login rate limit | 10 requests/minute/IP (edge middleware) |
+| Brute force | Account lock after repeated failures |
 
-#### Add New Client
+### ৮.২ Data Security
+
+| Feature | Implementation |
+|---------|---------------|
+| HTTPS enforcement | HSTS header (production) |
+| SQL injection | Prisma parameterized queries — no raw SQL |
+| XSS protection | X-XSS-Protection header + React's auto-escaping |
+| CSRF | NextAuth built-in CSRF token |
+| Clickjacking | X-Frame-Options: SAMEORIGIN |
+| Content sniffing | X-Content-Type-Options: nosniff |
+| Input validation | Zod schemas on all API routes |
+| File upload | Sharp resizes + validates file type/size before saving |
+| KYC data | Access-controlled (Admin/authorized staff only) |
+| NID number | Never displayed fully in public profile |
+
+### ৮.৩ Database Security
+
+- PostgreSQL user-এ minimum permissions (SELECT, INSERT, UPDATE — no DROP/CREATE)
+- `DATABASE_URL` environment variable-এ রাখুন (never in code)
+- Automated backup: hourly, retained 60 days
+- Backup files encrypted (Phase 2-তে AES-256)
+
+### ৮.৪ API Security
+
+- সব `/api/*` route-এ Zod validation
+- `verifySession()` helper — Server Actions ও API routes-এ
+- Rate limiting at edge middleware
+- CORS: production-এ শুধুমাত্র `ALLOWED_ORIGINS`
+
+---
+
+## ৯. ব্যাকআপ সিস্টেম / Backup System
+
 ```
-১. গ্রাহকের নাম, পিতার নাম, ঠিকানা, NID, মোবাইল পূরণ করুন।
-২. পণ্যের ক্রয়মূল্য দিন → ১০% লাভ স্বয়ংক্রিয়ভাবে যুক্ত হবে।
-৩. কিস্তির মাস সিলেক্ট করুন।
-৪. জামিনদার সদস্য তালিকা থেকে সিলেক্ট করুন।
-৫. স্বাক্ষীর তথ্য দিন।
-৬. "Save & Continue" — কিস্তির তফসিল স্বয়ংক্রিয় তৈরি হবে।
-৭. প্রিভিউ দেখুন → নিশ্চিত হলে সেভ করুন।
+প্রতি ঘণ্টায় auto backup (cron job):
+  → pg_dump → backups/backup_YYYY-MM-DD_HH-MM-SS.sql
+  → gzip compress করুন
+
+রিটেনশন পলিসি:
+  - লাস্ট 60 দিনের backup রাখা হবে
+  - 60 দিনের পুরনো backup auto-delete
+
+ম্যানুয়াল ব্যাকআপ:
+  Admin Panel → Backup → Download Now
+
+Restore:
+  Admin Panel → Backup → Restore from file
+  (Super Admin only)
 ```
 
----
-
-### Accounts (হিসাব)
-#### Settings → Add Payment Rules
-নতুন পেমেন্ট নিয়ম তৈরি করুন (যেমন: ফরম ফি, মাসিক সঞ্চয়, বিশেষ চাঁদা)।
-
-#### Member Payment Collection
-```
-১. সদস্যের আইডি বা নাম দিয়ে সার্চ করুন।
-২. পে-অর্ডার সিলেক্ট করুন।
-৩. টাকার পরিমাণ লিখুন।
-৪. পেমেন্ট মেথড সিলেক্ট করুন (ক্যাশ/বিকাশ/নগদ ইত্যাদি)।
-৫. SMS পাঠানোর টিক দিয়ে "Pay" করুন।
-৬. রসিদ প্রিন্ট করুন।
-```
-
-#### Client Installment Collection
-Member Payment-এর মতোই, তবে গ্রাহকের কিস্তি সংগ্রহের জন্য।
-
-#### Other Income / Expense
-অন্যান্য আয় ও ব্যয় ম্যানুয়ালি এন্ট্রি করুন।
-
-#### Account Summary
-সম্পূর্ণ হিসাবের সারসংক্ষেপ — গ্রাফসহ।
-
-#### Member Due / Client Due Reports
-মেয়াদোত্তীর্ণ বকেয়ার তালিকা। A4 প্রিন্ট করা যাবে।
-
----
-
-### Project (প্রজেক্ট)
-- **Project List:** সব প্রজেক্টের তালিকা।
-- **Running Project:** চলমান প্রজেক্ট।
-- **Create New Project:** নতুন প্রজেক্টের নাম, ধরন, পরিমাণ, মেয়াদ দিয়ে তৈরি করুন।
-- **All Project Ledger:** প্রজেক্টের আয়-ব্যয় হিসাব।
-
----
-
-### Fixed Asset (স্থায়ী সম্পদ)
-- **Asset List:** সব সম্পদের তালিকা।
-- **Create New Asset:** নতুন সম্পদ (কম্পিউটার, অফিস সামগ্রী ইত্যাদি) যুক্ত করুন।
-- **Asset Ledger:** সম্পদের আয়-ব্যয় হিসাব।
-
----
-
-### Qard-e-Hasana (করজে হাসানা)
-- **QH List:** করজ নেওয়া ব্যক্তিদের তালিকা।
-- **QH Fund:** করজে হাসানার মোট ফান্ড।
-- **QH Collection:** কোনো ব্যক্তির করজের কিস্তি সংগ্রহ করুন।
-- **Create Qard:** নতুন করজ তৈরি করুন। সদস্য আইডি দিলে তথ্য অটো ফিলআপ হবে।
-
----
-
-### Charity (চ্যারিটি)
-- **Charity Fundraising:** চ্যারিটি ফান্ডে আয়ের রেকর্ড।
-- **Charity Expenditure:** চ্যারিটি থেকে ব্যয়ের রেকর্ড।
-- **Charity Ledger:** সম্পূর্ণ চ্যারিটি হিসাব।
-
----
-
-### SMS
-বিস্তারিত নিচে [SMS সার্ভিস](#৯-sms-সার্ভিস) অংশে দেখুন।
-
----
-
-### Committee (কমিটি)
-- **Running Committee:** বর্তমান কমিটির তালিকা।
-- **Old Committee:** পুরাতন কমিটি।
-- **Add Committee:** নতুন কমিটি সদস্য যুক্ত করুন।
-- **Committee Rules:** কমিটির নিয়মকানুন ও অনুমোদনের নিয়ম সেট করুন।
-
----
-
-### Activities and Transactions
-লাইভ মনিটরিং — কে কী করছে রিয়েল-টাইমে দেখুন। ফিল্টার করা যাবে।
-
----
-
-## ৭. সদস্য অনুমোদন প্যানেল
-
-URL: **http://localhost:3001/admin/admin.html**
-
-এই প্যানেলটি বিশেষভাবে সদস্য আবেদন অনুমোদনের জন্য।
-
-### কিভাবে অনুমোদন দেবেন:
-```
-১. URL-এ যান।
-২. ভূমিকা সিলেক্ট করুন (যেমন: সভাপতি)।
-৩. পাসওয়ার্ড: admin123 দিয়ে লগইন করুন।
-৪. পেন্ডিং আবেদনের তালিকা দেখাবে।
-৫. যেকোনো আবেদনে ক্লিক করে বিস্তারিত দেখুন।
-৬. "অনুমোদন দিন" বা "বাতিল করুন" বাটনে ক্লিক করুন।
-৭. বাতিল করলে কারণ লিখুন।
+**Backup automation setup (cron):**
+```bash
+# crontab -e
+0 * * * * cd /home/username/nextjs && node scripts/backup.js >> /var/log/backup.log 2>&1
 ```
 
 ---
 
-## ৮. ব্যবহারকারীর ড্যাশবোর্ড
+## ১০. ব্যবসায়িক নিয়ম / Business Logic Reference
 
-URL: **http://localhost:3001/pages/dashboard.html**
+### ১০.১ Profit Distribution Formula
 
-### নতুন ব্যবহারকারী রেজিস্ট্রেশন:
 ```
-১. মূল পেইজে (index.html) যান।
-২. নেভবারে "লগইন/সাইনআপ" ক্লিক করুন।
-৩. "সাইনআপ" ট্যাব সিলেক্ট করুন।
-৪. নাম, মোবাইল, পাসওয়ার্ড পূরণ করুন।
-৫. OTP যাচাই করুন।
-৬. প্রোফাইল সম্পন্ন করুন।
-```
+Net Profit = Business Revenue − Cost of Goods − Operational Expense
 
-### সদস্যপদ আবেদন:
-```
-১. লগইন করুন।
-২. "সদস্য হতে আবেদন করুন" বাটনে ক্লিক করুন।
-৩. ফরম পূরণ করুন (প্রোফাইলের তথ্য অটো আসবে)।
-৪. ছবি ও NID আপলোড করুন।
-৫. বিনিয়োগের ধরন ও পরিমাণ সিলেক্ট করুন।
-৬. সাবমিট করুন।
-৭. অ্যাডমিন অনুমোদন দিলে SMS নোটিফিকেশন পাবেন।
+যদি Net Profit > 0:
+  Member/Investor Pool = Net Profit × 60%
+  Charity Fund         = Net Profit × 5%
+  Organization Fund    = Net Profit × 35%
+
+প্রতিটি সদস্যের share:
+  Weighted Capital = Total Capital × (Active Days / Total Days)
+  Share = (Member's Weighted Capital / Total Weighted Capital) × Member Pool
 ```
 
----
+### ১০.২ Installment Calculation (Method B — Default)
 
-## ৯. SMS সার্ভিস
-
-### SMS API সেটআপ
-বর্তমানে আপনার API তথ্য database-এ সেভ করা আছে:
-- **API Key:** `PEORenxMbnajRYOPGnsD`
-- **Sender ID:** `8809617611021`
-- **Provider:** [bulksmsbd.net](http://bulksmsbd.net)
-
-### অ্যাডমিন প্যানেল থেকে SMS সেটআপ পরিবর্তন:
 ```
-১. অ্যাডমিন প্যানেলে লগইন করুন।
-২. SMS মেনু → SMS Settings।
-৩. API Key, Sender ID আপডেট করুন।
-৪. Save করুন।
+Financed Amount = Purchase Cost − Down Payment
+Profit         = Financed Amount × Profit Rate
+Total Payable  = Purchase Cost + Profit
+
+Regular Installment = floor(Total Payable / N)  ← rounded down
+Last Installment    = Total Payable − (Regular × (N−1))  ← residual adjustment
+
+Sum of all installments = Total Payable (guaranteed)
 ```
 
-### SMS ব্যালেন্স দেখা:
+### ১০.৩ Late Fee Rule
+
 ```
-অ্যাডমিন প্যানেল → SMS → SMS Recharge
-```
-অথবা সরাসরি API দিয়ে:
-```
-http://bulksmsbd.net/api/getBalanceApi?api_key=PEORenxMbnajRYOPGnsD
+Late Fee = (Number of Units) × ৳100 per month
+Unit = ৳2,000 of savings
+
+⚠️ Late fee সংগঠনের আয় নয় — সরাসরি Charity Fund-এ জমা হবে।
 ```
 
-### SMS পাঠানো (অ্যাডমিন প্যানেল থেকে):
-```
-১. SMS → Send SMS।
-২. গ্রুপ সিলেক্ট করুন (সদস্য/গ্রাহক/কমিটি/সবাই)।
-৩. বার্তা লিখুন।
-৪. মেসেজ কাউন্ট ও ব্যালেন্স চেক দেখুন।
-৫. পপআপে মোট কতটি মেসেজ পাঠাবেন নিশ্চিত করুন।
-৬. Submit।
-```
+### ১০.৪ Unit System
 
-### OTP পাঠানোর ফরম্যাট:
 ```
-Your Barakah Finance OTP is XXXX
-```
+1 Unit = ৳2,000
+Fractional units allowed: ৳5,000 = 2.5 Units
 
-### SMS টেমপ্লেট ক্যাটাগরি:
-| ক্যাটাগরি | বিবরণ |
-|---|---|
-| `payment_received` | পেমেন্ট প্রাপ্তির নিশ্চয়তা |
-| `due_reminder` | কিস্তি মনে করিয়ে দেওয়া |
-| `overdue` | মেয়াদোত্তীর্ণ বকেয়া |
-| `membership_approved` | সদস্যপদ অনুমোদন |
-| `qard_approved` | করজে হাসানা অনুমোদন |
-| `birthday` | জন্মদিনের শুভেচ্ছা |
-| `notice` | সাধারণ নোটিশ |
-
-### Dynamic Variable ব্যবহার:
-```
-প্রিয় {name}, আপনার {amount} টাকার কিস্তি {due_date} তারিখে প্রদেয়।
-```
-`{name}`, `{amount}`, `{due_date}`, `{member_id}`, `{receipt_id}` — এগুলো স্বয়ংক্রিয় পরিবর্তন হয়।
-
----
-
-## ১০. ই-কমার্স শপ
-
-### পণ্য ম্যানেজমেন্ট:
-URL: **http://localhost:3001/admin/shop_admin.html**
-```
-১. নতুন পণ্য যুক্ত করুন: Add Product।
-২. নাম, ক্যাটাগরি, মূল্য, ছবি, বিবরণ দিন।
-৩. স্টক আছে কিনা সেট করুন।
-৪. Featured Product হিসেবে মার্ক করুন (হোম পেইজে দেখাবে)।
-```
-
-### গ্রাহক পণ্য অর্ডার করলে:
-```
-১. অ্যাডমিন প্যানেল → Client/Product → Client List।
-২. অনুমোদন পেন্ডিং অর্ডার দেখাবে।
-৩. তথ্য যাচাই করুন → Approve/Reject করুন।
-৪. অনুমোদন হলে কিস্তির তফসিল স্বয়ংক্রিয় তৈরি হবে।
+Unit Value change:
+  - শুধুমাত্র Super Admin পারবেন
+  - Change-এর পরে শুধু নতুন transaction-এ প্রযোজ্য
+  - পুরনো historical calculation পরিবর্তন হবে না
 ```
 
 ---
 
-## ১১. ডেটা ব্যাকআপ ও নিরাপত্তা
+## ১১. ডেভেলপার ইনস্ট্রাকশন / Developer Instructions
 
-### ডেটা কোথায় সংরক্ষিত হয়:
+### ১১.১ প্রজেক্ট স্ট্রাকচার
+
 ```
-C:\Project\barakah_finance\backend\db\data.json
-```
-এই একটি ফাইলেই পুরো সিস্টেমের সব ডেটা আছে।
-
-### ম্যানুয়াল ব্যাকআপ:
-```
-১. সার্ভার বন্ধ করুন (Ctrl+C)।
-২. data.json ফাইলটি কপি করুন।
-৩. নাম দিন: data_backup_2026-08-26.json
-৪. আলাদা ড্রাইভ বা Google Drive-এ সেভ করুন।
-৫. সার্ভার আবার চালু করুন।
-```
-
-### গুরুত্বপূর্ণ নিরাপত্তা নির্দেশনা:
-- প্রথম লগইনের পরই ডিফল্ট পাসওয়ার্ড (`admin1234`) পরিবর্তন করুন।
-- `data.json` ফাইলটি কখনো পাবলিকলি শেয়ার করবেন না।
-- নিয়মিত (সপ্তাহে একবার) ম্যানুয়াল ব্যাকআপ নিন।
-- প্রতিদিন রাতে ব্যাকআপ নেওয়ার অভ্যাস করুন।
-
----
-
-## ১২. সমস্যা সমাধান
-
-### সমস্যা: সার্ভার চালু হচ্ছে না
-```
-সমাধান:
-১. node_modules ফোল্ডার আছে কিনা দেখুন।
-   না থাকলে: npm install চালান।
-২. port 3001 ব্যবহার হচ্ছে কিনা দেখুন।
-   পরিবর্তন করতে: server.js-এ PORT = 3002 করুন।
+nextjs/
+├── app/                    # Next.js App Router
+│   ├── (public)/           # Public pages (no auth required)
+│   ├── (auth)/             # Login, Signup, OTP pages
+│   ├── (dashboard)/        # User dashboard (MEMBER+ required)
+│   ├── (admin)/            # Admin panel (ADMIN+ required)
+│   └── api/                # API Route Handlers
+├── components/
+│   ├── ui/                 # Shadcn/Radix primitive wrappers
+│   ├── providers/          # Context providers
+│   ├── layout/             # Navbar, Sidebar, Footer
+│   ├── forms/              # Form components
+│   ├── charts/             # Chart.js wrappers
+│   └── print/              # Receipt print templates
+├── lib/
+│   ├── auth/               # NextAuth config, session, OTP, 2FA, password
+│   ├── constants/          # roles.ts, permissions.ts
+│   ├── db/                 # Prisma client singleton
+│   └── utils/              # formatters, validators, calculators
+├── types/                  # Global TypeScript types
+├── hooks/                  # Custom React hooks
+├── prisma/
+│   ├── schema.prisma       # Database schema (55 models)
+│   └── seed.ts             # Default data seed
+└── middleware.ts            # Edge auth + security headers
 ```
 
-### সমস্যা: লগইন হচ্ছে না
+### ১১.২ নতুন API Route তৈরির pattern
+
+```typescript
+// app/api/members/route.ts
+import { requireSession } from "@/lib/auth/session";
+import { checkPermission } from "@/lib/auth/session";
+import { MODULES, ACTIONS } from "@/lib/constants/permissions";
+import prisma from "@/lib/db/prisma";
+import { z } from "zod";
+import { NextResponse } from "next/server";
+
+export async function GET(req: Request) {
+  const session = await requireSession({ requiredRole: "STAFF" });
+
+  const canView = await checkPermission(
+    session.user.id,
+    session.user.systemRole,
+    MODULES.MEMBERS,
+    ACTIONS.VIEW
+  );
+  if (!canView) return NextResponse.json({ error: "অ্যাক্সেস নেই" }, { status: 403 });
+
+  const members = await prisma.member.findMany({ ... });
+  return NextResponse.json({ members });
+}
 ```
-সমাধান:
-১. সার্ভার চালু আছে কিনা দেখুন।
-   http://localhost:3001/api/health
-২. ডিফল্ট তথ্য ব্যবহার করুন: admin / admin1234
-৩. data.json ফাইল আছে কিনা দেখুন।
-```
 
-### সমস্যা: SMS যাচ্ছে না
-```
-সমাধান:
-১. bulksmsbd.net-এ ব্যালেন্স আছে কিনা দেখুন।
-   http://bulksmsbd.net/api/getBalanceApi?api_key=PEORenxMbnajRYOPGnsD
-২. SMS Recharge মেনু থেকে লোকাল ব্যালেন্স বাড়ান।
-৩. API Key সঠিক কিনা যাচাই করুন।
-```
+### ১১.৩ Prisma Transaction Pattern (Financial Operations)
 
-### সমস্যা: পেইজ লোড হচ্ছে না
-```
-সমাধান:
-১. সার্ভার চালু আছে কিনা নিশ্চিত করুন।
-২. ব্রাউজারে http://localhost:3001 দিয়ে শুরু করুন।
-৩. ব্রাউজার cache পরিষ্কার করুন (Ctrl+Shift+R)।
-```
+```typescript
+// ALWAYS use $transaction for financial operations
+await prisma.$transaction(async (tx) => {
+  // 1. Create payment record
+  const payment = await tx.payment.create({ data: { ... } });
 
----
+  // 2. Create receipt
+  const receipt = await tx.receipt.create({ data: { ... } });
 
-## ১৩. API রেফারেন্স
+  // 3. Update installment
+  await tx.installment.update({ where: { id }, data: { status: "PAID" } });
 
-সার্ভার চালু থাকলে নিচের API গুলো ব্যবহার করা যাবে:
+  // 4. Write ledger entry
+  await tx.ledgerEntry.create({ data: { ... } });
 
-| API | পদ্ধতি | বিবরণ |
-|---|---|---|
-| `/api/health` | GET | সার্ভার স্ট্যাটাস |
-| `/api/auth/login` | POST | লগইন |
-| `/api/auth/register` | POST | রেজিস্ট্রেশন |
-| `/api/members` | GET | সদস্য তালিকা |
-| `/api/clients` | GET | গ্রাহক তালিকা |
-| `/api/products` | GET | পণ্য তালিকা |
-| `/api/notices` | GET | নোটিশ তালিকা |
-| `/api/sms/balance` | GET | লোকাল SMS ব্যালেন্স |
-| `/api/sms/balance/live` | GET | bulksmsbd.net-এর লাইভ ব্যালেন্স |
-| `/api/sms/send` | POST | SMS পাঠানো |
-| `/api/sms/send-otp` | POST | OTP পাঠানো |
-| `/api/sms/send-group` | POST | গ্রুপে SMS পাঠানো |
-| `/api/accounts` | GET | হিসাব সারসংক্ষেপ |
-| `/api/reports` | GET | রিপোর্ট |
-| `/api/audit` | GET | অডিট লগ |
-
-### SMS API (bulksmsbd.net):
-```
-SMS পাঠানো:
-GET http://bulksmsbd.net/api/smsapi?api_key=PEORenxMbnajRYOPGnsD&type=text&number=01XXXXXXXXX&senderid=8809617611021&message=আপনার_বার্তা
-
-ব্যালেন্স দেখা:
-GET http://bulksmsbd.net/api/getBalanceApi?api_key=PEORenxMbnajRYOPGnsD
+  // 5. Write audit log
+  await tx.auditLog.create({ data: { ... } });
+});
 ```
 
 ---
 
-## দ্রুত শুরু করার চেকলিস্ট
+## ১২. Phase Roadmap
 
-```
-[ ] ১. Terminal খুলুন: C:\Project\barakah_finance\backend
-[ ] ২. npm install (শুধু প্রথমবার)
-[ ] ৩. node server.js — সার্ভার চালু
-[ ] ৪. ব্রাউজারে যান: http://localhost:3001/admin/panel.html
-[ ] ৫. লগইন: admin / admin1234
-[ ] ৬. পাসওয়ার্ড পরিবর্তন করুন (Basic Settings → Admin Management)
-[ ] ৭. SMS API যাচাই করুন (SMS → SMS Recharge)
-[ ] ৮. প্রথম সদস্য যুক্ত করুন (Member → Add New Member)
-[ ] ৯. ডেটা ব্যাকআপ নিন (data.json কপি করুন)
-```
+| Phase | বিষয় | অবস্থা |
+|-------|------|--------|
+| **Phase 1** | DB Schema, Auth, RBAC, Middleware | ✅ **সম্পন্ন** |
+| **Phase 2** | Landing Page, Login UI, Public Pages | 🔄 পরবর্তী |
+| **Phase 3** | Member Dashboard, Savings, Installments | ⏳ |
+| **Phase 4** | Admin Panel, Reports, Accounts | ⏳ |
+| **Phase 5** | Qard, Charity, Projects, Profit Engine | ⏳ |
+| **Phase 6** | SMS, Notifications, Backup automation | ⏳ |
+| **Phase 7** | KYC, Digital Signature, Bank Integration | ⏳ |
 
 ---
 
-*বারাকাহ ফাইন্যান্স — সুদমুক্ত লেনদেনে সমৃদ্ধি সবার*
+## ১৩. পরিচিত সমস্যা ও সমাধান / Troubleshooting
+
+| সমস্যা | সমাধান |
+|--------|--------|
+| `prisma generate` error | `npm install` পুনরায় চালান |
+| DB connection refused | PostgreSQL চালু আছে কিনা চেক করুন; `.env.local`-এ `DATABASE_URL` সঠিক কিনা দেখুন |
+| `NEXTAUTH_SECRET` missing | `.env.local`-এ `NEXTAUTH_SECRET` সেট করুন: `openssl rand -base64 32` |
+| OTP আসছে না | `.env.local`-এ `SMS_API_KEY` সেট করুন; development-এ console-এ OTP দেখাবে |
+| Image upload error | `public/uploads/` ফোল্ডার তৈরি করুন এবং write permission দিন |
+| Build error (TypeScript) | `npm run lint` চালান; type error fix করুন |
+
+---
+
+*Last updated: Phase 1 completion*  
+*Contact: বারাকাহ ফাইন্যান্স টেকনিক্যাল টিম*

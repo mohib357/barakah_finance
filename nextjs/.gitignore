@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js build output
+.next/
+out/
+
+# Production
+build/
+dist/
+
+# Environment — NEVER commit these
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Prisma generated client (regenerated via postinstall)
+# Keep schema, ignore generated
+prisma/generated/
+
+# Uploads and backups (user data — not in source control)
+public/uploads/
+backups/
+
+# Misc
+.DS_Store
+*.pem
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# TypeScript incremental build
+*.tsbuildinfo
+next-env.d.ts

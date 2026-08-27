@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Bengali web fonts ── */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@300;400;500;600;700&family=Noto+Serif+Bengali:wght@400;600;700&display=swap');
+
+/* ── CSS custom properties (theme tokens) ── */
+:root {
+  --radius: 0.5rem;
+  --font-sans: 'Noto Sans Bengali', 'Noto Serif Bengali', ui-sans-serif, system-ui, sans-serif;
+
+  /* Brand */
+  --color-gold:    #F5D061;
+  --color-islamic: #1a7a4a;
+  --color-bg:      #ffffff;
+  --color-surface: #f8fafc;
+  --color-border:  #e2e8f0;
+  --color-text:    #0f172a;
+  --color-muted:   #64748b;
+}
+
+.dark {
+  --color-bg:      #0f172a;
+  --color-surface: #1e293b;
+  --color-border:  #334155;
+  --color-text:    #f1f5f9;
+  --color-muted:   #94a3b8;
+}
+
+/* ── Base ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Scrollbar styling ── */
+::-webkit-scrollbar        { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { background: var(--color-surface); }
+::-webkit-scrollbar-thumb  { background: var(--color-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-muted); }
+
+/* ── Notice bar marquee ── */
+.notice-marquee {
+  display: inline-block;
+  white-space: nowrap;
+  animation: marquee 30s linear infinite;
+}
+.notice-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* ── Print styles (5" × 7.5" receipt) ── */
+@media print {
+  @page {
+    size: 5in 7.5in;
+    margin: 0.3in 2in;
+  }
+
+  body { background: white !important; color: black !important; }
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+}
+
+/* ── Utility: Bengali digit formatting ── */
+.bn-digits {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Reveal animation (IntersectionObserver target) ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: none;
+}
