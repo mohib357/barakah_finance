@@ -1,184 +1,182 @@
-// C: \Project\Barakah_Finance\js\notice.js
-
+// C:\Project\Barakah_Finance\js\notice.js
 // ════════ Notice Bar & Badge Section ════════
+
+// Default notices shown when no server data available
+const DEFAULT_NOTICES = [
+    { id: 'n1', text: '🌙 বারাকাহ ফাইন্যান্সে স্বাগতম! সুদমুক্ত লেনদেনে সমৃদ্ধি সবার।', color: '#fff', active: true, style: 'bold' },
+    { id: 'n2', text: '📢 মাসিক সঞ্চয়ের শেষ তারিখ প্রতি মাসের ১৫ তারিখ।', color: '#F0D78A', active: true, style: 'normal' },
+    { id: 'n3', text: '🤝 করজে হাসানা — বিনা সুদে সর্বোচ্চ ১৫,০০০ টাকা। যোগ্য সদস্যরা আবেদন করুন।', color: '#a7f3d0', active: true, style: 'normal' },
+    { id: 'n4', text: '📦 কিস্তিতে পণ্য কিনুন — মাত্র ১০% লাভে ৬ মাসে পরিশোধ।', color: '#fde68a', active: true, style: 'normal' },
+];
+
+// ════════ NOTICE BAR ════════
 function initNoticeBar() {
-    renderNoticeBar();
+    _loadNoticesFromServer().then(renderNoticeBar);
+}
+
+async function _loadNoticesFromServer() {
+    try {
+        const res = await fetch('http://localhost:3001/api/notices', {
+            signal: AbortSignal.timeout(2500)
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data) && data.length) return;
+        }
+    } catch (e) { /* server offline — use defaults */ }
 }
 
 function renderNoticeBar() {
-    const notices = DB.getNotices().filter(n => n.active);
-    const track = document.getElementById('notice-track');
-    if (!track || !notices.length) return;
+    let notices = [];
 
-    const speed = DB.getSettings().noticeSpeed || 30; // px/s
+    // Try DB first
+    try {
+        if (typeof DB !== 'undefined' && DB.getNotices) {
+            notices = DB.getNotices().filter(n => n.active);
+        }
+    } catch (e) {}
+
+    // Fallback to defaults
+    if (!notices || !notices.length) {
+        notices = DEFAULT_NOTICES;
+    }
+
+    const track = document.getElementById('notice-track') || document.querySelector('.notice-track');
+    if (!track) return;
+
+    const styleMap = {
+        bold:   'font-weight:700;',
+        italic: 'font-style:italic;',
+        normal: '',
+    };
+
     const items = notices.map(n => {
-        const styles = {
-            bold: 'font-weight:700;',
-            italic: 'font-style:italic;',
-            normal: '',
-        };
-        return `<span style="color:${n.color || '#fff'};${styles[n.style || 'normal']}margin-right:80px;">
-      ${n.text}
-    </span>`;
+        const style = styleMap[n.style || 'normal'] || '';
+        const color = n.color || '#fff';
+        return `<span style="color:${color};${style}">${n.text}</span>`;
     }).join('');
+
+    // Duplicate for seamless loop
     track.innerHTML = items + items;
+
+    // Calc animation speed based on content length
+    const settings = (typeof DB !== 'undefined' && DB.getSettings) ? DB.getSettings() : {};
+    const speed = settings.noticeSpeed || 40; // px per second
+    // Let CSS animation handle it; set duration dynamically
     const totalWidth = track.scrollWidth / 2;
-    const duration = totalWidth / speed;
+    const duration = Math.max(15, totalWidth / speed);
     track.style.animation = `noticeScroll ${duration}s linear infinite`;
+
+    // Pause on hover
+    track.addEventListener('mouseenter', () => { track.style.animationPlayState = 'paused'; });
+    track.addEventListener('mouseleave', () => { track.style.animationPlayState = 'running'; });
 }
 
 // ════════ BADGE SECTION ════════
 function updateBadgeSection() {
-    const badges = DB.getBadges().filter(b => b.show);
-    const users = DB.getUsers();
-    const savings = DB.getSavings();
-    const loans = DB.getLoans();
-    const stats = {
-        members: users.filter(u => u.verified && u.role !== 'admin').length,
-        savingsTotal: savings.reduce((a, s) => a + (s.amount || 0), 0),
-        loansTotal: loans.filter(l => l.status === 'active').reduce((a, l) => a + (l.amount || 0), 0),
-        loansCount: loans.filter(l => l.status === 'active').length,
-    };
-
+    const badges = _getActiveBadges();
     const container = document.getElementById('badges-container');
     if (!container) return;
 
-    container.innerHTML = badges.map(b => {
-        let value = '';
-        let sub = '';
-        switch (b.key) {
-            case 'members':
-                value = toBengaliNum(stats.members);
-                sub = 'সক্রিয় সদস্য';
-                break;
-            case 'savings':
-                value = '৳' + toBengaliNum(stats.savingsTotal.toLocaleString());
-                sub = 'মোট সঞ্চয়';
-                break;
-            case 'loans':
-                value = '৳' + toBengaliNum(stats.loansTotal.toLocaleString());
-                sub = toBengaliNum(stats.loansCount) + ' টি চলমান করজ';
-                break;
-            case 'services':
-                value = '৪';
-                sub = 'ধরনের হালাল সেবা';
-                break;
-            default:
-                value = '—';
-                sub = b.label;
-        }
+    const stats = _getBadgeStats();
 
+    if (!badges.length) {
+        container.innerHTML = '<div style="color:rgba(255,255,255,0.4);text-align:center;padding:40px;font-size:14px;">তথ্য লোড হচ্ছে...</div>';
+        return;
+    }
+
+    container.innerHTML = badges.map(b => {
+        const { value, sub } = _getBadgeValue(b, stats);
+        const clickable = b.clickable !== false;
         return `
-            <div class="badge-card ${b.clickable ? 'clickable' : ''}"
-                 onclick="${b.clickable ? `openBadgeDetail('${b.key}')` : ''}">
-                <div class="badge-icon">${b.icon}</div>
-                <div class="badge-info">
-                    <div class="badge-value">${value}</div>
-                    <div class="badge-label">${b.label}</div>
-                    <div class="badge-sub">${sub}</div>
-                </div>
-            </div>`;
+        <div class="badge-card${clickable ? ' clickable' : ''}"
+             role="${clickable ? 'button' : 'presentation'}"
+             tabindex="${clickable ? '0' : '-1'}"
+             ${clickable ? `onclick="openBadgeDetail('${b.key}')" onkeydown="if(event.key==='Enter')openBadgeDetail('${b.key}')"` : ''}
+             aria-label="${b.label}">
+            <div class="badge-icon">${b.icon || '📊'}</div>
+            <div class="badge-info">
+                <div class="badge-value">${value}</div>
+                <div class="badge-label">${b.label}</div>
+                <div class="badge-sub">${sub}</div>
+            </div>
+        </div>`;
     }).join('');
 }
 
-// ════════ BADGE DETAIL MODAL ════════
-function openBadgeDetail(key) {
-    const modal = document.getElementById('badgeDetailModal');
-    const content = document.getElementById('badgeDetailContent');
-    if (!modal || !content) return;
+function _getActiveBadges() {
+    let badges = [];
+    try {
+        if (typeof DB !== 'undefined' && DB.getBadges) {
+            badges = DB.getBadges().filter(b => b.show !== false);
+        }
+    } catch (e) {}
 
-    const users = DB.getUsers().filter(u => u.verified && u.role !== 'admin');
-    const savings = DB.getSavings();
-    const loans = DB.getLoans().filter(l => l.status === 'active');
-
-    let html = '';
-    switch (key) {
-        case 'members':
-            html = `<h3 class="bd-title">👥 সদস্যবৃন্দ</h3>
-        <table class="bd-table">
-          <tr><th>নাম</th><th>আইডি</th><th>মোবাইল</th><th>ভূমিকা</th></tr>
-          ${users.map(u => `<tr>
-            <td><a href="#" onclick="viewMemberProfile('${u.id}')" class="bd-link">${u.name}</a></td>
-            <td>${u.memberID || '—'}</td><td>${u.phone}</td><td>${u.role}</td>
-          </tr>`).join('') || '<tr><td colspan="4" class="bd-empty">কোনো সদস্য নেই</td></tr>'}
-        </table>`;
-            break;
-
-        case 'savings':
-            html = `<h3 class="bd-title">💰 সঞ্চয় বিবরণ</h3>
-        <table class="bd-table">
-          <tr><th>সদস্য</th><th>মাস</th><th>পরিমাণ</th><th>তারিখ</th></tr>
-          ${savings.map(s => `<tr>
-            <td>${getUserName(s.userId)}</td><td>${s.month || '—'}</td>
-            <td>৳${(s.amount || 0).toLocaleString('bn')}</td><td>${formatDate(s.date)}</td>
-          </tr>`).join('') || '<tr><td colspan="4" class="bd-empty">কোনো সঞ্চয় নেই</td></tr>'}
-        </table>`;
-            break;
-
-        case 'loans':
-            html = `<h3 class="bd-title">🤝 করজে হাসানা বিবরণ</h3>
-        <table class="bd-table">
-          <tr><th>সদস্য</th><th>পরিমাণ</th><th>বাকি</th><th>মাস</th></tr>
-          ${loans.map(l => `<tr>
-            <td>${getUserName(l.userId)}</td>
-            <td>৳${(l.amount || 0).toLocaleString('bn')}</td>
-            <td>৳${(l.remaining || l.amount || 0).toLocaleString('bn')}</td>
-            <td>${l.months || 3} মাস</td>
-          </tr>`).join('') || '<tr><td colspan="4" class="bd-empty">কোনো সক্রিয় করজ নেই</td></tr>'}
-        </table>`;
-            break;
-
-        case 'services':
-            html = `<h3 class="bd-title">🌟 আমাদের সেবাসমূহ</h3>
-        <div class="services-grid">
-          ${[
-                    { icon: '🤝', name: 'করজে হাসানা', desc: 'বিনা সুদে সর্বোচ্চ ১৫,০০০ টাকা আপদকালীন ঋণ', link: '#apply' },
-                    { icon: '💰', name: 'সঞ্চয় ও বিনিয়োগ', desc: 'মাসিক ২,০০০ টাকা সঞ্চয়, হালাল বিনিয়োগে মুনাফা', link: '#calculator' },
-                    { icon: '🕌', name: 'সুদমুক্ত অর্থনীতি', desc: 'শরিয়াহসম্মত সকল লেনদেন ও আর্থিক সেবা', link: '#about' },
-                    { icon: '📊', name: 'মোট সম্পদ', desc: `মোট সঞ্চয়: ৳${DB.getSavings().reduce((a, s) => a + (s.amount || 0), 0).toLocaleString('bn')}`, link: '#' },
-                ].map(s => `<div class="svc-card" onclick="window.location.href='${s.link}'; closeBadgeDetail();">
-            <div class="svc-icon">${s.icon}</div>
-            <div class="svc-name">${s.name}</div>
-            <div class="svc-desc">${s.desc}</div>
-          </div>`).join('')}
-        </div>`;
-            break;
+    if (!badges.length) {
+        badges = [
+            { key: 'members',  icon: '👥', label: 'সদস্য',          show: true, clickable: true },
+            { key: 'savings',  icon: '💰', label: 'মোট সঞ্চয়',       show: true, clickable: true },
+            { key: 'loans',    icon: '🤝', label: 'করজে হাসানা',     show: true, clickable: true },
+            { key: 'services', icon: '🌟', label: 'আমাদের সেবা',     show: true, clickable: true },
+        ];
     }
-
-    content.innerHTML = html;
-    modal.classList.remove('hidden');
+    return badges;
 }
 
-function closeBadgeDetail() {
-    document.getElementById('badgeDetailModal')?.classList.add('hidden');
+function _getBadgeStats() {
+    let members = 0, savingsTotal = 0, loansTotal = 0, loansCount = 0;
+    try {
+        if (typeof DB !== 'undefined') {
+            const users = DB.getUsers ? DB.getUsers() : [];
+            const savings = DB.getSavings ? DB.getSavings() : [];
+            const loans = DB.getLoans ? DB.getLoans() : [];
+            members = users.filter(u => u.verified && u.role !== 'admin').length;
+            savingsTotal = savings.reduce((a, s) => a + (s.amount || 0), 0);
+            const activeLoans = loans.filter(l => l.status === 'active');
+            loansTotal = activeLoans.reduce((a, l) => a + (l.amount || 0), 0);
+            loansCount = activeLoans.length;
+        }
+    } catch (e) {}
+    return { members, savingsTotal, loansTotal, loansCount };
 }
 
-// ════════ HELPERS ════════
-function getUserName(id) {
-    const u = DB.getUsers().find(x => x.id === id);
-    return u ? u.name : '—';
-}
-function formatDate(iso) {
-    if (!iso) return '—';
-    return new Date(iso).toLocaleDateString('bn-BD');
-}
-function toBengaliNum(num) {
-    return String(num).replace(/[0-9]/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+function _getBadgeValue(badge, stats) {
+    const bn = (n) => String(n).replace(/[0-9]/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+    switch (badge.key) {
+        case 'members':
+            return { value: bn(stats.members || '৩০+'), sub: 'সক্রিয় সদস্য' };
+        case 'savings':
+            return { value: '৳' + bn((stats.savingsTotal || 0).toLocaleString()), sub: 'মোট সঞ্চয়' };
+        case 'loans':
+            return { value: '৳' + bn((stats.loansTotal || 0).toLocaleString()), sub: bn(stats.loansCount) + ' টি চলমান করজ' };
+        case 'services':
+            return { value: '৪', sub: 'ধরনের হালাল সেবা' };
+        default:
+            return { value: badge.defaultValue || '—', sub: badge.sub || badge.label };
+    }
 }
 
-// ════════ TOAST NOTIFICATION ════════
-function showToastGlobal(msg, color = '#065F46') {
+// ════════ TOAST ════════
+function showToastGlobal(msg, color) {
+    color = color || '#065F46';
+    // Use showToastG from auth.js if available
+    if (typeof showToastG === 'function') { showToastG(msg, color); return; }
     const ex = document.querySelector('.g-toast');
     if (ex) ex.remove();
     const t = document.createElement('div');
     t.className = 'g-toast';
-    t.style.cssText = `position:fixed;bottom:24px;right:24px;background:${color};color:#fff;padding:14px 22px;border-radius:10px;font-family:'Noto Serif Bengali',serif;font-size:0.9rem;z-index:9999;box-shadow:0 6px 20px rgba(0,0,0,0.25);animation:slideUp 0.3s ease;max-width:320px;`;
+    t.style.cssText = `position:fixed;bottom:24px;right:24px;background:${color};color:#fff;padding:13px 22px;border-radius:10px;font-family:'Noto Serif Bengali',serif;font-size:.9rem;z-index:9999;box-shadow:0 6px 20px rgba(0,0,0,.25);animation:slideUpG .3s ease;max-width:320px;`;
     t.textContent = msg;
     document.body.appendChild(t);
-    setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, 3500);
+    setTimeout(() => {
+        t.style.opacity = '0'; t.style.transition = 'opacity .4s';
+        setTimeout(() => t.remove(), 400);
+    }, 3500);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+// ════════ INIT ════════
+document.addEventListener('DOMContentLoaded', function () {
     initNoticeBar();
-    updateBadgeSection();
+    // Badge section update (with small delay to ensure DB is ready)
+    setTimeout(updateBadgeSection, 150);
 });
