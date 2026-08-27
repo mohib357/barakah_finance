@@ -136,17 +136,19 @@
     <div class="hero-pattern"></div>
     <div class="hero-content reveal">
       <div class="hero-badge" data-i18n="hero.badge">🕌 শরিয়াহসম্মত আর্থিক প্রতিষ্ঠান</div>
-      <h1 data-i18n="hero.title">সুদমুক্ত লেনদেনে<br><em>সমৃদ্ধি সবার</em></h1>
-      <p class="slogan" data-i18n="hero.subtitle">ইসলামী অর্থনীতির আলোকে সমাজ থেকে সুদের অভিশাপ দূর করে<br>
-        হালাল উপায়ে আর্থিক সহায়তা ও সমৃদ্ধি নিশ্চিত করা আমাদের অঙ্গীকার।</p>
+      <h1 data-i18n="hero.title">ইসলামী অর্থনীতির আলোকে<br><em>সমৃদ্ধি সবার</em></h1>
+      <div class="hero-quote-box">
+        "সমাজ থেকে সুদের অভিশাপ দূর করে হালাল উপায়ে আর্থিক সহায়তা ও সমৃদ্ধি নিশ্চিত করাই আমাদের অঙ্গীকার।"
+      </div>
+      <div class="hero-divider"></div>
       <div class="hero-actions">
         <button class="btn-primary" onclick="requireLoginThen('form.html')" data-i18n="hero.btn.member">📝 সদস্য হতে আবেদন করুন</button>
-        <button class="btn-primary" style="background:linear-gradient(135deg,#C9A227,#A67C00);color:#0A2A1A;"
+        <button class="btn-primary" style="background:linear-gradient(135deg,#1D9E75,#0F6E56);color:#fff;"
           onclick="requireLoginThen('pages/shop.html')" data-i18n="hero.btn.shop">🛒 কেনাকাটা করুন</button>
         <button class="btn-outline" onclick="location.href='pages/learn-more.html'" data-i18n="hero.btn.learn">📚 আরও জানুন</button>
       </div>
     </div>
-    <div class="badges-section">
+    <div class="badges-section reveal">
       <div id="badges-container"></div>
     </div>
   </section>
@@ -632,8 +634,80 @@
   <script src="js/admin-settings.js"></script>
   <script src="js/lang.js"></script>
 
-  <!-- Initialization script for critical functions not yet in other files -->
+  <!-- Bootstrap: page-specific init only (core functions are in auth.js / main.js) -->
   <script>
+    // ── Dark mode restore (runs before DOMContentLoaded to prevent flash) ──
+    (function() {
+      if (localStorage.getItem('bf_dark') === '1') {
+        document.body.classList.add('dark-mode');
+      }
+    })();
+
+    // ── Navbar scroll effect ──
+    window.addEventListener('scroll', function() {
+      const nav = document.getElementById('mainNav');
+      if (!nav) return;
+      nav.classList.toggle('scrolled', window.scrollY > 60);
+    }, { passive: true });
+
+    // ── Visitor Counter ──
+    function initVisitorCounter() {
+      const el = document.getElementById('visitorCount');
+      if (!el) return;
+      const key = 'bf_visits_today';
+      const dateKey = new Date().toDateString();
+      let stored = {};
+      try { stored = JSON.parse(localStorage.getItem(key) || '{}'); } catch(e) {}
+      if (stored.date !== dateKey) { stored.date = dateKey; stored.count = 0; }
+      stored.count++;
+      try { localStorage.setItem(key, JSON.stringify(stored)); } catch(e) {}
+      let base = 10 + Math.floor(stored.count / 2);
+      el.textContent = base;
+      setInterval(function() {
+        const delta = Math.floor(Math.random() * 5) - 2;
+        base = Math.max(5, base + delta);
+        el.textContent = base;
+      }, 12000);
+    }
+
+    // ── Restore language display ──
+    (function() {
+      const saved = localStorage.getItem('bf_lang') || 'bn';
+      const flags = { bn:'🇧🇩', en:'🇬🇧', ar:'🇸🇦' };
+      const names = { bn:'বাংলা', en:'English', ar:'عربي' };
+      const fl = document.getElementById('langFlag');
+      const lc = document.getElementById('langCode');
+      if (fl) fl.textContent = flags[saved] || '🌐';
+      if (lc) lc.textContent = names[saved] || saved;
+    })();
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Dark mode toggle icon sync
+      if (document.body.classList.contains('dark-mode')) {
+        const dk = document.getElementById('dkTog');
+        if (dk) dk.classList.add('on');
+      }
+
+      initVisitorCounter();
+
+      // Pending redirect after login
+      const session = (typeof DB !== 'undefined') ? DB.getSession() : null;
+      const redir = sessionStorage.getItem('bf_redirect');
+      if (session && session.verified && redir) {
+        sessionStorage.removeItem('bf_redirect');
+        location.href = redir;
+      }
+
+      // Review section init (from main.js)
+      if (typeof loadReviews === 'function') loadReviews();
+      const promptEl = document.getElementById('review-login-prompt');
+      if (promptEl) promptEl.style.display = (session && session.verified) ? 'none' : 'block';
+      if (typeof setReviewStar === 'function') setReviewStar(5);
+    });
+  </script>
+</body>
+
+</html>
     // ══════ Global Helpers ══════
     function toggleDarkMode() {
       document.body.classList.toggle('dark-mode');
