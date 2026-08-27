@@ -1,10 +1,8 @@
 // ═══════════════════════════════════════════════════════════
 //  BARAKAH FINANCE — Role Definitions
-//  Mirrors the UserSystemRole enum in prisma/schema.prisma.
-//  Used for type-safe role checks across the entire app.
 // ═══════════════════════════════════════════════════════════
 
-import { UserSystemRole } from "@prisma/client";
+import { UserSystemRole } from "@/types/enums";
 
 /** Ordered hierarchy — higher index = higher privilege */
 export const ROLE_HIERARCHY: UserSystemRole[] = [
@@ -44,28 +42,21 @@ export const ROLE_LABELS_EN: Record<UserSystemRole, string> = {
   SUPER_ADMIN: "Super Admin",
 };
 
-/** Roles that grant access to any admin panel section */
 export const ADMIN_ROLES: UserSystemRole[] = [
   UserSystemRole.ADMIN,
   UserSystemRole.SUPER_ADMIN,
 ];
 
-/** Roles that grant access to the member dashboard */
 export const MEMBER_ROLES: UserSystemRole[] = [
   UserSystemRole.MEMBER,
   UserSystemRole.ADMIN,
   UserSystemRole.SUPER_ADMIN,
 ];
 
-/** Check whether a role has at least admin-level access */
 export function isAdminRole(role: UserSystemRole): boolean {
   return ADMIN_ROLES.includes(role);
 }
 
-/** Check whether role A is at least as privileged as role B */
-export function hasMinimumRole(
-  userRole: UserSystemRole,
-  requiredRole: UserSystemRole
-): boolean {
+export function hasMinimumRole(userRole: UserSystemRole, requiredRole: UserSystemRole): boolean {
   return ROLE_HIERARCHY.indexOf(userRole) >= ROLE_HIERARCHY.indexOf(requiredRole);
 }

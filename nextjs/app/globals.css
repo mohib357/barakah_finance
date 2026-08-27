@@ -62,6 +62,18 @@ body {
   animation-play-state: paused;
 }
 
+/* ── NoticeBar scroll (translateX -50% because we duplicate items) ── */
+@keyframes noticeScroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ── Review carousel scroll ── */
+@keyframes reviewScroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
 /* ── Print styles (5" × 7.5" receipt) ── */
 @media print {
   @page {

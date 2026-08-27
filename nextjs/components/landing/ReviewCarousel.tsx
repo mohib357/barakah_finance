@@ -187,12 +187,7 @@ export default function ReviewCarousel() {
         </div>
       </div>
 
-      <style jsx>{`
-        @keyframes reviewScroll {
-          0%   { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-      `}</style>
+      {/* reviewScroll keyframe is defined in globals.css */}
     </section>
   );
 }

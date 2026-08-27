@@ -1,114 +1,85 @@
 // ═══════════════════════════════════════════════════════════
 //  BARAKAH FINANCE — RBAC Permission Matrix
-//
-//  MODULES: Every distinct section of the system
-//  ACTIONS: What can be done in each module
-//
-//  Stored in the DB as UserPermission rows.
-//  Role-level defaults are defined in ROLE_DEFAULT_PERMISSIONS.
-//  Individual overrides come from UserPermission table.
-//
-//  Spec ref: MASTER SECTION 2 — Permission Matrix
 // ═══════════════════════════════════════════════════════════
 
-import { UserSystemRole } from "@prisma/client";
+import { UserSystemRole } from "@/types/enums";
 
-// ── Module identifiers (string literals for DB storage) ──
-
+// ── Module identifiers ───────────────────────────────────────
 export const MODULES = {
-  // Finance
-  DASHBOARD:        "dashboard",
-  MEMBERS:          "members",
-  CUSTOMERS:        "customers",
-  PRODUCTS:         "products",
-  ORDERS:           "orders",
-  INSTALLMENTS:     "installments",
-  PAYMENTS:         "payments",
-  RECEIPTS:         "receipts",
-  SAVINGS:          "savings",
-  INVESTMENT:       "investment",
-  PROJECTS:         "projects",
-  ASSETS:           "assets",
-  QARD:             "qard",
-  CHARITY:          "charity",
-  ACCOUNTS:         "accounts",
-  EXPENSES:         "expenses",
-  REPORTS:          "reports",
-  PROFIT:           "profit",
-  WITHDRAWALS:      "withdrawals",
-  LEDGER:           "ledger",
-  FUND_TRANSFERS:   "fund_transfers",
-  // Website / CMS
-  NOTICES:          "notices",
-  BADGES:           "badges",
-  REVIEWS:          "reviews",
-  POSTS:            "posts",
-  GALLERY:          "gallery",
-  WEBSITE_CONTENT:  "website_content",
-  // Communication
-  SMS:              "sms",
-  NOTIFICATIONS:    "notifications",
-  // Admin
-  COMMITTEE:        "committee",
-  KYC:              "kyc",
-  DOCUMENTS:        "documents",
-  USERS:            "users",
-  ROLES:            "roles",
-  PERMISSIONS:      "permissions",
-  AUDIT_LOGS:       "audit_logs",
-  BACKUP:           "backup",
-  SETTINGS:         "settings",
-  ACTIVITY_LOG:     "activity_log",
+  DASHBOARD:       "dashboard",
+  MEMBERS:         "members",
+  CUSTOMERS:       "customers",
+  PRODUCTS:        "products",
+  ORDERS:          "orders",
+  INSTALLMENTS:    "installments",
+  PAYMENTS:        "payments",
+  RECEIPTS:        "receipts",
+  SAVINGS:         "savings",
+  INVESTMENT:      "investment",
+  PROJECTS:        "projects",
+  ASSETS:          "assets",
+  QARD:            "qard",
+  CHARITY:         "charity",
+  ACCOUNTS:        "accounts",
+  EXPENSES:        "expenses",
+  REPORTS:         "reports",
+  PROFIT:          "profit",
+  WITHDRAWALS:     "withdrawals",
+  LEDGER:          "ledger",
+  FUND_TRANSFERS:  "fund_transfers",
+  NOTICES:         "notices",
+  BADGES:          "badges",
+  REVIEWS:         "reviews",
+  POSTS:           "posts",
+  GALLERY:         "gallery",
+  WEBSITE_CONTENT: "website_content",
+  SMS:             "sms",
+  NOTIFICATIONS:   "notifications",
+  COMMITTEE:       "committee",
+  KYC:             "kyc",
+  DOCUMENTS:       "documents",
+  USERS:           "users",
+  ROLES:           "roles",
+  PERMISSIONS:     "permissions",
+  AUDIT_LOGS:      "audit_logs",
+  BACKUP:          "backup",
+  SETTINGS:        "settings",
+  ACTIVITY_LOG:    "activity_log",
 } as const;
 
 export type Module = (typeof MODULES)[keyof typeof MODULES];
 
-// ── Action identifiers ──
-
+// ── Action identifiers ───────────────────────────────────────
 export const ACTIONS = {
-  VIEW:     "view",
-  CREATE:   "create",
-  EDIT:     "edit",
-  SUBMIT:   "submit",
-  APPROVE:  "approve",
-  REJECT:   "reject",
-  CANCEL:   "cancel",
-  REVERSE:  "reverse",
-  DELETE:   "delete",   // soft-delete only for financial records
-  EXPORT:   "export",
-  PRINT:    "print",
-  MANAGE:   "manage",   // full control (for settings, backup, etc.)
+  VIEW:    "view",
+  CREATE:  "create",
+  EDIT:    "edit",
+  SUBMIT:  "submit",
+  APPROVE: "approve",
+  REJECT:  "reject",
+  CANCEL:  "cancel",
+  REVERSE: "reverse",
+  DELETE:  "delete",
+  EXPORT:  "export",
+  PRINT:   "print",
+  MANAGE:  "manage",
 } as const;
 
 export type Action = (typeof ACTIONS)[keyof typeof ACTIONS];
 
-// ── Permission descriptor ──
 export interface Permission {
   module: Module;
   action: Action;
 }
 
-// ── Helper to build permission keys for fast lookup ──
 export function permKey(module: Module, action: Action): string {
   return `${module}:${action}`;
 }
 
-// ─────────────────────────────────────────────────────────
-// ROLE-LEVEL DEFAULT PERMISSIONS
-// These are the defaults enforced in middleware/session
-// when the user has NO individual UserPermission row.
-// ─────────────────────────────────────────────────────────
-
-/** Define a permission set as a map of module → allowed actions */
 type PermissionSet = Partial<Record<Module, Action[]>>;
 
-/**
- * Returns the default allowed permissions for a given role.
- * Individual UserPermission DB rows can GRANT or DENY on top of these defaults.
- */
+// ── Role defaults ────────────────────────────────────────────
 export const ROLE_DEFAULT_PERMISSIONS: Record<UserSystemRole, PermissionSet> = {
-
-  // ── USER: can only see their own dashboard and public pages ──
   USER: {
     [MODULES.DASHBOARD]:    [ACTIONS.VIEW],
     [MODULES.PRODUCTS]:     [ACTIONS.VIEW],
@@ -117,15 +88,11 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<UserSystemRole, PermissionSet> = {
     [MODULES.GALLERY]:      [ACTIONS.VIEW],
     [MODULES.NOTIFICATIONS]:[ACTIONS.VIEW],
   },
-
-  // ── WITNESS: same as USER ──
   WITNESS: {
     [MODULES.DASHBOARD]:    [ACTIONS.VIEW],
     [MODULES.PRODUCTS]:     [ACTIONS.VIEW],
     [MODULES.NOTIFICATIONS]:[ACTIONS.VIEW],
   },
-
-  // ── GUARANTOR: can see their guaranteed clients ──
   GUARANTOR: {
     [MODULES.DASHBOARD]:    [ACTIONS.VIEW],
     [MODULES.CUSTOMERS]:    [ACTIONS.VIEW],
@@ -134,8 +101,6 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<UserSystemRole, PermissionSet> = {
     [MODULES.PRODUCTS]:     [ACTIONS.VIEW],
     [MODULES.NOTIFICATIONS]:[ACTIONS.VIEW],
   },
-
-  // ── CUSTOMER: can see their own orders and payment status ──
   CUSTOMER: {
     [MODULES.DASHBOARD]:    [ACTIONS.VIEW],
     [MODULES.ORDERS]:       [ACTIONS.VIEW, ACTIONS.SUBMIT],
@@ -145,8 +110,6 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<UserSystemRole, PermissionSet> = {
     [MODULES.RECEIPTS]:     [ACTIONS.VIEW, ACTIONS.PRINT],
     [MODULES.NOTIFICATIONS]:[ACTIONS.VIEW],
   },
-
-  // ── INVESTOR: can see investment portfolio and project data ──
   INVESTOR: {
     [MODULES.DASHBOARD]:    [ACTIONS.VIEW],
     [MODULES.INVESTMENT]:   [ACTIONS.VIEW, ACTIONS.SUBMIT],
@@ -156,8 +119,6 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<UserSystemRole, PermissionSet> = {
     [MODULES.WITHDRAWALS]:  [ACTIONS.VIEW, ACTIONS.SUBMIT],
     [MODULES.NOTIFICATIONS]:[ACTIONS.VIEW],
   },
-
-  // ── MEMBER: full access to own financial data + apply for services ──
   MEMBER: {
     [MODULES.DASHBOARD]:    [ACTIONS.VIEW],
     [MODULES.SAVINGS]:      [ACTIONS.VIEW],
@@ -177,8 +138,6 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<UserSystemRole, PermissionSet> = {
     [MODULES.GALLERY]:      [ACTIONS.VIEW],
     [MODULES.NOTIFICATIONS]:[ACTIONS.VIEW],
   },
-
-  // ── STAFF: operational access — no financial approval rights ──
   STAFF: {
     [MODULES.DASHBOARD]:    [ACTIONS.VIEW],
     [MODULES.MEMBERS]:      [ACTIONS.VIEW, ACTIONS.CREATE, ACTIONS.EDIT],
@@ -196,8 +155,6 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<UserSystemRole, PermissionSet> = {
     [MODULES.NOTIFICATIONS]:[ACTIONS.VIEW],
     [MODULES.ACTIVITY_LOG]: [ACTIONS.VIEW],
   },
-
-  // ── ADMIN: broad access — cannot manage super admin settings ──
   ADMIN: {
     [MODULES.DASHBOARD]:       [ACTIONS.VIEW, ACTIONS.MANAGE],
     [MODULES.MEMBERS]:         [ACTIONS.VIEW, ACTIONS.CREATE, ACTIONS.EDIT, ACTIONS.APPROVE, ACTIONS.REJECT, ACTIONS.EXPORT, ACTIONS.PRINT],
@@ -236,39 +193,20 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<UserSystemRole, PermissionSet> = {
     [MODULES.ACTIVITY_LOG]:    [ACTIONS.VIEW],
     [MODULES.BACKUP]:          [ACTIONS.VIEW],
   },
-
-  // ── SUPER_ADMIN: unrestricted — all modules, all actions ──
   SUPER_ADMIN: Object.fromEntries(
     Object.values(MODULES).map((mod) => [mod, Object.values(ACTIONS)])
   ) as PermissionSet,
 };
 
-// ─────────────────────────────────────────────────────────
-// PERMISSION CHECKER UTILITY
-// ─────────────────────────────────────────────────────────
-
-/**
- * Check whether a given role has a specific permission by default.
- * Does NOT account for individual UserPermission DB overrides —
- * those are handled by checkPermission() in lib/auth/session.ts.
- */
-export function roleHasPermission(
-  role: UserSystemRole,
-  module: Module,
-  action: Action
-): boolean {
+export function roleHasPermission(role: UserSystemRole, module: Module, action: Action): boolean {
   if (role === UserSystemRole.SUPER_ADMIN) return true;
-  const set = ROLE_DEFAULT_PERMISSIONS[role];
-  if (!set) return false;
-  const actions = set[module];
-  if (!actions) return false;
-  return actions.includes(action);
+  const actions = ROLE_DEFAULT_PERMISSIONS[role]?.[module];
+  return actions?.includes(action) ?? false;
 }
 
-/**
- * Return all modules and actions a role can access.
- * Used to build the sidebar navigation.
- */
+// Re-export role hierarchy so other modules can import from here
+export { ROLE_HIERARCHY } from "@/lib/constants/roles";
+
 export function getDefaultPermissionsForRole(role: UserSystemRole): Permission[] {
   if (role === UserSystemRole.SUPER_ADMIN) {
     return Object.values(MODULES).flatMap((mod) =>
@@ -281,10 +219,6 @@ export function getDefaultPermissionsForRole(role: UserSystemRole): Permission[]
   );
 }
 
-/**
- * Modules that require admin-level access (ADMIN or SUPER_ADMIN).
- * Used by middleware to protect /admin/* routes.
- */
 export const ADMIN_ONLY_MODULES: Module[] = [
   MODULES.AUDIT_LOGS,
   MODULES.BACKUP,
@@ -294,46 +228,14 @@ export const ADMIN_ONLY_MODULES: Module[] = [
   MODULES.ACTIVITY_LOG,
 ];
 
-/**
- * Route path prefixes and the minimum role required.
- * Middleware reads this to enforce access at the edge.
- */
 export const ROUTE_PERMISSION_MAP: Array<{
   pathPrefix: string;
   requiredRole: UserSystemRole;
   requireVerified?: boolean;
 }> = [
-  // Public routes — no auth required
-  // (Not listed here — anything not in this map is assumed public)
-
-  // Authenticated user routes
-  {
-    pathPrefix:   "/dashboard",
-    requiredRole: UserSystemRole.USER,
-    requireVerified: true,
-  },
-  {
-    pathPrefix:   "/profile",
-    requiredRole: UserSystemRole.USER,
-    requireVerified: true,
-  },
-  {
-    pathPrefix:   "/apply",
-    requiredRole: UserSystemRole.USER,
-    requireVerified: true,
-  },
-  {
-    pathPrefix:   "/shop",
-    requiredRole: UserSystemRole.USER,
-    requireVerified: true,
-  },
-
-  // Admin routes
-  {
-    pathPrefix:   "/admin",
-    requiredRole: UserSystemRole.ADMIN,
-    requireVerified: true,
-  },
-
-  // API routes — auth checked individually in handlers
+  { pathPrefix: "/dashboard", requiredRole: UserSystemRole.USER,  requireVerified: true },
+  { pathPrefix: "/profile",   requiredRole: UserSystemRole.USER,  requireVerified: true },
+  { pathPrefix: "/apply",     requiredRole: UserSystemRole.USER,  requireVerified: true },
+  { pathPrefix: "/shop",      requiredRole: UserSystemRole.USER,  requireVerified: true },
+  { pathPrefix: "/admin",     requiredRole: UserSystemRole.ADMIN, requireVerified: true },
 ];

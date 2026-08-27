@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -6,8 +7,15 @@ import { cn } from "@/lib/utils/cn";
 import { Spinner } from "@/components/ui/Spinner";
 import { ToastProvider, useToast } from "@/components/ui/Toast";
 
+import React from "react";
 export default function VerifyPage() {
-  return <ToastProvider><VerifyInner /></ToastProvider>;
+  return (
+    <ToastProvider>
+      <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-[#1D9E75] rounded-full border-t-transparent" /></div>}>
+        <VerifyInner />
+      </React.Suspense>
+    </ToastProvider>
+  );
 }
 
 function VerifyInner() {

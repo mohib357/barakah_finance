@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback, useRef } from "react";
+import React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Image from "next/image";
@@ -54,7 +55,9 @@ function useUsernameCheck() {
 export default function LoginPage() {
   return (
     <ToastProvider>
-      <LoginPageInner />
+      <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-[#1D9E75] rounded-full border-t-transparent" /></div>}>
+        <LoginPageInner />
+      </React.Suspense>
     </ToastProvider>
   );
 }

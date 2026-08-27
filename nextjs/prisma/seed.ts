@@ -6,7 +6,8 @@
 //           income/expense categories, pay order rules.
 // ═══════════════════════════════════════════════════════════
 
-import { PrismaClient, UserSystemRole, NoticeStyle, ProfitMethod } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
+import { UserSystemRole, NoticeStyle, ProfitMethod } from "../types/enums";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();

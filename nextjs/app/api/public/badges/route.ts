@@ -19,7 +19,8 @@ export async function GET() {
     ]);
 
     // Attach live computed values
-    const enriched = badges.map((b) => {
+    type BadgeRow = (typeof badges)[number];
+    const enriched = badges.map((b: BadgeRow) => {
       let value = b.value ?? "";
       let sub   = "";
       if (b.dataSource === "computed") {

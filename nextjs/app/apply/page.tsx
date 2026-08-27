@@ -73,11 +73,10 @@ function ApplyForm() {
   const [village, setVillage]       = useState("");
 
   // Step 2 — Nominee
-  const [nomName, setNomName]   = useState("");
-  const [nomFather, setNomFather] = useState("");
-  const [nomRel, setNomRel]     = useState("");
-  const [nomPhone, setNomPhone] = useState("");
-  const [nomGender, setNomGender] = useState("");
+  const [nomName, setNomName]       = useState("");
+  const [nomRel, setNomRel]         = useState("");
+  const [nomPhone, setNomPhone]     = useState("");
+  const [nomGender, setNomGender]   = useState("");
   const [nomAddress, setNomAddress] = useState("");
 
   // Step 3 — Investment
@@ -352,7 +351,7 @@ function ApplyForm() {
                 <h2 className="font-bold text-[#0D2B1A] text-base mb-3">ধাপ ২ — নমিনির তথ্য</h2>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <Field label="নমিনির নাম *" value={nomName} onChange={setNomName} placeholder="পূর্ণ নাম" />
-                  <Field label="পিতার নাম" value={nomFather} onChange={setNomFather} placeholder="পিতার নাম" />
+                  <Field label="পিতার নাম" value={nomAddress} onChange={setNomAddress} placeholder="পিতার নাম" />
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
@@ -530,7 +529,9 @@ function ApplyForm() {
                 <ReviewRow label="বিনিয়োগের ধরন"  value={INV_TYPES.find((t) => t.key === invType)?.title ?? invType} />
                 {invAmount && <ReviewRow label="বিনিয়োগের পরিমাণ" value={`৳${invAmount}`} />}
                 <div className="flex gap-4 mt-2">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   {photoData && <img src={photoData} alt="photo" className="h-20 rounded-lg border" />}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   {signData  && <img src={signData}  alt="sign"  className="h-10 border rounded self-end" />}
                 </div>
 
