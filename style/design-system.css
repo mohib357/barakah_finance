@@ -1108,3 +1108,214 @@ code { font-family: var(--font-mono); font-size: var(--fs-xs); background: var(-
   body { background: #fff; color: #000; }
   .card { box-shadow: none; border: 1px solid #ddd; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE GRID UTILITIES
+   (Used by dashboard profit/withdrawal panels)
+   ═══════════════════════════════════════════════════════════════ */
+.responsive-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+@media (max-width: 640px) { .responsive-2col { grid-template-columns: 1fr; } }
+
+.responsive-3col {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+}
+@media (max-width: 768px) { .responsive-3col { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 480px) { .responsive-3col { grid-template-columns: 1fr; } }
+
+/* ─── STATS ROW (dashboard) ─── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+/* ─── Two-col admin card layout ─── */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+}
+@media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+/* ─── Admin Card (shared between admin panel and dashboard) ─── */
+.admin-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-5);
+}
+.admin-card:last-child { margin-bottom: 0; }
+
+/* ─── Pending Badge (admin dashboard quick actions) ─── */
+.pending-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  background: rgba(217,119,6,.12);
+  border: 1px solid rgba(217,119,6,.25);
+  color: var(--clr-warning);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.pending-badge:hover { background: rgba(217,119,6,.2); }
+.quick-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+
+/* ─── Chart wrap ─── */
+.chart-wrap { position: relative; height: 200px; }
+
+/* ─── MT spacing (margin-top shortcuts) ─── */
+.mt-4 { margin-top: var(--space-4) !important; }
+.mt-6 { margin-top: var(--space-6) !important; }
+.mt-8 { margin-top: var(--space-8) !important; }
+
+/* ─── PM GRID (product modal) ─── */
+.pm-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+}
+@media (max-width: 640px) { .pm-grid { grid-template-columns: 1fr; } }
+
+/* ═══════════════════════════════════════════════════════════════
+   ENHANCED NAV (inner pages — landing.css uses its own nav)
+   ═══════════════════════════════════════════════════════════════ */
+.nav-theme-btn {
+  width: 36px; height: 36px;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface-2);
+  border: 1.5px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all var(--transition-fast);
+  color: var(--text-primary);
+}
+.nav-theme-btn:hover { background: var(--clr-primary-50); border-color: var(--clr-primary-300); }
+.dark-mode .nav-theme-btn:hover { background: rgba(29,158,117,.15); }
+
+/* ─── Nav user avatar ─── */
+.nav-user-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--clr-primary-400), var(--clr-primary-600));
+  color: #fff;
+  font-weight: 700;
+  font-size: var(--fs-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 2px solid var(--clr-primary-300);
+  transition: all var(--transition-fast);
+}
+.nav-user-avatar:hover { transform: scale(1.08); box-shadow: 0 0 0 3px rgba(29,158,117,.2); }
+
+/* ─── Nav user menu ─── */
+.nav-user-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  min-width: 200px;
+  z-index: var(--z-dropdown);
+  overflow: hidden;
+  animation: fadeInDown .2s ease;
+}
+.nav-user { position: relative; }
+.user-menu-header {
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  border-bottom: 1px solid var(--border-light);
+  background: var(--bg-surface-2);
+}
+.user-menu-name { font-weight: 700; font-size: var(--fs-sm); color: var(--text-primary); }
+.user-menu-role { font-size: var(--fs-xs); color: var(--text-muted); }
+.user-menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font-bangla);
+  text-decoration: none;
+}
+.user-menu-item:hover { background: var(--bg-surface-2); color: var(--text-primary); }
+.user-menu-item.danger { color: var(--clr-danger); }
+.user-menu-item.danger:hover { background: #fef2f2; }
+
+/* ─── Hamburger button ─── */
+.nav-hamburger {
+  width: 36px; height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-2);
+  border: 1.5px solid var(--border-color);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+}
+.nav-hamburger span {
+  display: block;
+  width: 18px; height: 2px;
+  background: var(--text-primary);
+  border-radius: 2px;
+  transition: all var(--transition-fast);
+}
+.nav-hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(4px, 4px); }
+.nav-hamburger.open span:nth-child(2) { opacity: 0; }
+.nav-hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(4px, -4px); }
+@media (max-width: 768px) { .nav-hamburger { display: flex; } }
+
+/* ─── Mobile nav menu ─── */
+.nav-mobile {
+  display: none;
+  flex-direction: column;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-light);
+  padding: var(--space-3);
+  box-shadow: var(--shadow-md);
+}
+.nav-mobile.open { display: flex; }
+.mob-link {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  border-radius: var(--radius-lg);
+  transition: background var(--transition-fast);
+  cursor: pointer;
+  text-decoration: none;
+  display: block;
+}
+.mob-link:hover { background: var(--bg-surface-2); color: var(--text-primary); }
+
+/* ═══════════════════════════════════════════════════════════════
+   LANDING CSS COMPAT: ensure dark-mode class on body ALSO sets
+   data-theme=dark attribute (for pages using data-theme selectors)
+   ═══════════════════════════════════════════════════════════════ */

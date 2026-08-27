@@ -87,20 +87,24 @@ function initReveal() {
 
 // ── Theme ──
 function initTheme() {
-  const t = localStorage.getItem('bf_theme') || 'light';
+  const t = localStorage.getItem('bf_theme') || (localStorage.getItem('bf_dark') === '1' ? 'dark' : 'light');
+  applyTheme(t);
+}
+function applyTheme(t) {
   document.documentElement.setAttribute('data-theme', t);
   document.body.classList.toggle('dark-mode', t === 'dark');
+  // Sync old bf_dark key too (index.html uses it)
+  localStorage.setItem('bf_theme', t);
+  localStorage.setItem('bf_dark', t === 'dark' ? '1' : '0');
   const icon = document.getElementById('themeIcon');
   if (icon) icon.textContent = t === 'dark' ? '☀️' : '🌙';
+  // Update index.html toggle if present
+  const dkTog = document.getElementById('dkTog');
+  if (dkTog) dkTog.classList.toggle('on', t === 'dark');
 }
 function toggleTheme() {
   const t = localStorage.getItem('bf_theme') || 'light';
-  const next = t === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  document.body.classList.toggle('dark-mode', next === 'dark');
-  const icon = document.getElementById('themeIcon');
-  if (icon) icon.textContent = next === 'dark' ? '☀️' : '🌙';
-  localStorage.setItem('bf_theme', next);
+  applyTheme(t === 'dark' ? 'light' : 'dark');
 }
 
 // ── Nav session ──
