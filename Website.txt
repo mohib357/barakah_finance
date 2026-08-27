@@ -1293,6 +1293,19 @@ Withdrawal Policy:
 - Emergency withdrawal: Committee approval required
 - Full withdrawal: 60 days notice required
 
+যে Technology ব্যবহারকরে Project টি করতে হবে।
+Next.js, TypeScript, React, Node.js, PostgreSQL
+
+** ওয়েবসাইটের মূল ল্যাঙ্গুয়েজ হবে ইংরেজি।
+** ডাটাবেস কিভাবে কোথায় ইউজ হচ্ছে তার বর্ণনা দিয়ে একটি গাইডলাইন।
+** এডমিন, সুপার এডমিন, সদস্য একই সিস্টেমে লগইন করবে।
+** প্রথমে ওয়েবসাইটে ঢুকার জন্য এডমিন/সুপার এডমিন/সদস্য ইউজার আইডি ও পাসওয়ার্র্ড প্রভাইট করবে।
+** সমস্ত ওয়েবসাইট এডমিন, সুপার এডমিন, সদস্য কিভাবে ইউজ করবে (রুড ম্যাপ) এর একটা পরিপূর্ন গাইডলাইন।
+** লোকাল সার্ভারে কিভাবে ডাটা সংরক্ষণ হবে সেটা গাইডলাইনে উল্লেখ থাকবে।
+** কিভাবে অনলাইনে ওয়েবসাইট পাবলিশ করবো তার বিস্তারিত গাইডলাইন; আমাদের অলরেডি ন্যামচিপ থেকে ডোমেইন ও হোস্টিং নেওয়া আছে এবং তারা আমাদের সি প্যানেলের একসেস দিয়েছে।
+** আমাদের সিকিউরিটি সিস্টেম কী আছে? সেটা গাইডলানে লেখা থাকবে।
+** পাবলিক ওয়েবসাইটে বিভিন্ন ফাইলে ঢুকলে সে ফাইলের সম্পূর্ণ নাম (এক্সটেনশন সহ) কী দেখতে পাবে। এমন সিস্টেম রাখতে হবে যেন হ্যাকাররা এটা ভাংতে না পারে এবং ফাইল দেখাবে এরকম- কেউ গ্যালারিতে গেছে, লিংক হবে- barakahfinancebd.com/gallery; সেমভাবে barakahfinancebd.com/shop; barakahfinancebd.com/dashboard; barakahfinancebd.com/shop/mobile; barakahfinancebd.com/mohib357; ইত্যাদি
+
 Implementation Instruction
 এই document-টি Barakah Finance system-এর মূল requirement document। এখানে বর্ণিত feature, workflow, calculation, business rule এবং relationship-গুলো system design করার সময় মূল reference হিসেবে বিবেচনা করতে হবে।
 Developer/AI কোনো requirement নিজের অনুমান অনুযায়ী পরিবর্তন করবে না।
