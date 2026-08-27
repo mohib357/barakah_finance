@@ -509,10 +509,12 @@ function closeTerms() {
     if (m) m.classList.add('hidden');
 }
 
-// ════════ BADGE DETAIL MODAL (openBD) ════════
+// ════════ BADGE DETAIL MODAL ════════
+// index.html uses id="badgeDetailModal" and id="badgeDetailContent"
 function openBD(key) {
-    const modal = document.getElementById('bdModal');
-    const con = document.getElementById('bd-content');
+    // Support both old id='bdModal' and new id='badgeDetailModal'
+    const modal = document.getElementById('badgeDetailModal') || document.getElementById('bdModal');
+    const con = document.getElementById('badgeDetailContent') || document.getElementById('bd-content');
     if (!modal || !con) return;
 
     const users = DB.getUsers().filter(function (x) { return x.verified && x.role !== 'admin'; });
@@ -666,15 +668,87 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 // ════════ FUNCTION ALIASES (HTML attribute compatibility) ════════
-// These aliases bridge the gap between HTML onclick attribute names and actual function names.
 // HTML uses: resendOtpCode, autoGenerateUsername, checkUsernameAvailability, searchReferral
-// Functions defined as: resendOtp, autoUname, checkUname, refSearch
 function resendOtpCode() { resendOtp(); }
 function autoGenerateUsername() { autoUname(); }
 function checkUsernameAvailability() { checkUname(); }
 function searchReferral() { refSearch(); }
 
-// openAuthModal alias for pages that load auth.js (openAuth is used in some inner pages)
+// openAuth / openAuthModal unified alias
 function openAuth(mode) { openAuthModal(mode); }
-// closeAuth alias
-function closeAuth() { const m = document.getElementById('authModal'); if (m) m.classList.add('hidden'); }
+
+// closeAuthModal — unified single implementation (removes duplicate)
+function closeAuthModal() {
+    const modal = document.getElementById('authModal');
+    if (modal) modal.classList.add('hidden');
+    clearAAlerts();
+}
+// closeAuth is an alias for closeAuthModal
+function closeAuth() { closeAuthModal(); }
+
+// setAuthTab — bridges index.html onclick="setAuthTab('login')" → setAtab()
+function setAuthTab(t) { setAtab(t); }
+
+// setAuthPanel — bridges onclick="setAuthPanel('forgot')" → setPanel()
+function setAuthPanel(p) { setPanel(p); }
+
+// openTermsModal / closeTermsModal — bridges to openTerms/closeTerms
+function openTermsModal() { openTerms(); }
+function closeTermsModal() { closeTerms(); }
+
+// Badge detail modal aliases — unified to use badgeDetailModal id
+function openBadgeDetail(key) { openBD(key); }
+function closeBadgeDetailModal() { closeBadgeDetail(); }
+
+// acceptTerms — check terms checkbox and close modal
+function acceptTerms() {
+    const cb = document.getElementById('su-terms');
+    if (cb) cb.checked = true;
+    closeTerms();
+}
+
+// toggleAuthMenu / closeAuthMenu for nav dropdown
+function toggleAuthMenu(event) {
+    if (event) event.stopPropagation();
+    const drop = document.getElementById('navAuthDrop');
+    const btn = document.getElementById('navAuthBtn');
+    const caret = document.getElementById('navAuthCaret');
+    if (!drop) return;
+    const isOpen = !drop.classList.contains('hidden') && drop.style.display !== 'none';
+    if (isOpen) {
+        drop.style.display = 'none';
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+        if (caret) caret.style.transform = '';
+    } else {
+        drop.style.display = 'block';
+        if (btn) btn.setAttribute('aria-expanded', 'true');
+        if (caret) caret.style.transform = 'rotate(180deg)';
+    }
+}
+function closeAuthMenu() {
+    const drop = document.getElementById('navAuthDrop');
+    if (drop) drop.style.display = 'none';
+    const btn = document.getElementById('navAuthBtn');
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+}
+// Close auth menu when clicking outside
+document.addEventListener('click', function(e) {
+    const drop = document.getElementById('navAuthDrop');
+    const btn = document.getElementById('navAuthBtn');
+    if (drop && btn && !btn.contains(e.target) && !drop.contains(e.target)) {
+        drop.style.display = 'none';
+        btn.setAttribute('aria-expanded', 'false');
+    }
+});
+
+// toggleLangMenu
+function toggleLangMenu() {
+    const drop = document.getElementById('langDrop');
+    if (drop) drop.classList.toggle('open');
+}
+document.addEventListener('click', function(e) {
+    const langBtn = document.getElementById('langBtn');
+    const langDrop = document.getElementById('langDrop');
+    if (langDrop && langBtn && !langBtn.contains(e.target)) langDrop.classList.remove('open');
+});
+

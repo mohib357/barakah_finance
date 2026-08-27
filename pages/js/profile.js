@@ -45,7 +45,7 @@ async function initProfile() {
 
   // Load fresh data
   try {
-    const res = await fetch(`${API}/users/${currentUser.id}`, {
+    const res = await fetch(`${_PROFILE_API}/users/${currentUser.id}`, {
       headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
       signal: AbortSignal.timeout(3000)
     });
@@ -381,7 +381,7 @@ async function saveSocial() {
 
 async function patchUser(data) {
   try {
-    const res = await fetch(`${API}/users/${currentUser.id}`, {
+    const res = await fetch(`${_PROFILE_API}/users/${currentUser.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
       body: JSON.stringify(data),
@@ -418,7 +418,7 @@ function checkUnameAvail() {
   _unameTimer = setTimeout(async () => {
     let available = true;
     try {
-      const res = await fetch(`${API}/auth/check-username/${val}`, { signal: AbortSignal.timeout(2000) });
+      const res = await fetch(`${_PROFILE_API}/auth/check-username/${val}`, { signal: AbortSignal.timeout(2000) });
       if (res.ok) { const d = await res.json(); available = d.available; }
     } catch (_) { if (typeof DB !== 'undefined') available = DB.checkUsername(val); }
     if (status) status.textContent = available ? '✅' : '❌';
@@ -451,7 +451,7 @@ async function changePassword() {
     showToast('পাসওয়ার্ড কমপক্ষে ৮ অক্ষর, সংখ্যা ও অক্ষরসহ হতে হবে।', 'error'); return;
   }
   try {
-    const res = await fetch(`${API}/auth/change-password`, {
+    const res = await fetch(`${_PROFILE_API}/auth/change-password`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
       body: JSON.stringify({ currentPassword: oldPass, newPassword: newPass }),

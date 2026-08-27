@@ -170,7 +170,7 @@ function openDetail(id) {
     }
 
     const modal = document.getElementById('detailModal');
-    if (modal) modal.classList.add('open');
+    if (modal) modal.classList.remove('hidden');
 }
 
 function setMainImg(src, thumb) {
@@ -182,12 +182,32 @@ function setMainImg(src, thumb) {
 
 function closeDetail() {
     const m = document.getElementById('detailModal');
-    if (m) m.classList.remove('open');
+    if (m) m.classList.add('hidden');
 }
 
 function openOrderFromDetail() {
     closeDetail();
     if (selectedProduct) openOrder(selectedProduct.id);
+}
+
+// Update calc when installment count changes in detail modal
+function updateDetailCalc() {
+    if (!selectedProduct) return;
+    const n = parseInt(document.getElementById('detailInstallNum')?.value || '6');
+    const price = selectedProduct.price;
+    const total = Math.round(price * 1.10);
+    const perInstall = Math.round(total / n);
+    const lastInstall = Math.round(total - perInstall * (n - 1));
+    const resultEl = document.getElementById('detailCalcResult');
+    if (resultEl) {
+        resultEl.innerHTML =
+            'মোট পরিশোধযোগ্য: <strong>' + fmtBn(total) + '</strong> | ' +
+            'প্রতি কিস্তি: <strong>' + fmtBn(perInstall) + '</strong> × ' + n +
+            ' (শেষ: ' + fmtBn(lastInstall) + ')';
+    }
+    // Update order button
+    const installEl = document.getElementById('detailInstall');
+    if (installEl) installEl.textContent = 'কিস্তি: ' + fmtBn(perInstall) + ' × ' + n + ' (১০% লাভ)';
 }
 
 // ═══ ORDER MODAL ═══
@@ -223,12 +243,12 @@ function openOrder(id) {
     const alertEl = document.getElementById('orderAlert');
     if (alertEl) alertEl.classList.add('hidden');
     const modal = document.getElementById('orderModal');
-    if (modal) modal.classList.add('open');
+    if (modal) modal.classList.remove('hidden');
 }
 
 function closeOrder() {
     const m = document.getElementById('orderModal');
-    if (m) m.classList.remove('open');
+    if (m) m.classList.add('hidden');
 }
 
 function submitOrder() {

@@ -64,58 +64,59 @@
   <div class="shop-filters">
     <div class="search-input-wrap" style="flex:1;min-width:240px">
       <span class="search-icon">🔍</span>
-      <input type="text" class="search-input" id="shopSearch" placeholder="পণ্য খুঁজুন..." oninput="filterProducts()"/>
+      <input type="text" class="search-input" id="searchInput" placeholder="পণ্য খুঁজুন..." oninput="renderProducts()"/>
     </div>
-    <div id="shopCatBtns" style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="shop-cat-btn active" data-cat="" onclick="setCategory('',this)">সব পণ্য</button>
+    <div id="catFilters" style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="fcat active" data-cat="" onclick="setFilter('all',this)">সব পণ্য</button>
     </div>
-    <select class="filter-select" id="shopSort" onchange="filterProducts()">
+    <select class="filter-select" id="sortSel" onchange="renderProducts()">
       <option value="">ক্রমানুসারে</option>
       <option value="price-asc">মূল্য: কম থেকে বেশি</option>
       <option value="price-desc">মূল্য: বেশি থেকে কম</option>
+      <option value="name">নাম অনুসারে</option>
     </select>
   </div>
 
-  <!-- Product grid -->
-  <div class="shop-grid" id="shopGrid">
-    <div class="empty-state" style="grid-column:1/-1"><div class="spinner spinner-lg"></div></div>
-  </div>
+  <!-- Product count -->
+  <div style="margin-bottom:12px;font-size:.9rem;color:var(--text-muted)" id="productCount"></div>
 
-  <!-- Load more -->
-  <div class="text-center mt-8 hidden" id="loadMoreWrap">
-    <button class="btn btn-outline btn-lg" onclick="loadMoreProducts()">আরও দেখুন</button>
+  <!-- Product grid -->
+  <div class="shop-grid" id="productsGrid">
+    <div class="empty-state" style="grid-column:1/-1"><div class="spinner spinner-lg"></div></div>
   </div>
 </div>
 
 <!-- Product Detail Modal -->
-<div class="modal-overlay hidden" id="productModal">
+<div class="modal-overlay hidden" id="detailModal">
   <div class="modal modal-lg" id="productModalBox">
     <div class="modal-head">
-      <h3 id="pmName">পণ্যের নাম</h3>
-      <button class="modal-close" onclick="closeProductModal()">✕</button>
+      <h3 id="detailName">পণ্যের নাম</h3>
+      <button class="modal-close" onclick="closeDetail()">✕</button>
     </div>
     <div class="modal-body">
       <div class="pm-grid">
         <div class="pm-left">
-          <div class="pm-img-main" id="pmImgMain" style="background:var(--bg-surface-2);border-radius:12px;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;font-size:5rem;margin-bottom:8px">📦</div>
-          <div class="pm-img-thumbs" id="pmImgThumbs" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+          <div class="pm-img-main" id="mainImgBox" style="background:var(--bg-surface-2);border-radius:12px;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;font-size:5rem;margin-bottom:8px">
+            <span id="mainImgEmoji">📦</span>
+          </div>
+          <div class="pm-img-thumbs" id="thumbRow" style="display:flex;gap:8px;flex-wrap:wrap"></div>
         </div>
         <div class="pm-right">
-          <div class="pm-cat" id="pmCat" style="font-size:.75rem;color:var(--clr-primary-500);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px"></div>
-          <div class="pm-price" id="pmPrice" style="font-size:2rem;font-weight:800;color:var(--clr-primary-500);margin-bottom:8px">৳ ০</div>
-          <div class="pm-install" id="pmInstall" style="font-size:.85rem;color:var(--text-muted);margin-bottom:12px"></div>
-          <div class="pm-desc" id="pmDesc" style="font-size:.9rem;color:var(--text-secondary);line-height:1.8;margin-bottom:16px"></div>
-          <div class="pm-stock" id="pmStock"></div>
+          <div class="pm-cat" id="detailCat" style="font-size:.75rem;color:var(--clr-primary-500);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px"></div>
+          <div class="pm-price" id="detailPrice" style="font-size:2rem;font-weight:800;color:var(--clr-primary-500);margin-bottom:8px">৳ ০</div>
+          <div class="pm-install" id="detailInstall" style="font-size:.85rem;color:var(--text-muted);margin-bottom:12px"></div>
+          <div class="pm-desc" id="detailDesc" style="font-size:.9rem;color:var(--text-secondary);line-height:1.8;margin-bottom:16px"></div>
+          <div id="detailStock"></div>
           <div class="pm-actions" style="display:flex;flex-direction:column;gap:8px;margin-top:16px">
-            <div class="form-group" id="pmInstallSelect">
+            <div class="form-group" id="detailInstallSelect">
               <label class="form-label">কিস্তির সংখ্যা</label>
-              <select class="form-select" id="pmInstallNum" onchange="updateInstallment()">
+              <select class="form-select" id="detailInstallNum" onchange="updateDetailCalc()">
                 <option value="3">৩ মাস</option><option value="6" selected>৬ মাস</option>
                 <option value="9">৯ মাস</option><option value="12">১২ মাস</option>
               </select>
             </div>
-            <div style="background:var(--bg-surface-2);padding:12px;border-radius:12px;font-size:.9rem;color:var(--text-secondary)" id="pmCalcResult"></div>
-            <button class="btn btn-primary btn-lg btn-block" id="pmOrderBtn" onclick="orderProduct()">🛒 কিস্তিতে অর্ডার করুন</button>
+            <div style="background:var(--bg-surface-2);padding:12px;border-radius:12px;font-size:.9rem;color:var(--text-secondary)" id="detailCalcResult"></div>
+            <button class="btn btn-primary btn-lg btn-block" id="detailOrderBtn" onclick="openOrderFromDetail()">🛒 কিস্তিতে অর্ডার করুন</button>
           </div>
         </div>
       </div>
@@ -126,21 +127,38 @@
 <!-- Order Confirm Modal -->
 <div class="modal-overlay hidden" id="orderModal">
   <div class="modal modal-sm">
-    <div class="modal-head"><h3>✅ অর্ডার নিশ্চিত করুন</h3><button class="modal-close" onclick="document.getElementById('orderModal').classList.add('hidden')">✕</button></div>
+    <div class="modal-head"><h3>✅ অর্ডার নিশ্চিত করুন</h3><button class="modal-close" onclick="closeOrder()">✕</button></div>
     <div class="modal-body">
-      <div id="orderSummary" style="font-size:.9rem;color:var(--text-secondary);line-height:2"></div>
-      <div class="form-group mt-4">
-        <label class="form-label">ডেলিভারি ঠিকানা</label>
-        <textarea class="form-textarea" id="orderAddress" rows="2" placeholder="আপনার সম্পূর্ণ ঠিকানা লিখুন..."></textarea>
+      <div id="orderSummary" style="font-size:.9rem;color:var(--text-secondary);line-height:2;background:var(--bg-surface-2);padding:12px;border-radius:8px;margin-bottom:16px"></div>
+      <div id="orderAlert" class="aalert aalert-err hidden"></div>
+      <div class="form-group">
+        <label class="form-label">নাম <span class="req">*</span></label>
+        <input type="text" class="form-input" id="ord-name" placeholder="আপনার পূর্ণ নাম"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">মোবাইল নম্বর <span class="req">*</span></label>
+        <input type="tel" class="form-input" id="ord-phone" placeholder="01XXXXXXXXX"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">এনআইডি / সদস্য আইডি <span class="req">*</span></label>
+        <input type="text" class="form-input" id="ord-nid" placeholder="NID বা সদস্য আইডি"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">ডেলিভারি ঠিকানা <span class="req">*</span></label>
+        <textarea class="form-textarea" id="ord-address" rows="2" placeholder="আপনার সম্পূর্ণ ঠিকানা..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">জামিনদারের নাম <small class="text-muted">(সদস্যদের জন্য)</small></label>
+        <input type="text" class="form-input" id="ord-witness" placeholder="জামিনদারের নাম"/>
       </div>
       <div class="form-group">
         <label class="form-label">বিশেষ নির্দেশনা <small class="text-muted">(ঐচ্ছিক)</small></label>
-        <textarea class="form-textarea" id="orderNote" rows="2" placeholder="কোনো বিশেষ নির্দেশনা থাকলে লিখুন..."></textarea>
+        <textarea class="form-textarea" id="ord-note" rows="2" placeholder="কোনো বিশেষ নির্দেশনা..."></textarea>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('orderModal').classList.add('hidden')">বাতিল</button>
-      <button class="btn btn-primary btn-sm" onclick="confirmOrder()">অর্ডার জমা দিন</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeOrder()">বাতিল</button>
+      <button class="btn btn-primary btn-sm" onclick="submitOrder()">✅ অর্ডার জমা দিন</button>
     </div>
   </div>
 </div>
@@ -151,6 +169,6 @@
 <script src="../js/api.js"></script>
 <script src="../js/app.js"></script>
 <script src="../js/notice.js"></script>
-<script src="../js/shop.js"></script>
+<script src="js/shop.js"></script>
 </body>
 </html>

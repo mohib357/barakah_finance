@@ -2,7 +2,8 @@
 //  BARAKAH FINANCE — USER DASHBOARD JS
 // ═══════════════════════════════════════════════════════════
 
-const API = 'http://localhost:3001/api';
+// Use window._API to avoid const redeclaration conflict with api.js
+const _DASH_API = (typeof API !== 'undefined') ? API : 'http://localhost:3001/api';
 let currentUser = null;
 let _allUsers = [];
 
@@ -41,7 +42,7 @@ async function initDashboard() {
 // ─── Refresh user from server ───
 async function refreshUserData() {
   try {
-    const res = await fetch(`${API}/auth/me`, {
+    const res = await fetch(`${_DASH_API}/auth/me`, {
       headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
       signal: AbortSignal.timeout(3000)
     });
@@ -159,7 +160,7 @@ async function loadOverview() {
   // Fetch stats
   let stats = {};
   try {
-    const res = await fetch(`${API}/reports/dashboard`, {
+    const res = await fetch(`${_DASH_API}/reports/dashboard`, {
       headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
       signal: AbortSignal.timeout(3000)
     });
@@ -291,7 +292,7 @@ async function loadRecentActivity() {
 
   let activities = [];
   try {
-    const res = await fetch(`${API}/audit/live?n=10`, {
+    const res = await fetch(`${_DASH_API}/audit/live?n=10`, {
       headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
       signal: AbortSignal.timeout(3000)
     });
@@ -359,7 +360,7 @@ async function loadPendingActions(stats) {
 async function loadSavings() {
   let savings = [];
   try {
-    const res = await fetch(`${API}/savings/user/${currentUser.id}`, {
+    const res = await fetch(`${_DASH_API}/savings/user/${currentUser.id}`, {
       headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
       signal: AbortSignal.timeout(3000)
     });
@@ -397,7 +398,7 @@ async function loadSavings() {
 async function loadLoans() {
   let loans = [];
   try {
-    const res = await fetch(`${API}/loans/user/${currentUser.id}`, {
+    const res = await fetch(`${_DASH_API}/loans/user/${currentUser.id}`, {
       headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
       signal: AbortSignal.timeout(3000)
     });
@@ -439,7 +440,7 @@ async function loadLoans() {
 async function loadOrders() {
   let orders = [];
   try {
-    const res = await fetch(`${API}/orders/user/${currentUser.phone}`, {
+    const res = await fetch(`${_DASH_API}/orders/user/${currentUser.phone}`, {
       headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
       signal: AbortSignal.timeout(3000)
     });
@@ -502,7 +503,7 @@ function profileRow(lbl, val) {
 async function loadAllUsers() {
   let users = [];
   try {
-    const res = await fetch(`${API}/users`, {
+    const res = await fetch(`${_DASH_API}/users`, {
       headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
       signal: AbortSignal.timeout(4000)
     });
@@ -546,7 +547,7 @@ async function changeRole(userId, currentRole) {
   const newRole = prompt('নতুন রোল (user/member/admin):', currentRole);
   if (!newRole || newRole === currentRole) return;
   try {
-    await fetch(`${API}/users/${userId}/role`, {
+    await fetch(`${_DASH_API}/users/${userId}/role`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
       body: JSON.stringify({ role: newRole })
@@ -588,7 +589,7 @@ async function submitQardDash() {
   if (amount > 15000) { showToast('সর্বোচ্চ ১৫,০০০ টাকা।', 'error'); return; }
 
   try {
-    const res = await fetch(`${API}/loans`, {
+    const res = await fetch(`${_DASH_API}/loans`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
       body: JSON.stringify({ amount, reason, months, userId: currentUser.id }),
@@ -615,7 +616,7 @@ async function loadWithdrawal() {
 
   let savings = [];
   try {
-    const res = await fetch(`${API}/savings/user/${currentUser.id}`, {
+    const res = await fetch(`${_DASH_API}/savings/user/${currentUser.id}`, {
       headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
       signal: AbortSignal.timeout(3000)
     });
@@ -752,7 +753,7 @@ async function submitWithdrawal() {
   };
 
   try {
-    const res = await fetch(`${API}/savings/withdrawal`, {
+    const res = await fetch(`${_DASH_API}/savings/withdrawal`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
       body: JSON.stringify(request),
@@ -779,7 +780,7 @@ async function loadWithdrawalHistory() {
   if (!wrap) return;
   let history = [];
   try {
-    const res = await fetch(`${API}/savings/withdrawal/user/${currentUser.id}`, {
+    const res = await fetch(`${_DASH_API}/savings/withdrawal/user/${currentUser.id}`, {
       headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
       signal: AbortSignal.timeout(3000)
     });
@@ -815,7 +816,7 @@ async function loadKyc() {
 
   let kycData = null;
   try {
-    const res = await fetch(`${API}/auth/me`, {
+    const res = await fetch(`${_DASH_API}/auth/me`, {
       headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
       signal: AbortSignal.timeout(3000)
     });
@@ -897,7 +898,7 @@ async function loadProfit() {
 
   let profitData = {};
   try {
-    const res = await fetch(`${API}/reports/profit/user/${currentUser.id}`, {
+    const res = await fetch(`${_DASH_API}/reports/profit/user/${currentUser.id}`, {
       headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
       signal: AbortSignal.timeout(3000)
     });

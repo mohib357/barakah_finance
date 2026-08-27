@@ -2,7 +2,8 @@
 //  BARAKAH FINANCE — MEMBER LEDGER JS
 // ═══════════════════════════════════════════════════════════
 
-const API = 'http://localhost:3001/api';
+// Avoid const redeclaration conflict with api.js
+const _LEDGER_API = (typeof API !== 'undefined') ? API : 'http://localhost:3001/api';
 let currentUser = null;
 let _entries = [];
 
@@ -34,7 +35,7 @@ async function loadLedger() {
     if (type) params.set('type', type);
     if (from) params.set('from', from);
     if (to)   params.set('to', to);
-    const res = await fetch(`${API}/ledger?${params}`, {
+    const res = await fetch(`${_LEDGER_API}/ledger?${params}`, {
       headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
       signal: AbortSignal.timeout(4000)
     });
