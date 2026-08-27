@@ -122,9 +122,11 @@
     <a id="mnav-signup" onclick="openAuthModal('signup');toggleMob()" data-i18n="nav.signup">📝 নিবন্ধন করুন</a>
     <a href="admin/panel.html" data-i18n="nav.admin">🛡️ অ্যাডমিন প্যানেল</a>
   </div>
+  <!-- Mobile menu overlay backdrop -->
+  <div class="nav-overlay" id="navOverlay" onclick="toggleMob()"></div>
 
   <!-- ══════ NOTICE BAR (Fixed: animation will be applied by JS) ══════ -->
-  <div class="notice-bar" style="position:sticky;top:80px;z-index:997;">
+  <div class="notice-bar" id="noticeBar">
     <div class="notice-label">📢 নোটিশ</div>
     <div class="notice-scroll-wrap">
       <div id="notice-track">লোড হচ্ছে...</div>

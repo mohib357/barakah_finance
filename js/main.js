@@ -275,13 +275,16 @@ function smScroll(id) {
 function toggleMob(force) {
     const m = document.getElementById('mobileMenu');
     const h = document.getElementById('hamburger');
+    const overlay = document.getElementById('navOverlay');
     if (!m) return;
     if (force === false) {
         m.classList.remove('active');
         if (h) h.classList.remove('active');
+        if (overlay) overlay.style.display = 'none';
     } else {
-        m.classList.toggle('active');
-        if (h) h.classList.toggle('active');
+        const isOpen = m.classList.toggle('active');
+        if (h) h.classList.toggle('active', isOpen);
+        if (overlay) overlay.style.display = isOpen ? 'block' : 'none';
     }
 }
 
