@@ -73,11 +73,11 @@ async function doAdminLogin() {
     showLoginErr(d.error || 'লগইন ব্যর্থ।'); return;
   } catch (_) {}
 
-  // Offline fallback
+  // Offline fallback — password must match stored hash; no universal backdoor
   let user = null;
   if (typeof DB !== 'undefined') {
     user = DB.findUser(id);
-    if (user && (user.password === pw || pw === 'admin1234') && (user.role === 'admin' || user.role === 'super_admin')) {
+    if (user && user.password === pw && (user.role === 'admin' || user.role === 'super_admin')) {
       adminSession = user;
       localStorage.setItem('bf_admin_session', JSON.stringify(adminSession));
       DB.setSession(adminSession);
@@ -868,7 +868,7 @@ async function resetPermissions(userId) {
 }
 
 async function apiDelete(path) {
-  const token = localStorage.getItem('bf_admin_token');
+  const token = localStorage.getItem('bf_token'); // ✅ Fixed: was 'bf_admin_token'
   const r = await fetch(API + path, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' } });
   if (!r.ok) throw new Error((await r.json()).error || 'API error');
   return r.json();

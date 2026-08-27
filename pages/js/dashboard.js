@@ -87,6 +87,9 @@ function buildNav() {
     show('navSavings');
     show('navLoans');
     show('navLedger');
+    show('navWithdrawal'); // ✅ Now has panel
+    show('navProfit');     // ✅ Now has panel
+    show('navKyc');        // ✅ Now has panel
   }
   if (isAdmin) {
     show('adminNavLabel');
@@ -115,6 +118,9 @@ function showPanel(id, btn) {
     profile:       loadProfilePanel,
     allUsers:      loadAllUsers,
     notifications: loadNotifications,
+    withdrawal:    loadWithdrawal,   // ✅ Added
+    profit:        loadProfit,       // ✅ Added
+    kyc:           loadKyc,          // ✅ Added
   };
   loaders[id]?.();
 }
@@ -600,4 +606,406 @@ async function submitQardDash() {
   }
   document.getElementById('qardDashModal')?.classList.add('hidden');
   showToast('করজ আবেদন সফল!', 'success');
+}
+
+// ─── Withdrawal Panel ───
+async function loadWithdrawal() {
+  const panel = document.getElementById('panel-withdrawal');
+  if (!panel) return;
+
+  let savings = [];
+  try {
+    const res = await fetch(`${API}/savings/user/${currentUser.id}`, {
+      headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
+      signal: AbortSignal.timeout(3000)
+    });
+    if (res.ok) { const d = await res.json(); savings = d.savings || []; }
+  } catch (_) {}
+  if (!savings.length && typeof DB !== 'undefined') savings = DB.getSavings().filter(s => s.userId === currentUser.id);
+
+  const total = savings.reduce((a, s) => a + (s.amount || 0), 0);
+
+  panel.innerHTML = `
+    <h2 style="margin-bottom:20px;font-size:1.5rem">💸 উত্তোলন আবেদন</h2>
+
+    <!-- Withdrawal Policy Notice -->
+    <div class="admin-card" style="border-left:4px solid var(--clr-warning);margin-bottom:20px">
+      <div class="card-title">📋 উত্তোলন নীতিমালা</div>
+      <ul style="font-size:.9rem;color:var(--text-secondary);line-height:2;margin:0;padding-left:18px">
+        <li>আংশিক উত্তোলন: ৩০ দিনের পূর্বনোটিশ প্রয়োজন।</li>
+        <li>সম্পূর্ণ উত্তোলন: ৬০ দিনের পূর্বনোটিশ প্রয়োজন।</li>
+        <li>জরুরি উত্তোলন: কমিটির বিশেষ অনুমোদন প্রয়োজন।</li>
+        <li>উত্তোলনের সময় আনুপাতিক হারে মুনাফা হিসাব করা হবে।</li>
+        <li>প্রজেক্টে বিনিয়োগকৃত অর্থ উত্তোলনে বিনিয়োগ উঠে আসার পর পাওয়া যাবে।</li>
+      </ul>
+    </div>
+
+    <!-- Current Balance -->
+    <div class="stats-row" style="margin-bottom:20px">
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-green">💰</div>
+        <div class="stat-val">৳ ${fmtN(total)}</div>
+        <div class="stat-lbl">মোট জমাকৃত অর্থ</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-gold">📊</div>
+        <div class="stat-val">${(total / 2000).toFixed(2)}</div>
+        <div class="stat-lbl">মোট ইউনিট</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-blue">💵</div>
+        <div class="stat-val">হিসাব চলছে</div>
+        <div class="stat-lbl">আনুমানিক মুনাফা</div>
+      </div>
+    </div>
+
+    <!-- Withdrawal Request Form -->
+    <div class="admin-card">
+      <div class="card-title">📝 উত্তোলন আবেদন করুন</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px" class="responsive-2col">
+        <div class="form-group">
+          <label class="form-label">উত্তোলনের ধরন <span style="color:var(--clr-danger)">*</span></label>
+          <select class="form-select" id="wdType" onchange="updateWithdrawalInfo()">
+            <option value="partial">আংশিক উত্তোলন (৩০ দিন নোটিশ)</option>
+            <option value="full">সম্পূর্ণ উত্তোলন (৬০ দিন নোটিশ)</option>
+            <option value="emergency">জরুরি উত্তোলন (কমিটি অনুমোদন)</option>
+          </select>
+        </div>
+        <div class="form-group" id="wdAmtWrap">
+          <label class="form-label">পরিমাণ (৳) <span style="color:var(--clr-danger)">*</span></label>
+          <input type="number" class="form-input" id="wdAmount" placeholder="পরিমাণ লিখুন" min="1" max="${total}" oninput="updateWithdrawalInfo()"/>
+          <div style="font-size:.75rem;color:var(--text-muted);margin-top:4px">সর্বোচ্চ: ৳ ${fmtN(total)}</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">কারণ ও বিস্তারিত <span style="color:var(--clr-danger)">*</span></label>
+        <textarea class="form-textarea" id="wdReason" rows="3" placeholder="উত্তোলনের কারণ বিস্তারিত লিখুন..."></textarea>
+      </div>
+      <div class="admin-card" id="wdInfo" style="background:var(--bg-surface-2);border:none;margin-bottom:16px;display:none">
+        <div id="wdInfoContent" style="font-size:.88rem;color:var(--text-secondary);line-height:2"></div>
+      </div>
+      <div id="wdAlert" style="display:none;padding:10px 14px;border-radius:8px;font-size:.85rem;margin-bottom:12px"></div>
+      <button class="btn btn-primary" onclick="submitWithdrawal()">💸 উত্তোলন আবেদন করুন</button>
+    </div>
+
+    <!-- Previous Requests -->
+    <div class="admin-card" style="margin-top:20px">
+      <div class="card-title">📋 পূর্ববর্তী আবেদন</div>
+      <div id="wdHistory">
+        <div class="empty-state" style="padding:30px"><div class="empty-state-icon">📋</div><div class="empty-state-title">কোনো পূর্ববর্তী আবেদন নেই</div></div>
+      </div>
+    </div>`;
+
+  loadWithdrawalHistory();
+}
+
+function updateWithdrawalInfo() {
+  const type = document.getElementById('wdType')?.value;
+  const amount = parseFloat(document.getElementById('wdAmount')?.value) || 0;
+  const infoDiv = document.getElementById('wdInfo');
+  const infoContent = document.getElementById('wdInfoContent');
+  const amtWrap = document.getElementById('wdAmtWrap');
+  if (!infoDiv || !infoContent) return;
+
+  if (type === 'full') {
+    if (amtWrap) amtWrap.style.display = 'none';
+  } else {
+    if (amtWrap) amtWrap.style.display = '';
+  }
+
+  const notices = {
+    partial: `⏳ আংশিক উত্তোলনের জন্য আবেদনের তারিখ থেকে <strong>৩০ দিন</strong> পর কার্যকর হবে।<br>
+              💰 উত্তোলনযোগ্য পরিমাণ: <strong>৳ ${fmtN(amount)}</strong><br>
+              📅 আনুমানিক তারিখ: <strong>${new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('bn-BD')}</strong>`,
+    full: `⏳ সম্পূর্ণ উত্তোলনের জন্য আবেদনের তারিখ থেকে <strong>৬০ দিন</strong> পর কার্যকর হবে।<br>
+           💰 সম্পূর্ণ জমাকৃত অর্থ + আনুপাতিক মুনাফা পাওয়া যাবে।<br>
+           📅 আনুমানিক তারিখ: <strong>${new Date(Date.now() + 60*24*60*60*1000).toLocaleDateString('bn-BD')}</strong>`,
+    emergency: `🚨 জরুরি উত্তোলনের জন্য কমিটির বিশেষ অনুমোদন প্রয়োজন।<br>
+                📞 কমিটির সাথে সরাসরি যোগাযোগ করুন।<br>
+                ⚠️ কারণ যথেষ্ট প্রমাণযোগ্য হতে হবে।`
+  };
+  infoContent.innerHTML = notices[type] || '';
+  infoDiv.style.display = 'block';
+}
+
+async function submitWithdrawal() {
+  const type = document.getElementById('wdType')?.value;
+  const reason = document.getElementById('wdReason')?.value.trim();
+  const amount = type === 'full' ? null : parseFloat(document.getElementById('wdAmount')?.value);
+  const alertEl = document.getElementById('wdAlert');
+
+  if (!reason) {
+    alertEl.style.cssText = 'display:block;background:#fef2f2;border:1px solid #fca5a5;color:#dc2626';
+    alertEl.textContent = 'কারণ লিখুন।'; return;
+  }
+  if (type !== 'full' && (!amount || amount <= 0)) {
+    alertEl.style.cssText = 'display:block;background:#fef2f2;border:1px solid #fca5a5;color:#dc2626';
+    alertEl.textContent = 'পরিমাণ লিখুন।'; return;
+  }
+
+  const request = {
+    id: 'WD-' + Date.now(),
+    userId: currentUser.id,
+    type, amount: amount || 'সম্পূর্ণ',
+    reason, status: 'pending',
+    requestedAt: new Date().toISOString()
+  };
+
+  try {
+    const res = await fetch(`${API}/savings/withdrawal`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
+      body: JSON.stringify(request),
+      signal: AbortSignal.timeout(4000)
+    });
+    if (res.ok) {
+      alertEl.style.cssText = 'display:block;background:#f0fdf4;border:1px solid #86efac;color:#16a34a';
+      alertEl.textContent = 'উত্তোলন আবেদন সফলভাবে জমা হয়েছে। কমিটি পর্যালোচনা করবে।';
+      loadWithdrawalHistory(); return;
+    }
+  } catch (_) {}
+
+  // Offline: store in localStorage
+  const wdList = JSON.parse(localStorage.getItem('bf_withdrawals_' + currentUser.id) || '[]');
+  wdList.push(request);
+  localStorage.setItem('bf_withdrawals_' + currentUser.id, JSON.stringify(wdList));
+  alertEl.style.cssText = 'display:block;background:#f0fdf4;border:1px solid #86efac;color:#16a34a';
+  alertEl.textContent = 'উত্তোলন আবেদন জমা হয়েছে।';
+  loadWithdrawalHistory();
+}
+
+async function loadWithdrawalHistory() {
+  const wrap = document.getElementById('wdHistory');
+  if (!wrap) return;
+  let history = [];
+  try {
+    const res = await fetch(`${API}/savings/withdrawal/user/${currentUser.id}`, {
+      headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
+      signal: AbortSignal.timeout(3000)
+    });
+    if (res.ok) { const d = await res.json(); history = d.requests || d.withdrawals || []; }
+  } catch (_) {}
+  if (!history.length) history = JSON.parse(localStorage.getItem('bf_withdrawals_' + currentUser.id) || '[]');
+
+  if (!history.length) {
+    wrap.innerHTML = `<div class="empty-state" style="padding:30px"><div class="empty-state-icon">📋</div><div class="empty-state-title">কোনো আবেদন নেই</div></div>`;
+    return;
+  }
+  const typeLabel = { partial:'আংশিক', full:'সম্পূর্ণ', emergency:'জরুরি' };
+  const stBadge = { pending:'badge-warning', approved:'badge-paid', rejected:'badge-danger', processing:'badge-info' };
+  const stLabel = { pending:'পেন্ডিং', approved:'অনুমোদিত', rejected:'প্রত্যাখ্যাত', processing:'প্রক্রিয়াধীন' };
+  wrap.innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>আইডি</th><th>ধরন</th><th>পরিমাণ</th><th>কারণ</th><th>তারিখ</th><th>স্ট্যাটাস</th></tr></thead>
+    <tbody>${history.sort((a,b) => new Date(b.requestedAt) - new Date(a.requestedAt)).map(r => `
+      <tr>
+        <td><code style="font-size:.75rem">${r.id?.slice(0,12) || '—'}</code></td>
+        <td>${typeLabel[r.type] || r.type || '—'}</td>
+        <td style="font-weight:700">${r.amount === 'সম্পূর্ণ' ? 'সম্পূর্ণ' : '৳ ' + fmtN(r.amount)}</td>
+        <td style="font-size:.82rem;color:var(--text-muted)">${(r.reason||'').slice(0,50)}${r.reason?.length > 50 ? '...' : ''}</td>
+        <td style="font-size:.8rem">${fmtDT(r.requestedAt)}</td>
+        <td><span class="badge ${stBadge[r.status] || 'badge-muted'}">${stLabel[r.status] || r.status}</span></td>
+      </tr>`).join('')}
+    </tbody></table></div>`;
+}
+
+// ─── KYC Panel ───
+async function loadKyc() {
+  const panel = document.getElementById('panel-kyc');
+  if (!panel) return;
+
+  let kycData = null;
+  try {
+    const res = await fetch(`${API}/auth/me`, {
+      headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
+      signal: AbortSignal.timeout(3000)
+    });
+    if (res.ok) { const d = await res.json(); kycData = d.kyc || null; }
+  } catch (_) {}
+
+  const kycStatus = kycData?.status || 'not_submitted';
+  const statusMap = {
+    'not_submitted': { label:'জমা দেওয়া হয়নি', color:'badge-muted', icon:'📋', desc:'KYC ডকুমেন্ট এখনো জমা দেওয়া হয়নি।' },
+    'submitted':     { label:'জমা দেওয়া হয়েছে', color:'badge-warning', icon:'⏳', desc:'কমিটি পর্যালোচনা করছে।' },
+    'under_review':  { label:'পর্যালোচনাধীন', color:'badge-info', icon:'🔍', desc:'আপনার ডকুমেন্ট যাচাই করা হচ্ছে।' },
+    'verified':      { label:'যাচাইকৃত', color:'badge-paid', icon:'✅', desc:'আপনার KYC সফলভাবে যাচাই হয়েছে।' },
+    'rejected':      { label:'প্রত্যাখ্যাত', color:'badge-danger', icon:'❌', desc:'KYC প্রত্যাখ্যাত। পুনরায় জমা দিন।' },
+  };
+  const info = statusMap[kycStatus] || statusMap['not_submitted'];
+
+  panel.innerHTML = `
+    <h2 style="margin-bottom:20px;font-size:1.5rem">🪪 KYC যাচাই অবস্থা</h2>
+
+    <!-- Status Card -->
+    <div class="admin-card" style="border-left:4px solid var(--clr-primary-500);margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:16px">
+        <div style="font-size:3rem">${info.icon}</div>
+        <div>
+          <div style="font-size:1.1rem;font-weight:700;color:var(--text-primary);margin-bottom:6px">
+            <span class="badge ${info.color}">${info.label}</span>
+          </div>
+          <div style="font-size:.9rem;color:var(--text-secondary)">${info.desc}</div>
+          ${kycData?.rejectionReason ? `<div style="font-size:.85rem;color:var(--clr-danger);margin-top:8px;padding:8px;background:#fef2f2;border-radius:8px">প্রত্যাখ্যানের কারণ: ${kycData.rejectionReason}</div>` : ''}
+        </div>
+      </div>
+    </div>
+
+    <!-- KYC Steps -->
+    <div class="admin-card" style="margin-bottom:20px">
+      <div class="card-title">KYC প্রক্রিয়া</div>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
+        ${[
+          { step:1, label:'প্রোফাইল তথ্য পূরণ', done: (currentUser.profileComplete||0) >= 60, link:'profile.html' },
+          { step:2, label:'NID/জন্ম নিবন্ধন আপলোড', done: !!kycData?.nidUploaded, link:'profile.html?tab=photo' },
+          { step:3, label:'ছবি ও স্বাক্ষর আপলোড', done: !!kycData?.photoUploaded, link:'profile.html?tab=photo' },
+          { step:4, label:'কমিটি পর্যালোচনা', done: kycStatus === 'verified', link: null },
+        ].map(s => `
+          <div style="display:flex;align-items:center;gap:14px;padding:12px;background:var(--bg-surface-2);border-radius:10px">
+            <div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0;background:${s.done ? 'var(--clr-primary-500)' : 'var(--bg-surface)'};color:${s.done ? '#fff' : 'var(--text-muted)'};border:2px solid ${s.done ? 'var(--clr-primary-500)' : 'var(--border)'}">
+              ${s.done ? '✓' : s.step}
+            </div>
+            <div style="flex:1;font-size:.9rem;font-weight:${s.done ? '600' : '400'};color:${s.done ? 'var(--text-primary)' : 'var(--text-secondary)'}">
+              ${s.label}
+            </div>
+            ${!s.done && s.link ? `<a href="${s.link}" class="btn btn-sm btn-outline">সম্পন্ন করুন →</a>` : ''}
+            ${s.done ? '<span style="color:var(--clr-primary-500);font-size:1.2rem">✅</span>' : ''}
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- Profile Completion -->
+    <div class="admin-card">
+      <div class="card-title">📊 প্রোফাইল সম্পূর্ণতা</div>
+      <div style="margin-top:12px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:.85rem;font-weight:600">
+          <span>প্রোফাইল</span><span>${currentUser.profileComplete || 40}%</span>
+        </div>
+        <div style="height:10px;background:var(--bg-surface-2);border-radius:100px;overflow:hidden">
+          <div style="height:100%;width:${currentUser.profileComplete || 40}%;background:linear-gradient(90deg,var(--clr-primary-400),var(--clr-primary-600));border-radius:100px;transition:width .6s"></div>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+          <a href="profile.html" class="btn btn-primary btn-sm">✏️ প্রোফাইল আপডেট</a>
+          <a href="profile.html?tab=photo" class="btn btn-outline btn-sm">📷 ছবি আপলোড</a>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ─── Profit Panel ───
+async function loadProfit() {
+  const panel = document.getElementById('panel-profit');
+  if (!panel) return;
+
+  let profitData = {};
+  try {
+    const res = await fetch(`${API}/reports/profit/user/${currentUser.id}`, {
+      headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
+      signal: AbortSignal.timeout(3000)
+    });
+    if (res.ok) profitData = await res.json();
+  } catch (_) {}
+
+  const totalDeposit = profitData.totalDeposit || 0;
+  const totalProfit  = profitData.totalProfit  || 0;
+  const activeDays   = profitData.activeDays   || 0;
+  const units        = profitData.units        || (totalDeposit / 2000);
+  const profitShare  = profitData.profitShare  || 60;
+
+  panel.innerHTML = `
+    <h2 style="margin-bottom:20px;font-size:1.5rem">📈 মুনাফা বিবরণ</h2>
+
+    <!-- Profit Policy Notice -->
+    <div class="admin-card" style="border-left:4px solid var(--clr-gold-500);margin-bottom:20px;background:linear-gradient(135deg,rgba(201,162,39,.05),transparent)">
+      <div class="card-title" style="color:var(--clr-gold-600)">📜 মুনাফা বণ্টন নীতি</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px;text-align:center" class="responsive-3col">
+        <div style="padding:12px;background:var(--bg-surface-2);border-radius:10px">
+          <div style="font-size:1.5rem;font-weight:800;color:var(--clr-primary-500)">${profitShare}%</div>
+          <div style="font-size:.8rem;color:var(--text-muted);margin-top:4px">সদস্য/বিনিয়োগকারী</div>
+        </div>
+        <div style="padding:12px;background:var(--bg-surface-2);border-radius:10px">
+          <div style="font-size:1.5rem;font-weight:800;color:var(--clr-gold-500)">5%</div>
+          <div style="font-size:.8rem;color:var(--text-muted);margin-top:4px">চ্যারিটি ফান্ড</div>
+        </div>
+        <div style="padding:12px;background:var(--bg-surface-2);border-radius:10px">
+          <div style="font-size:1.5rem;font-weight:800;color:var(--clr-info)">35%</div>
+          <div style="font-size:.8rem;color:var(--text-muted);margin-top:4px">সংগঠন ফান্ড</div>
+        </div>
+      </div>
+      <p style="font-size:.8rem;color:var(--text-muted);margin-top:12px;line-height:1.7">
+        মুনাফা গণনা শুরু হয় যখন আপনার জমাকৃত অর্থ কোনো প্রজেক্ট বা পণ্য বিক্রয়ে সক্রিয়ভাবে ব্যবহৃত হয়।
+        ইউনিট হিসাবে (প্রতি ৳২,০০০ = ১ ইউনিট) আনুপাতিক হারে মুনাফা বণ্টন করা হয়।
+      </p>
+    </div>
+
+    <!-- My Profit Stats -->
+    <div class="stats-row" style="margin-bottom:20px">
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-green">💰</div>
+        <div class="stat-val">৳ ${fmtN(totalDeposit)}</div>
+        <div class="stat-lbl">মোট বিনিয়োগ</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-gold">📊</div>
+        <div class="stat-val">${parseFloat(units).toFixed(2)}</div>
+        <div class="stat-lbl">মোট ইউনিট</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-blue">📈</div>
+        <div class="stat-val">৳ ${fmtN(totalProfit)}</div>
+        <div class="stat-lbl">আনুমানিক মুনাফা</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-green">🗓️</div>
+        <div class="stat-val">${activeDays || '—'}</div>
+        <div class="stat-lbl">সক্রিয় দিন</div>
+      </div>
+    </div>
+
+    <!-- Profit calculation explanation -->
+    <div class="admin-card" style="margin-bottom:20px">
+      <div class="card-title">🧮 আপনার মুনাফা হিসাব</div>
+      <div style="font-size:.9rem;color:var(--text-secondary);line-height:2;margin-top:8px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+          <div style="padding:10px;background:var(--bg-surface-2);border-radius:8px">
+            <div style="font-size:.75rem;color:var(--text-muted)">আপনার বিনিয়োগ</div>
+            <div style="font-weight:700;color:var(--text-primary)">৳ ${fmtN(totalDeposit)}</div>
+          </div>
+          <div style="padding:10px;background:var(--bg-surface-2);border-radius:8px">
+            <div style="font-size:.75rem;color:var(--text-muted)">ইউনিট সংখ্যা</div>
+            <div style="font-weight:700;color:var(--text-primary)">${parseFloat(units).toFixed(2)} ইউনিট (প্রতি ৳২,০০০ = ১ ইউনিট)</div>
+          </div>
+          <div style="padding:10px;background:var(--bg-surface-2);border-radius:8px">
+            <div style="font-size:.75rem;color:var(--text-muted)">মুনাফার ভাগ</div>
+            <div style="font-weight:700;color:var(--clr-primary-500)">${profitShare}% (নিট মুনাফার)</div>
+          </div>
+          <div style="padding:10px;background:var(--bg-surface-2);border-radius:8px">
+            <div style="font-size:.75rem;color:var(--text-muted)">আনুমানিক মুনাফা</div>
+            <div style="font-weight:700;color:var(--clr-gold-600)">৳ ${fmtN(totalProfit)}</div>
+          </div>
+        </div>
+        <div style="padding:12px;background:rgba(29,158,117,.08);border-radius:8px;font-size:.82rem;border:1px solid rgba(29,158,117,.2)">
+          ⚠️ <strong>গুরুত্বপূর্ণ:</strong> মুনাফার পরিমাণ ব্যবসায়িক আয়ের উপর নির্ভরশীল। প্রকৃত মুনাফা নির্ধারণে পরিচালন ব্যয় বাদ দিয়ে নিট মুনাফা হিসাব করা হয়।
+          মূলধন সর্বদা সুরক্ষিত — কোনো প্রমাণযোগ্য ব্যবসায়িক ক্ষতি না হলে মূল অর্থ ফেরত নিশ্চিত।
+        </div>
+      </div>
+    </div>
+
+    <!-- Profit History -->
+    <div class="admin-card">
+      <div class="card-title">📋 মুনাফা ইতিহাস</div>
+      <div id="profitHistory" style="margin-top:8px">
+        ${profitData.history?.length ? `
+          <div class="table-wrap"><table>
+            <thead><tr><th>মাস/প্রজেক্ট</th><th>বিনিয়োগ</th><th>মুনাফা</th><th>তারিখ</th><th>স্ট্যাটাস</th></tr></thead>
+            <tbody>${(profitData.history||[]).map(h => `
+              <tr>
+                <td>${h.label || h.project || '—'}</td>
+                <td>৳ ${fmtN(h.investment)}</td>
+                <td style="color:var(--clr-primary-500);font-weight:700">৳ ${fmtN(h.profit)}</td>
+                <td style="font-size:.8rem">${fmtDT(h.date)}</td>
+                <td><span class="badge badge-${h.status === 'distributed' ? 'paid' : 'pending'}">${h.status === 'distributed' ? 'বণ্টিত' : 'প্রক্রিয়াধীন'}</span></td>
+              </tr>`).join('')}
+            </tbody></table></div>` :
+          `<div class="empty-state" style="padding:30px"><div class="empty-state-icon">📈</div><div class="empty-state-title">এখনো মুনাফা বণ্টন হয়নি</div><div class="empty-state-sub">প্রথম মুনাফা বণ্টনের পর এখানে দেখাবে।</div></div>`}
+      </div>
+    </div>`;
 }

@@ -116,6 +116,11 @@ function renderPost(p) {
   const rvCounts = {};
   REACTIONS.forEach(r => { rvCounts[r] = (p.reactions?.[r] || 0); });
   const saved = JSON.parse(localStorage.getItem('bf_reactions_'+p.id)||'{}');
+  // Load persisted comments from localStorage (merged with server comments)
+  const storedComments = JSON.parse(localStorage.getItem('bf_comments_'+p.id)||'[]');
+  const allComments = [...(p.comments||[])];
+  storedComments.forEach(sc => { if (!allComments.find(c => c.id === sc.id)) allComments.push(sc); });
+  const sortedComments = allComments.sort((a,b) => new Date(a.date) - new Date(b.date));
   return `
   <div class="timeline-post" id="post-${p.id}">
     <div class="tp-header">
@@ -139,7 +144,7 @@ function renderPost(p) {
       <button class="tp-react-btn ml-auto" onclick="toggleComment('${p.id}')">💬 মন্তব্য</button>
     </div>
     <div class="tp-comments hidden" id="comments-${p.id}" style="padding:12px 20px;border-top:1px solid var(--border-light)">
-      <div id="clist-${p.id}">${renderComments(p.comments||[])}</div>
+      <div id="clist-${p.id}">${renderComments(sortedComments)}</div>
       <div style="display:flex;gap:8px;margin-top:12px">
         <input type="text" class="form-input" id="cinput-${p.id}" placeholder="মন্তব্য লিখুন..." style="flex:1"/>
         <button class="btn btn-primary btn-sm" onclick="addComment('${p.id}')">পোস্ট</button>
@@ -191,8 +196,34 @@ function addComment(postId) {
   const inp = document.getElementById('cinput-'+postId);
   const text = inp?.value.trim();
   if (!text) return;
-  const name = session?.name || prompt('আপনার নাম লিখুন:') || 'বেনামী';
+
+  let name = '';
+  if (session) {
+    name = session.name;
+  } else {
+    // Prompt for name if not logged in
+    const inputName = prompt('আপনার নাম লিখুন (প্রকাশিত হবে):');
+    if (!inputName) return;
+    name = inputName.trim() || 'বেনামী';
+  }
+
   const comment = { id:'c-'+Date.now(), name, text, date: new Date().toISOString() };
+
+  // Persist to localStorage
+  const storageKey = 'bf_comments_' + postId;
+  const existing = JSON.parse(localStorage.getItem(storageKey) || '[]');
+  existing.push(comment);
+  localStorage.setItem(storageKey, JSON.stringify(existing));
+
+  // Also try to persist to server
+  fetch('http://localhost:3001/api/notices/posts/' + postId + '/comments', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('bf_token') || '') },
+    body: JSON.stringify(comment),
+    signal: AbortSignal.timeout(3000)
+  }).catch(() => {}); // silently fail — localStorage already saved it
+
+  // Update DOM
   const clist = document.getElementById('clist-'+postId);
   if (clist) {
     const div = document.createElement('div');

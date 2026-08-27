@@ -664,3 +664,17 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 });
+
+// ════════ FUNCTION ALIASES (HTML attribute compatibility) ════════
+// These aliases bridge the gap between HTML onclick attribute names and actual function names.
+// HTML uses: resendOtpCode, autoGenerateUsername, checkUsernameAvailability, searchReferral
+// Functions defined as: resendOtp, autoUname, checkUname, refSearch
+function resendOtpCode() { resendOtp(); }
+function autoGenerateUsername() { autoUname(); }
+function checkUsernameAvailability() { checkUname(); }
+function searchReferral() { refSearch(); }
+
+// openAuthModal alias for pages that load auth.js (openAuth is used in some inner pages)
+function openAuth(mode) { openAuthModal(mode); }
+// closeAuth alias
+function closeAuth() { const m = document.getElementById('authModal'); if (m) m.classList.add('hidden'); }

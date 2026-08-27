@@ -906,44 +906,6 @@
       if (e.key === 'Escape') closeAuthMenu();
     });
   </script>
-        document.getElementById('ap-forgot').classList.add('hidden');
-      } else {
-        loginTab.classList.remove('on');
-        signupTab.classList.add('on');
-        document.getElementById('ap-login').classList.add('hidden');
-        document.getElementById('ap-signup').classList.remove('hidden');
-        document.getElementById('ap-otp').classList.add('hidden');
-        document.getElementById('ap-forgot').classList.add('hidden');
-      }
-    }
-
-    function setAuthPanel(panel) {
-      document.querySelectorAll('.auth-body').forEach(p => p.classList.add('hidden'));
-      document.getElementById(`ap-${panel}`).classList.remove('hidden');
-    }
-
-    function closeAuthModal() {
-      document.getElementById('authModal').classList.add('hidden');
-    }
-    // Note: setAuthPanel and closeAuthModal defined once above (removed duplicate)
-
-    function openTermsModal() { document.getElementById('termsModal').classList.remove('hidden'); }
-    function closeTermsModal() { document.getElementById('termsModal').classList.add('hidden'); }
-    function acceptTerms() { document.getElementById('su-terms').checked = true; closeTermsModal(); }
-    function closeBadgeDetailModal() { document.getElementById('badgeDetailModal').classList.add('hidden'); }
-
-    function calculateInstallment() { if (window.calculate) window.calculate(); }
-    function switchFormTab(tabId) { if (window.switchTab) window.switchTab(null, tabId); }
-    function quickSubmitForm(type) { if (window.quickSubmit) window.quickSubmit(type); }
-    function previewInstallment() { if (window.pCalc) window.pCalc(); }
-
-    // Check saved dark mode
-    if (localStorage.getItem('bf_dark') === '1') {
-      document.body.classList.add('dark-mode');
-      const dk = document.getElementById('dkTog');
-      if (dk) dk.classList.add('on');
-    }
-  </script>
 </body>
 
 </html>
