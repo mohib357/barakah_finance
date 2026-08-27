@@ -1,299 +1,125 @@
-/* C:\Project\Barakah_Finance\style\hero_style.css */
+/* C:\Project\Barakah_Finance\style\hero_style.css
+   Professional Hero & Landing Page Styles — Barakah Finance
+   ═══════════════════════════════════════════════════════════ */
 
-/* ════════ HERO SECTION ═════════ */
+/* ════════ DESIGN TOKENS ════════ */
 :root {
-    /* ════════ Animation Control ════════ */
-    --animations-enabled: 0;
-    --neumorphism-enabled: 1;
-    --rainbow-enabled: 1;
-    --rainbow-speed: slow;
-
-    /* ════════ NEUMORPHISM INTENSITY ════════ */
-    --neumorphism-blur: 10px;
-    --neumorphism-opacity: 0.3;
-    --neumorphism-border-opacity: 0.2;
-
-    /* ════════ COLORS ════════ */
-    --gold: #C9A227;
-    --gold-light: #F5D061;
-    --dark-green: #0A2A1A;
-    --medium-green: #1B5B37;
+    --gold:           #C9A227;
+    --gold-light:     #F0D78A;
+    --gold-dark:      #A67C00;
+    --dark-green:     #0A2A1A;
+    --medium-green:   #1B5B37;
+    --light-green:    #2d7a50;
     --gradient-start: #0A2A1A;
-    --gradient-end: #31945c;
+    --gradient-end:   #1e6640;
+    --hero-glass:     rgba(15, 55, 35, 0.55);
+    --hero-border:    rgba(201, 162, 39, 0.25);
 }
 
-/* ════════ ANIMATION SYSTEM ════════ */
-.no-animation *,
-.no-animation .reveal,
-.no-animation .hero-content,
-.no-animation .stat-card {
-    animation: none !important;
-    transition: none !important;
-}
-
-.no-neumorphism .hero-content,
-.no-neumorphism .stat-card,
-.no-neumorphism .btn-primary,
-.no-neumorphism .btn-outline,
-.no-neumorphism .hero-badge {
-    box-shadow: none !important;
-    backdrop-filter: none !important;
-}
-
-.rainbow-enabled .hero-content:hover {
-    animation: var(--rainbow-animation, rainbowSlow 3s ease-in-out infinite) !important;
-}
-
-/* ════════ RAINBOW ANIMATIONS ════════ */
-@keyframes rainbowSlow {
-    0% {
-        box-shadow: 4px 4px 25px rgba(255, 0, 0, 0.6), -4px -4px 20px rgba(255, 0, 0, 0.3);
-        border-color: rgba(255, 0, 0, 0.3);
-    }
-
-    14% {
-        box-shadow: 4px 4px 25px rgba(255, 165, 0, 0.6), -4px -4px 20px rgba(255, 165, 0, 0.3);
-        border-color: rgba(255, 165, 0, 0.3);
-    }
-
-    28% {
-        box-shadow: 4px 4px 25px rgba(255, 255, 0, 0.6), -4px -4px 20px rgba(255, 255, 0, 0.3);
-        border-color: rgba(255, 255, 0, 0.3);
-    }
-
-    42% {
-        box-shadow: 4px 4px 25px rgba(0, 200, 0, 0.6), -4px -4px 20px rgba(0, 200, 0, 0.3);
-        border-color: rgba(0, 200, 0, 0.3);
-    }
-
-    57% {
-        box-shadow: 4px 4px 25px rgba(0, 255, 255, 0.6), -4px -4px 20px rgba(0, 255, 255, 0.3);
-        border-color: rgba(0, 255, 255, 0.3);
-    }
-
-    71% {
-        box-shadow: 4px 4px 25px rgba(0, 100, 255, 0.6), -4px -4px 20px rgba(0, 100, 255, 0.3);
-        border-color: rgba(0, 100, 255, 0.3);
-    }
-
-    85% {
-        box-shadow: 4px 4px 25px rgba(155, 0, 255, 0.6), -4px -4px 20px rgba(155, 0, 255, 0.3);
-        border-color: rgba(155, 0, 255, 0.3);
-    }
-
-    100% {
-        box-shadow: 4px 4px 25px rgba(255, 0, 100, 0.6), -4px -4px 20px rgba(255, 0, 100, 0.3);
-        border-color: rgba(255, 0, 100, 0.3);
-    }
-}
-
-@keyframes rainbowMedium {
-
-    0%,
-    100% {
-        box-shadow: 4px 4px 25px #ff0000, -4px -4px 20px #ff0000;
-        border-color: #ff0000;
-    }
-
-    14% {
-        box-shadow: 4px 4px 25px #ff8c00, -4px -4px 20px #ff8c00;
-        border-color: #ff8c00;
-    }
-
-    28% {
-        box-shadow: 4px 4px 25px #ffff00, -4px -4px 20px #ffff00;
-        border-color: #ffff00;
-    }
-
-    42% {
-        box-shadow: 4px 4px 25px #00ff00, -4px -4px 20px #00ff00;
-        border-color: #00ff00;
-    }
-
-    57% {
-        box-shadow: 4px 4px 25px #00ffff, -4px -4px 20px #00ffff;
-        border-color: #00ffff;
-    }
-
-    71% {
-        box-shadow: 4px 4px 25px #0080ff, -4px -4px 20px #0080ff;
-        border-color: #0080ff;
-    }
-
-    85% {
-        box-shadow: 4px 4px 25px #8000ff, -4px -4px 20px #8000ff;
-        border-color: #8000ff;
-    }
-}
-
-@keyframes rainbowFast {
-
-    0%,
-    100% {
-        box-shadow: 4px 4px 25px #ff0000, -4px -4px 20px #ff0000;
-    }
-
-    12% {
-        box-shadow: 4px 4px 25px #ff8c00, -4px -4px 20px #ff8c00;
-    }
-
-    25% {
-        box-shadow: 4px 4px 25px #ffff00, -4px -4px 20px #ffff00;
-    }
-
-    37% {
-        box-shadow: 4px 4px 25px #00ff00, -4px -4px 20px #00ff00;
-    }
-
-    50% {
-        box-shadow: 4px 4px 25px #00ffff, -4px -4px 20px #00ffff;
-    }
-
-    62% {
-        box-shadow: 4px 4px 25px #0080ff, -4px -4px 20px #0080ff;
-    }
-
-    75% {
-        box-shadow: 4px 4px 25px #8000ff, -4px -4px 20px #8000ff;
-    }
-
-    87% {
-        box-shadow: 4px 4px 25px #ff00ff, -4px -4px 20px #ff00ff;
-    }
-}
-
-/* ════════ MAIN HERO STYLES ════════ */
+/* ════════ HERO SECTION ════════ */
 .hero {
     min-height: 100vh;
-    background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+    background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 60%, #2a7a50 100%);
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
     position: relative;
     overflow: hidden;
-    padding: 100px 4% 4rem;
+    padding: 100px 5% 5rem;
     isolation: isolate;
+    gap: 2rem;
 }
 
-/* ════════ HERO PATTERN ════════ */
+/* Subtle background pattern */
 .hero::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(ellipse 80% 60% at 30% 40%, rgba(29, 158, 117, 0.12) 0%, transparent 60%),
-        radial-gradient(ellipse 50% 40% at 80% 70%, rgba(222, 220, 213, 0.08) 0%, transparent 50%);
+    background:
+        radial-gradient(ellipse 70% 50% at 25% 40%, rgba(29,158,117,0.15) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 30% at 80% 70%, rgba(201,162,39,0.08) 0%, transparent 50%);
+    pointer-events: none;
     z-index: 0;
 }
 
 .hero-pattern {
     position: absolute;
     inset: 0;
-    opacity: 0.03;
+    opacity: 0.025;
     background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C9A227'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-}
-
-/* ════════ HERO CONTENT ════════ */
-.hero-content {
-    /* position: relative; */
-    z-index: 2;
-    width: 45%;
-    max-width: 600px;
-    min-width: 320px;
-    background: rgba(27, 91, 55, var(--neumorphism-opacity));
-    backdrop-filter: blur(var(--neumorphism-blur));
-    border-radius: 48px;
-    padding: 48px;
-    border: 1px solid rgba(255, 255, 255, var(--neumorphism-border-opacity));
-    box-shadow: 8px 8px 20px rgba(0, 0, 0, 0.30), -4px -4px 12px rgba(30, 80, 50, 0.25);
-    overflow: hidden;
-    transition: all 0.4s ease;
-    margin-right: 2rem;
-}
-
-.hero-content {
-    box-shadow: 8px 8px 20px rgba(0, 0, 0, 0.30),
-        -4px -4px 12px rgba(30, 80, 50, 0.25),
-        inset 0px 0px 0px rgba(255, 255, 255, 0.05);
-
-}
-
-.hero-content::before {
-    content: '';
-    position: absolute;
-    top: -150%;
-    /* start on top-right */
-    left: -150%;
-    width: 300%;
-    height: 300%;
-    background: linear-gradient(135deg,
-            rgba(255, 255, 255, 0) 0%,
-            rgba(2, 255, 137, 0.2) 50%,
-            /* green */
-            rgba(255, 255, 255, 0) 100%);
-    transition: all 0.6s ease-in-out;
-    z-index: -1;
     pointer-events: none;
 }
 
-/* ════════ Curser Hover Effect ════════ */
-.hero-content:hover::before {
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+/* ════════ HERO CONTENT CARD ════════ */
+.hero-content {
+    position: relative;
+    z-index: 2;
+    width: 46%;
+    max-width: 580px;
+    min-width: 300px;
+    background: var(--hero-glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 28px;
+    padding: 44px 48px;
+    border: 1px solid var(--hero-border);
+    box-shadow:
+        0 24px 60px rgba(0,0,0,0.35),
+        0 8px 24px rgba(0,0,0,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+    transition: box-shadow 0.35s ease, transform 0.35s ease;
 }
 
-/* ════════ Default Hover Shadow ════════ */
 .hero-content:hover {
-    box-shadow: 4px 4px 15px rgba(2, 255, 137, 0.521),
-        -4px -4px 15px rgba(255, 255, 255, 0.807),
-        inset 1px 1px 2px rgba(255, 255, 255, 0.08);
+    transform: translateY(-4px);
+    box-shadow:
+        0 32px 70px rgba(0,0,0,0.38),
+        0 12px 32px rgba(0,0,0,0.22),
+        0 0 0 1px rgba(201,162,39,0.3),
+        inset 0 1px 0 rgba(255,255,255,0.1);
 }
 
-/* ════════ Right Side: Badges Container Wrapper ════════ */
-.badges-section {
-    flex: 1;
-    height: 80%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0 20px;
+/* Shimmer sweep on hover — subtle, professional */
+.hero-content::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 60%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+    transition: left 0.6s ease;
+    pointer-events: none;
+    border-radius: inherit;
 }
 
+.hero-content:hover::after { left: 140%; }
+
+/* ════════ HERO BADGE (Islamic Finance tag) ════════ */
 .hero-badge {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    background: rgba(201, 162, 39, 0.12);
-    border: 1px solid rgba(201, 162, 39, 0.3);
-    color: #F5D061;
-    padding: 8px 20px;
-    border-radius: 60px;
-    font-size: 13px;
-    margin-bottom: 2rem;
-    font-weight: 500;
-    letter-spacing: 0.5px;
+    gap: 8px;
+    background: rgba(201,162,39,0.14);
+    border: 1px solid rgba(201,162,39,0.35);
+    color: var(--gold-light);
+    padding: 7px 18px;
+    border-radius: 50px;
+    font-size: 12.5px;
+    margin-bottom: 1.75rem;
+    font-weight: 600;
+    letter-spacing: 0.4px;
     backdrop-filter: blur(4px);
-    box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.15),
-        inset -2px -2px 4px rgba(255, 255, 255, 0.05),
-        2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.hero-badge::before {
-    content: '';
-    font-family: 'Font Awesome 6 Free';
-    font-weight: 900;
-    font-size: 12px;
-}
-
+/* ════════ HERO HEADLINE ════════ */
 .hero h1 {
-    font-family: 'Noto Serif Bengali', 'SolaimanLipi', serif;
-    font-size: clamp(2.2rem, 5vw, 3.5rem);
-    color: white;
-    line-height: 1.3;
-    margin-bottom: 1rem;
+    font-family: 'Noto Serif Bengali', serif;
+    font-size: clamp(2rem, 4.5vw, 3.2rem);
+    color: #ffffff;
+    line-height: 1.35;
+    margin-bottom: 1.1rem;
     font-weight: 700;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    text-shadow: 0 2px 12px rgba(0,0,0,0.25);
 }
 
 .hero h1 em {
@@ -302,279 +128,175 @@
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    position: relative;
     display: inline-block;
 }
 
-.hero h1 em::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, #C9A227, transparent);
+/* Highlight quote box */
+.hero-quote-box {
+    border-left: 3px solid var(--gold);
+    background: rgba(201,162,39,0.08);
+    border-radius: 0 10px 10px 0;
+    padding: 12px 16px;
+    margin-bottom: 1.5rem;
+    font-size: 14px;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.7;
 }
 
 .hero .slogan {
-    font-size: 1rem;
-    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.96rem;
+    color: rgba(255,255,255,0.68);
     margin-bottom: 2rem;
-    line-height: 1.7;
+    line-height: 1.75;
     font-weight: 300;
 }
 
+/* Gold divider line */
+.hero-divider {
+    height: 3px;
+    width: 80px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+    border-radius: 2px;
+    margin-bottom: 1.75rem;
+}
+
+/* ════════ CTA BUTTONS ════════ */
 .hero-actions {
     display: flex;
-    gap: 1.2rem;
+    gap: 1rem;
     flex-wrap: wrap;
 }
 
 .btn-primary {
     background: linear-gradient(135deg, #C9A227, #A67C00);
     color: #0A2A1A;
-    padding: 14px 34px;
+    padding: 13px 28px;
     border-radius: 50px;
-    font-size: 15px;
+    font-size: 14.5px;
     font-weight: 700;
     text-decoration: none;
     cursor: pointer;
     border: none;
-    transition: all 0.3s ease;
+    transition: all 0.25s ease;
     font-family: 'Noto Sans Bengali', sans-serif;
-    box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.25),
-        -4px -4px 8px rgba(30, 80, 50, 0.3),
-        inset 1px 1px 1px rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 14px rgba(201,162,39,0.4), 0 2px 6px rgba(0,0,0,0.2);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, #D9B237, #B88D00);
+    background: linear-gradient(135deg, #D4AE35, #B88D0A);
     transform: translateY(-2px);
-    box-shadow: 12px 12px 20px rgba(0, 0, 0, 0.3),
-        -6px -6px 12px rgba(30, 80, 50, 0.35),
-        inset 1px 1px 1px rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 20px rgba(201,162,39,0.45), 0 4px 10px rgba(0,0,0,0.25);
 }
 
 .btn-primary:active {
-    transform: translateY(1px);
-    box-shadow: inset 6px 6px 12px rgba(0, 0, 0, 0.2),
-        inset -2px -2px 4px rgba(255, 255, 255, 0.05);
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(201,162,39,0.3);
 }
 
 .btn-outline {
-    background: rgba(255, 255, 255, 0.05);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    padding: 14px 34px;
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.9);
+    border: 1.5px solid rgba(255,255,255,0.28);
+    padding: 12px 26px;
     border-radius: 50px;
-    font-size: 15px;
+    font-size: 14.5px;
     font-weight: 500;
     text-decoration: none;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.25s ease;
     font-family: 'Noto Sans Bengali', sans-serif;
     backdrop-filter: blur(4px);
-    box-shadow: 5px 5px 12px rgba(0, 0, 0, 0.15),
-        -3px -3px 8px rgba(30, 80, 50, 0.2);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
 }
 
 .btn-outline:hover {
-    border-color: rgba(201, 162, 39, 0.6);
-    background: rgba(201, 162, 39, 0.1);
+    border-color: rgba(201,162,39,0.6);
+    background: rgba(201,162,39,0.12);
     transform: translateY(-2px);
-    box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.2);
+    color: #ffffff;
 }
 
-/* ════════ Status Cards ════════ */
-.hero-stats {
-    position: absolute;
-    right: 5rem;
-    top: 50%;
-    transform: translateY(-50%);
+/* ════════ BADGES SECTION (right side) ════════ */
+.badges-section {
+    flex: 1;
+    min-height: 400px;
     display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+    justify-content: center;
+    align-items: center;
     z-index: 2;
+    padding: 0 10px;
 }
 
-.stat-card {
-    background: rgba(13, 43, 26, 0.5);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(201, 162, 39, 0.2);
-    border-radius: 28px;
-    padding: 1.2rem 2rem;
-    text-align: center;
-    min-width: 140px;
-    transition: all 0.3s ease;
-    box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.2),
-        -6px -6px 12px rgba(30, 80, 50, 0.25),
-        inset 1px 1px 1px rgba(255, 255, 255, 0.08);
-}
-
-.stat-card:hover {
-    transform: translateX(-8px);
-    box-shadow: 6px 6px 14px rgba(0, 0, 0, 0.2),
-        -4px -4px 10px rgba(30, 80, 50, 0.2),
-        inset 0px 0px 0px rgba(255, 255, 255, 0.05);
-}
-
-.stat-card .num {
-    font-family: 'Noto Serif Bengali', serif;
-    font-size: 2.5rem;
-    background: linear-gradient(135deg, #F5D061, #C9A227);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    font-weight: 800;
-    display: block;
-    line-height: 1.2;
-}
-
-.stat-card .label {
-    font-size: 11px;
-    color: rgba(255, 255, 255, 0.55);
-    margin-top: 8px;
-    font-weight: 400;
-    letter-spacing: 0.5px;
-}
-
-/* ════════ Animation ════════ */
+/* ════════ ANIMATIONS ════════ */
 @keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
+    from { opacity: 0; transform: translateY(28px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+@keyframes fadeInLeft {
+    from { opacity: 0; transform: translateX(28px); }
+    to   { opacity: 1; transform: translateX(0); }
 }
 
 .reveal {
-    animation: fadeInUp 0.6s ease forwards;
+    opacity: 0;
+    transform: translateY(22px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .hero-content.reveal {
-    animation-delay: 0.1s;
+    animation: fadeInUp 0.7s ease 0.1s forwards;
 }
 
-.stat-card.reveal:nth-child(1) {
-    animation-delay: 0.2s;
+.badges-section.reveal {
+    animation: fadeInLeft 0.7s ease 0.25s forwards;
 }
 
-.stat-card.reveal:nth-child(2) {
-    animation-delay: 0.35s;
+/* ════════ RESPONSIVE ════════ */
+@media (max-width: 1100px) {
+    .hero { padding: 100px 3% 4rem; }
 }
 
-.stat-card.reveal:nth-child(3) {
-    animation-delay: 0.5s;
-}
-
-/* ════════ Responsive Design ════════ */
-@media (max-width: 1200px) {
-    .hero-stats {
-        right: 2rem;
-    }
-
-    .stat-card {
-        padding: 1rem 1.5rem;
-        min-width: 110px;
-    }
-
-    .stat-card .num {
-        font-size: 2rem;
-    }
-}
-
-@media (max-width: 992px) {
+@media (max-width: 900px) {
     .hero {
         flex-direction: column;
-        padding: 100px 2rem 3rem;
+        align-items: stretch;
+        padding: 90px 1.5rem 3.5rem;
+        gap: 1.5rem;
     }
-
     .hero-content {
         width: 100%;
         max-width: 100%;
-        margin-bottom: 2rem;
-        margin: 20px 0;
-        height: auto;
+        min-width: unset;
+        padding: 32px 28px;
     }
-
-    .hero-stats {
-        position: relative;
-        right: auto;
-        top: auto;
-        transform: none;
-        flex-direction: row;
-        justify-content: center;
-        gap: 1rem;
-        margin-top: 1rem;
-    }
-
     .badges-section {
+        min-height: 280px;
         width: 100%;
-        height: auto;
-        margin-top: 2rem;
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px)
     }
 }
 
-@media (max-width: 640px) {
-    .hero {
-        padding: 90px 1rem 2rem;
-    }
-
-    .hero-content {
-        padding: 24px;
-        border-radius: 32px;
-        margin: 20px 0;
-    }
-
-    .hero-stats {
-        flex-wrap: wrap;
-    }
-
-    .stat-card {
-        min-width: 100px;
-        padding: 0.8rem 1rem;
-    }
-
-    .stat-card .num {
-        font-size: 1.5rem;
-    }
-
-    .btn-primary,
-    .btn-outline {
-        padding: 10px 24px;
-        font-size: 13px;
-        width: 100%;
-        text-align: center;
-    }
-
-    .hero-actions {
-        flex-direction: column;
-    }
-}
-
-@media (max-width: 480px) {
-    .hero-content {
-        padding: 20px;
-    }
-
-    .hero-badge {
-        font-size: 10px;
-        padding: 5px 14px;
-    }
-
-    .hero h1 {
-        font-size: 1.6rem;
-    }
-
-    .hero .slogan {
-        font-size: 0.85rem;
-    }
+@media (max-width: 600px) {
+    .hero { padding: 80px 1rem 2.5rem; }
+    .hero-content { padding: 24px 20px; border-radius: 20px; }
+    .hero h1 { font-size: 1.75rem; }
+    .hero .slogan { font-size: 0.88rem; }
+    .hero-badge { font-size: 11px; padding: 6px 14px; }
+    .btn-primary, .btn-outline { padding: 11px 20px; font-size: 13px; }
+    .hero-actions { flex-direction: column; gap: 0.7rem; }
+    .hero-actions .btn-primary,
+    .hero-actions .btn-outline { width: 100%; justify-content: center; }
+    .hero-divider { display: none; }
 }

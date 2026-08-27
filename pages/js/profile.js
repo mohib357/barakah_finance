@@ -2,7 +2,8 @@
 //  BARAKAH FINANCE — PROFILE PAGE JS
 // ═══════════════════════════════════════════════════════════
 
-const API = 'http://localhost:3001/api';
+// Avoid const redeclaration conflict with api.js
+const _PROFILE_API = (typeof API !== 'undefined') ? API : 'http://localhost:3001/api';
 let currentUser = null;
 let profileData  = {};
 let cropperInst  = null;
