@@ -1,5 +1,8 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import prisma from "@/lib/db/prisma";
+
+export const dynamic = "force-dynamic";
+
 
 export async function GET() {
   try {
@@ -27,19 +30,19 @@ export async function GET() {
         switch (b.key) {
           case "members":
             value = String(memberCount);
-            sub   = "সক্রিয় সদস্য";
+            sub   = "à¦¸à¦•à§à¦°à¦¿à¦¯à¦¼ à¦¸à¦¦à¦¸à§à¦¯";
             break;
           case "savings":
-            value = "৳" + ((savingsAgg._sum.paidAmount ?? 0) as number).toLocaleString("en-IN");
-            sub   = "মোট সঞ্চয়";
+            value = "à§³" + ((savingsAgg._sum.paidAmount ?? 0) as number).toLocaleString("en-IN");
+            sub   = "à¦®à§‹à¦Ÿ à¦¸à¦žà§à¦šà¦¯à¦¼";
             break;
           case "loans":
-            value = "৳" + ((qardAgg._sum.disbursedAmount ?? 0) as number).toLocaleString("en-IN");
-            sub   = String(qardAgg._count) + " টি চলমান করজ";
+            value = "à§³" + ((qardAgg._sum.disbursedAmount ?? 0) as number).toLocaleString("en-IN");
+            sub   = String(qardAgg._count) + " à¦Ÿà¦¿ à¦šà¦²à¦®à¦¾à¦¨ à¦•à¦°à¦œ";
             break;
           case "products":
             value = String(productCount);
-            sub   = "ধরনের পণ্য";
+            sub   = "à¦§à¦°à¦¨à§‡à¦° à¦ªà¦£à§à¦¯";
             break;
         }
       }

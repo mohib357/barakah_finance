@@ -1,41 +1,47 @@
 "use client";
-import React from "react";
-import { useState, useEffect, useRef } from "react";
+import { Suspense, useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils/cn";
 import { Spinner } from "@/components/ui/Spinner";
 import { ToastProvider, useToast } from "@/components/ui/Toast";
 
-import React from "react";
 export default function VerifyPage() {
   return (
     <ToastProvider>
-      <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-[#1D9E75] rounded-full border-t-transparent" /></div>}>
+      <Suspense
+        fallback={
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="animate-spin h-8 w-8 border-4 border-[#1D9E75] rounded-full border-t-transparent" />
+          </div>
+        }
+      >
         <VerifyInner />
-      </React.Suspense>
+      </Suspense>
     </ToastProvider>
   );
 }
 
 function VerifyInner() {
-  const router = useRouter();
-  const params = useSearchParams();
+  const router       = useRouter();
+  const params       = useSearchParams();
   const { showToast } = useToast();
 
-  const phone   = params.get("phone") ?? "";
+  const phone   = params.get("phone")   ?? "";
   const purpose = (params.get("purpose") ?? "signup") as "signup" | "password_reset";
 
-  const [code, setCode]         = useState("");
-  const [loading, setLoading]   = useState(false);
-  const [err, setErr]           = useState("");
+  const [code,      setCode]      = useState("");
+  const [loading,   setLoading]   = useState(false);
+  const [err,       setErr]       = useState("");
   const [remaining, setRemaining] = useState(120);
   const timerRef = useRef<ReturnType<typeof setInterval>>();
 
-  // Countdown timer
   useEffect(() => {
     timerRef.current = setInterval(() => {
-      setRemaining((p) => { if (p <= 1) { clearInterval(timerRef.current); return 0; } return p - 1; });
+      setRemaining((p) => {
+        if (p <= 1) { clearInterval(timerRef.current); return 0; }
+        return p - 1;
+      });
     }, 1000);
     return () => clearInterval(timerRef.current);
   }, []);
@@ -48,9 +54,9 @@ function VerifyInner() {
     setLoading(true);
     try {
       const res  = await fetch("/api/auth/verify-otp", {
-        method: "POST",
+        method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, code, purpose }),
+        body:    JSON.stringify({ phone, code, purpose }),
       });
       const data = await res.json();
       if (!res.ok) { setErr(data.error ?? "OTP ভুল।"); return; }
@@ -65,13 +71,12 @@ function VerifyInner() {
 
   async function resend() {
     if (remaining > 0) return;
-    // Re-trigger forgot-password endpoint for password_reset purpose
     const endpoint = purpose === "signup" ? "/api/auth/signup" : "/api/auth/forgot-password";
     try {
       await fetch(endpoint, {
-        method: "POST",
+        method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone }),
+        body:    JSON.stringify({ phone }),
       });
       setRemaining(120);
       clearInterval(timerRef.current);
@@ -98,46 +103,36 @@ function VerifyInner() {
         </div>
 
         {err && (
-          <div className="mb-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{err}</div>
+          <div className="mb-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+            {err}
+          </div>
         )}
 
-        {/* OTP Input — individual digit boxes */}
-        <div className="flex justify-center gap-2 mb-6">
-          {[0,1,2,3,4,5].map((i) => (
+        {/* Digit display boxes */}
+        <div className="flex justify-center gap-2 mb-4">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
             <div
               key={i}
               className={cn(
-                "h-12 w-10 rounded-xl border-2 text-center text-xl font-bold flex items-center justify-center",
-                code[i]
-                  ? "border-[#1D9E75] text-[#0D2B1A]"
-                  : "border-gray-200 text-transparent"
+                "h-12 w-10 rounded-xl border-2 flex items-center justify-center text-xl font-bold",
+                code[i] ? "border-[#1D9E75] text-[#0D2B1A]" : "border-gray-200 text-transparent",
               )}
             >
-              {code[i] ?? ""}
+              {code[i] ?? "•"}
             </div>
           ))}
         </div>
 
-        {/* Hidden real input */}
+        {/* Real input */}
         <input
           type="text"
-          inputMode="numeric"
-          maxLength={6}
-          value={code}
-          onChange={(e) => { setErr(""); setCode(e.target.value.replace(/\D/g, "")); }}
-          className="sr-only"
-          autoFocus
-        />
-
-        {/* Visible input for mobile */}
-        <input
-          type="number"
           inputMode="numeric"
           maxLength={6}
           value={code}
           onChange={(e) => { setErr(""); setCode(e.target.value.replace(/\D/g, "").slice(0, 6)); }}
           onKeyDown={(e) => { if (e.key === "Enter") verify(); }}
           placeholder="000000"
+          autoFocus
           className="w-full rounded-xl border border-gray-200 px-4 py-3 text-center text-2xl tracking-[0.5em] font-bold focus:outline-none focus:ring-2 focus:ring-[#1D9E75] mb-4"
         />
 
@@ -146,10 +141,10 @@ function VerifyInner() {
           disabled={loading || code.length !== 6}
           className="w-full rounded-xl bg-[#1D9E75] py-3 text-sm font-semibold text-white hover:bg-[#0F6E56] disabled:opacity-60 flex items-center justify-center gap-2 transition-colors"
         >
-          {loading && <Spinner size="sm" />} ✅ যাচাই করুন
+          {loading && <Spinner size="sm" />}
+          ✅ যাচাই করুন
         </button>
 
-        {/* Timer and resend */}
         <div className="mt-4 text-center text-xs text-gray-500">
           {remaining > 0 ? (
             <span>কোড মেয়াদ: <strong className="text-[#0D2B1A]">{mins}:{secs}</strong></span>
@@ -161,7 +156,9 @@ function VerifyInner() {
         </div>
 
         <div className="mt-5 text-center text-xs">
-          <Link href="/login" className="text-[#1D9E75] hover:underline">← লগইনে ফিরে যান</Link>
+          <Link href="/login" className="text-[#1D9E75] hover:underline">
+            ← লগইনে ফিরে যান
+          </Link>
         </div>
       </div>
     </div>

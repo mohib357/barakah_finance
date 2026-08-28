@@ -1,9 +1,12 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 import prisma from "@/lib/db/prisma";
 import { hashPassword, validatePasswordStrength } from "@/lib/auth/password";
 import { createOTP, sendOTPViaSMS } from "@/lib/auth/otp";
 import { z } from "zod";
+
+export const dynamic = "force-dynamic";
+
 
 const SignupSchema = z.object({
   firstName:  z.string().min(1).max(60),
@@ -21,7 +24,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const parsed = SignupSchema.safeParse(body);
     if (!parsed.success) {
-      const msg = parsed.error.errors[0]?.message ?? "অবৈধ তথ্য।";
+      const msg = parsed.error.errors[0]?.message ?? "à¦…à¦¬à§ˆà¦§ à¦¤à¦¥à§à¦¯à¥¤";
       return NextResponse.json({ error: msg }, { status: 400 });
     }
 
@@ -29,7 +32,7 @@ export async function POST(req: NextRequest) {
 
     // Must have either phone or email
     if (!phone && !email) {
-      return NextResponse.json({ error: "মোবাইল নম্বর অথবা ইমেইল প্রয়োজন।" }, { status: 400 });
+      return NextResponse.json({ error: "à¦®à§‹à¦¬à¦¾à¦‡à¦² à¦¨à¦®à§à¦¬à¦° à¦…à¦¥à¦¬à¦¾ à¦‡à¦®à§‡à¦‡à¦² à¦ªà§à¦°à¦¯à¦¼à§‹à¦œà¦¨à¥¤" }, { status: 400 });
     }
 
     // Password strength
@@ -41,14 +44,14 @@ export async function POST(req: NextRequest) {
     // Duplicate checks
     if (phone) {
       const existing = await prisma.user.findUnique({ where: { phone }, select: { id: true } });
-      if (existing) return NextResponse.json({ error: "এই মোবাইল নম্বরে ইতিমধ্যে অ্যাকাউন্ট আছে।" }, { status: 409 });
+      if (existing) return NextResponse.json({ error: "à¦à¦‡ à¦®à§‹à¦¬à¦¾à¦‡à¦² à¦¨à¦®à§à¦¬à¦°à§‡ à¦‡à¦¤à¦¿à¦®à¦§à§à¦¯à§‡ à¦…à§à¦¯à¦¾à¦•à¦¾à¦‰à¦¨à§à¦Ÿ à¦†à¦›à§‡à¥¤" }, { status: 409 });
     }
     if (email) {
       const existing = await prisma.user.findUnique({ where: { email }, select: { id: true } });
-      if (existing) return NextResponse.json({ error: "এই ইমেইলে ইতিমধ্যে অ্যাকাউন্ট আছে।" }, { status: 409 });
+      if (existing) return NextResponse.json({ error: "à¦à¦‡ à¦‡à¦®à§‡à¦‡à¦²à§‡ à¦‡à¦¤à¦¿à¦®à¦§à§à¦¯à§‡ à¦…à§à¦¯à¦¾à¦•à¦¾à¦‰à¦¨à§à¦Ÿ à¦†à¦›à§‡à¥¤" }, { status: 409 });
     }
     const usernameExist = await prisma.user.findUnique({ where: { username: username.toLowerCase() }, select: { id: true } });
-    if (usernameExist) return NextResponse.json({ error: "এই ইউজারনেম নেওয়া হয়েছে।" }, { status: 409 });
+    if (usernameExist) return NextResponse.json({ error: "à¦à¦‡ à¦‡à¦‰à¦œà¦¾à¦°à¦¨à§‡à¦® à¦¨à§‡à¦“à¦¯à¦¼à¦¾ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤" }, { status: 409 });
 
     // Validate referral
     let referredById: string | undefined;
@@ -93,7 +96,7 @@ export async function POST(req: NextRequest) {
     }
 
     const resp: Record<string, unknown> = {
-      message: "OTP পাঠানো হয়েছে।",
+      message: "OTP à¦ªà¦¾à¦ à¦¾à¦¨à§‹ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤",
       phone: user.phone,
       email: user.email,
       smsSent,
@@ -107,6 +110,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(resp, { status: 201 });
   } catch (err) {
     console.error("[signup]", err);
-    return NextResponse.json({ error: "সার্ভার সমস্যা হয়েছে। পরে চেষ্টা করুন।" }, { status: 500 });
+    return NextResponse.json({ error: "à¦¸à¦¾à¦°à§à¦­à¦¾à¦° à¦¸à¦®à¦¸à§à¦¯à¦¾ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤ à¦ªà¦°à§‡ à¦šà§‡à¦·à§à¦Ÿà¦¾ à¦•à¦°à§à¦¨à¥¤" }, { status: 500 });
   }
 }

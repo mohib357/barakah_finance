@@ -1,7 +1,10 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 import prisma from "@/lib/db/prisma";
 import { z } from "zod";
+
+export const dynamic = "force-dynamic";
+
 
 export async function GET() {
   try {
@@ -32,7 +35,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const parsed = ReviewSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ error: "অবৈধ তথ্য।" }, { status: 400 });
+      return NextResponse.json({ error: "à¦…à¦¬à§ˆà¦§ à¦¤à¦¥à§à¦¯à¥¤" }, { status: 400 });
     }
     const { name, phone, content, rating, userId } = parsed.data;
     const review = await prisma.review.create({
@@ -45,8 +48,8 @@ export async function POST(req: NextRequest) {
         status:  "PENDING",
       },
     });
-    return NextResponse.json({ message: "মতামত জমা হয়েছে। অ্যাডমিন অনুমোদনের পর প্রকাশিত হবে।", id: review.id });
+    return NextResponse.json({ message: "à¦®à¦¤à¦¾à¦®à¦¤ à¦œà¦®à¦¾ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤ à¦…à§à¦¯à¦¾à¦¡à¦®à¦¿à¦¨ à¦…à¦¨à§à¦®à§‹à¦¦à¦¨à§‡à¦° à¦ªà¦° à¦ªà§à¦°à¦•à¦¾à¦¶à¦¿à¦¤ à¦¹à¦¬à§‡à¥¤", id: review.id });
   } catch {
-    return NextResponse.json({ error: "সার্ভার সমস্যা।" }, { status: 500 });
+    return NextResponse.json({ error: "à¦¸à¦¾à¦°à§à¦­à¦¾à¦° à¦¸à¦®à¦¸à§à¦¯à¦¾à¥¤" }, { status: 500 });
   }
 }

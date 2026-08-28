@@ -1,8 +1,11 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 import prisma from "@/lib/db/prisma";
 import { verifyOTP } from "@/lib/auth/otp";
 import { z } from "zod";
+
+export const dynamic = "force-dynamic";
+
 
 const Schema = z.object({
   phone:   z.string().optional(),
@@ -16,7 +19,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const parsed = Schema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ error: "অবৈধ তথ্য।" }, { status: 400 });
+      return NextResponse.json({ error: "à¦…à¦¬à§ˆà¦§ à¦¤à¦¥à§à¦¯à¥¤" }, { status: 400 });
     }
 
     const { phone, email, code, purpose } = parsed.data;
@@ -42,9 +45,9 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    return NextResponse.json({ verified: true, message: "সফলভাবে যাচাই হয়েছে।", userId: user?.id });
+    return NextResponse.json({ verified: true, message: "à¦¸à¦«à¦²à¦­à¦¾à¦¬à§‡ à¦¯à¦¾à¦šà¦¾à¦‡ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤", userId: user?.id });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "যাচাইকরণ ব্যর্থ।";
+    const message = err instanceof Error ? err.message : "à¦¯à¦¾à¦šà¦¾à¦‡à¦•à¦°à¦£ à¦¬à§à¦¯à¦°à§à¦¥à¥¤";
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }

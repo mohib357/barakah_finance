@@ -1,9 +1,12 @@
-// Quick-apply endpoint — accepts member / product / qard pre-applications
+﻿// Quick-apply endpoint â€” accepts member / product / qard pre-applications
 // from the landing page apply section (no auth required)
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 import prisma from "@/lib/db/prisma";
 import { z } from "zod";
+
+export const dynamic = "force-dynamic";
+
 
 const Schema = z.object({
   type:       z.enum(["member", "product", "qard"]),
@@ -26,12 +29,12 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const parsed = Schema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ error: "অবৈধ তথ্য।" }, { status: 400 });
+      return NextResponse.json({ error: "à¦…à¦¬à§ˆà¦§ à¦¤à¦¥à§à¦¯à¥¤" }, { status: 400 });
     }
 
     const data = parsed.data;
 
-    // Store as a lightweight application note — admin reviews via panel
+    // Store as a lightweight application note â€” admin reviews via panel
     // We use the Note-like approach since CharityApplication / QardApplication
     // both need full KYC later; this is just the initial interest form.
     // Store in AuditLog as activity record (quick-apply doesn't need a full model)
@@ -55,13 +58,13 @@ export async function POST(req: NextRequest) {
     });
 
     const messages = {
-      member:  "✅ সদস্য আবেদন জমা হয়েছে! কমিটি শীঘ্রই যোগাযোগ করবেন।",
-      product: "✅ পণ্য রিকোয়েস্ট জমা হয়েছে!",
-      qard:    "✅ করজে হাসানা আবেদন জমা হয়েছে!",
+      member:  "âœ… à¦¸à¦¦à¦¸à§à¦¯ à¦†à¦¬à§‡à¦¦à¦¨ à¦œà¦®à¦¾ à¦¹à¦¯à¦¼à§‡à¦›à§‡! à¦•à¦®à¦¿à¦Ÿà¦¿ à¦¶à§€à¦˜à§à¦°à¦‡ à¦¯à§‹à¦—à¦¾à¦¯à§‹à¦— à¦•à¦°à¦¬à§‡à¦¨à¥¤",
+      product: "âœ… à¦ªà¦£à§à¦¯ à¦°à¦¿à¦•à§‹à¦¯à¦¼à§‡à¦¸à§à¦Ÿ à¦œà¦®à¦¾ à¦¹à¦¯à¦¼à§‡à¦›à§‡!",
+      qard:    "âœ… à¦•à¦°à¦œà§‡ à¦¹à¦¾à¦¸à¦¾à¦¨à¦¾ à¦†à¦¬à§‡à¦¦à¦¨ à¦œà¦®à¦¾ à¦¹à¦¯à¦¼à§‡à¦›à§‡!",
     };
 
     return NextResponse.json({ message: messages[data.type] });
   } catch {
-    return NextResponse.json({ error: "সার্ভার সমস্যা।" }, { status: 500 });
+    return NextResponse.json({ error: "à¦¸à¦¾à¦°à§à¦­à¦¾à¦° à¦¸à¦®à¦¸à§à¦¯à¦¾à¥¤" }, { status: 500 });
   }
 }

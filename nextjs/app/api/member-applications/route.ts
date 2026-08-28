@@ -1,12 +1,9 @@
-// ═══════════════════════════════════════════════════════════
-//  BARAKAH FINANCE — Member Application Submission
-//  POST /api/member-applications
-//  Accepts multipart/form-data (photo + signature + NID files)
-//  Spec flow:
-//    User submits → Application = PENDING
-//    Admin/Committee reviews → Approved / Rejected
-//    If Approved → Payment Request → Member ID Activated
-// ═══════════════════════════════════════════════════════════
+﻿// Barakah Finance — Member Application Submission
+// POST /api/member-applications
+// Accepts multipart/form-data (photo + signature + NID files)
+// Spec flow: User submits -> PENDING -> Admin/Committee review -> Approved/Rejected -> Payment -> Member ID
+
+export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
@@ -14,32 +11,27 @@ import { getServerSession } from "@/lib/auth/session";
 import prisma from "@/lib/db/prisma";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
-import { ApplicationStatus, InvestType, Gender } from "@/types/enums";
+import { ApplicationStatus, InvestType } from "@/types/enums";
 import { sendSMS } from "@/lib/auth/otp";
 
 const UPLOAD_DIR = process.env.UPLOAD_DIR ?? "./public/uploads";
 
-/** Save a base64 data-URL to disk and return the public path */
 async function saveDataUrl(dataUrl: string, subdir: string, filename: string): Promise<string> {
   const matches = dataUrl.match(/^data:(.+);base64,(.+)$/);
   if (!matches) throw new Error("Invalid image data");
   const buffer = Buffer.from(matches[2], "base64");
-  const dir    = path.join(process.cwd(), UPLOAD_DIR, subdir);
+  const dir = path.join(process.cwd(), UPLOAD_DIR, subdir);
   await mkdir(dir, { recursive: true });
-  const filePath = path.join(dir, filename);
-  await writeFile(filePath, buffer);
-  return `/${subdir}/${filename}`;
+  await writeFile(path.join(dir, filename), buffer);
+  return `/uploads/${subdir}/${filename}`;
 }
 
-/** Save a file buffer (NID upload) */
 async function saveUploadedFile(file: File, subdir: string, filename: string): Promise<string> {
-  const arrayBuffer = await file.arrayBuffer();
-  const buffer      = Buffer.from(arrayBuffer);
-  const dir         = path.join(process.cwd(), UPLOAD_DIR, subdir);
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const dir = path.join(process.cwd(), UPLOAD_DIR, subdir);
   await mkdir(dir, { recursive: true });
-  const filePath = path.join(dir, filename);
-  await writeFile(filePath, buffer);
-  return `/${subdir}/${filename}`;
+  await writeFile(path.join(dir, filename), buffer);
+  return `/uploads/${subdir}/${filename}`;
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -51,7 +43,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     const userId = session.user.id;
 
-    // ── Check for duplicate pending application ──────────────
+    // Check for duplicate pending application
     const existing = await prisma.memberApplication.findFirst({
       where: { userId, status: { in: [ApplicationStatus.PENDING, ApplicationStatus.UNDER_REVIEW] } },
     });
@@ -62,17 +54,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // ── Parse multipart form ─────────────────────────────────
     const formData = await req.formData();
     const g = (key: string) => (formData.get(key) as string | null) ?? "";
 
-    // Personal
     const nameBn     = g("nameBn").trim();
     const nameEn     = g("nameEn").trim();
     const fatherName = g("fatherName").trim();
-    const motherName = g("motherName").trim();
+    const motherName = g("motherName").trim() || null;
     const dob        = g("dob");
-    const gender     = g("gender") as Gender | "";
+    const gender     = g("gender");
     const phone      = g("phone").trim();
     const email      = g("email").trim() || null;
     const nid        = g("nid").trim();
@@ -82,19 +72,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const upazila    = g("upazila").trim() || null;
     const village    = g("village").trim();
 
-    // Nominee
     const nomineeName     = g("nomineeName").trim();
     const nomineeRelation = g("nomineeRelation").trim();
     const nomineePhone    = g("nomineePhone").trim();
-    const nomineeGender   = g("nomineeGender") as Gender | "" | null;
+    const nomineeGender   = g("nomineeGender") || null;
     const nomineeAddress  = g("nomineeAddress").trim() || null;
 
-    // Investment
-    const investType   = g("investType") as InvestType;
+    const investType   = g("investType") as InvestType || InvestType.MONTHLY_SAVINGS;
     const investAmount = parseFloat(g("investAmount") || "0");
     const investStart  = g("investStart") || null;
 
-    // Validate required fields
     if (!nameBn || !nameEn || !fatherName || !dob || !gender || !phone || !nid || !division || !district || !village) {
       return NextResponse.json({ error: "প্রয়োজনীয় তথ্য অনুপস্থিত।" }, { status: 400 });
     }
@@ -102,132 +89,100 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: "নমিনির তথ্য অনুপস্থিত।" }, { status: 400 });
     }
 
-    // ── Save images ──────────────────────────────────────────
-    const ts        = Date.now();
-    let photoUrl    = "";
-    let signUrl     = "";
+    const ts = Date.now();
+    let photoUrl = "";
+    let signUrl  = "";
     let nidFrontUrl = "";
     let nidBackUrl  = "";
 
     const photoDataUrl = g("photoDataUrl");
     const signDataUrl  = g("signDataUrl");
 
-    if (photoDataUrl) {
-      photoUrl = await saveDataUrl(photoDataUrl, `photos`,     `${userId}_${ts}.webp`);
-    }
-    if (signDataUrl) {
-      signUrl  = await saveDataUrl(signDataUrl,  `signatures`, `${userId}_${ts}.webp`);
-    }
+    if (photoDataUrl) photoUrl = await saveDataUrl(photoDataUrl, "photos",     `${userId}_${ts}.webp`);
+    if (signDataUrl)  signUrl  = await saveDataUrl(signDataUrl,  "signatures", `${userId}_${ts}.webp`);
 
     const nidFrontFile = formData.get("nidFront") as File | null;
     const nidBackFile  = formData.get("nidBack")  as File | null;
-
     if (nidFrontFile?.name) {
-      const ext = path.extname(nidFrontFile.name) || ".jpg";
-      nidFrontUrl = await saveUploadedFile(nidFrontFile, `kyc`, `${userId}_front_${ts}${ext}`);
+      nidFrontUrl = await saveUploadedFile(nidFrontFile, "kyc", `${userId}_front_${ts}${path.extname(nidFrontFile.name) || ".jpg"}`);
     }
     if (nidBackFile?.name) {
-      const ext = path.extname(nidBackFile.name) || ".jpg";
-      nidBackUrl = await saveUploadedFile(nidBackFile, `kyc`, `${userId}_back_${ts}${ext}`);
+      nidBackUrl = await saveUploadedFile(nidBackFile, "kyc", `${userId}_back_${ts}${path.extname(nidBackFile.name) || ".jpg"}`);
     }
 
-    // ── Update user profile with submitted data ──────────────
+    // Update user profile
     await prisma.userProfile.upsert({
       where:  { userId },
       create: {
         userId,
-        fatherName,    fatherNameEn: nameEn ? fatherName : undefined,
-        motherName:    motherName || null,
-        dateOfBirth:   dob ? new Date(dob) : null,
-        gender:        gender || undefined,
-        occupation:    profession || null,
-        division,      district,      upazila: upazila || null,
-        village,       villageEn:     null,
-        photoUrl:      photoUrl  || null,
-        signatureUrl:  signUrl   || null,
+        fatherName,
+        motherName,
+        dateOfBirth: dob ? new Date(dob) : null,
+        occupation:  profession,
+        division,    district,   upazila,   village,
+        ...(photoUrl && { photoUrl }),
+        ...(signUrl  && { signatureUrl: signUrl }),
       },
       update: {
-        fatherName,
-        motherName:    motherName || null,
-        dateOfBirth:   dob ? new Date(dob) : null,
-        gender:        gender || undefined,
-        occupation:    profession || null,
-        division,      district,   upazila: upazila || null,
-        village,
+        fatherName,  motherName,
+        dateOfBirth: dob ? new Date(dob) : null,
+        occupation:  profession,
+        division,    district,   upazila,   village,
         ...(photoUrl && { photoUrl }),
         ...(signUrl  && { signatureUrl: signUrl }),
       },
     });
 
-    // ── Update KYC ───────────────────────────────────────────
+    // Update KYC
     if (nidFrontUrl) {
       await prisma.userKYC.upsert({
         where:  { userId },
-        create: {
-          userId,
-          nidNumber:    nid,
-          nidType:      "nid",
-          nidFrontUrl,
-          nidBackUrl:   nidBackUrl || null,
-          status:       "SUBMITTED",
-          submittedAt:  new Date(),
-        },
-        update: {
-          nidNumber:    nid,
-          nidFrontUrl,
-          nidBackUrl:   nidBackUrl || null,
-          status:       "SUBMITTED",
-          submittedAt:  new Date(),
-        },
+        create: { userId, nidNumber: nid, nidType: "nid", nidFrontUrl, nidBackUrl: nidBackUrl || null, status: "SUBMITTED", submittedAt: new Date() },
+        update: { nidNumber: nid, nidFrontUrl, nidBackUrl: nidBackUrl || null, status: "SUBMITTED", submittedAt: new Date() },
       });
     }
 
-    // ── Create MemberApplication record ──────────────────────
+    // Create application
     const application = await prisma.memberApplication.create({
       data: {
         userId,
-        investType:   investType   || InvestType.MONTHLY_SAVINGS,
-        investAmount: investAmount || 0,
-        formFee:      100,
-        status:       ApplicationStatus.PENDING,
-        notes: JSON.stringify({
-          nameBn, nameEn, nomineeName, nomineeRelation, nomineePhone,
-          nomineeGender: nomineeGender || null, nomineeAddress,
-          investStart,
-        }),
+        investType,
+        investAmount,
+        formFee: 100,
+        status:  ApplicationStatus.PENDING,
+        notes: JSON.stringify({ nameBn, nameEn, nomineeName, nomineeRelation, nomineePhone, nomineeGender, nomineeAddress, investStart }),
       },
     });
 
-    // ── Audit log ────────────────────────────────────────────
+    // Audit log
     await prisma.auditLog.create({
       data: {
         userId,
         action:   "CREATE",
         module:   "members",
         recordId: application.id,
-        newValue: { status: ApplicationStatus.PENDING, investType },
+        newValue: { status: ApplicationStatus.PENDING, investType, nameBn },
       },
     });
 
-    // ── Activity feed ─────────────────────────────────────────
+    // Activity feed
     await prisma.activityFeed.create({
       data: {
         userId,
         userName: nameBn,
         action:   "MEMBER_APPLICATION_SUBMITTED",
         module:   "members",
-        detail:   `${nameBn} (${phone}) — আবেদন জমা করেছেন।`,
+        detail:   `${nameBn} (${phone}) আবেদন করেছেন।`,
       },
     });
 
-    // ── Confirmation SMS to admin (optional) ─────────────────
-    const settings = await prisma.systemSettings.findUnique({ where: { id: "global" } });
-    if (settings?.phone) {
-      await sendSMS(
-        settings.phone,
-        `নতুন সদস্য আবেদন: ${nameBn} (${phone}) — পর্যালোচনা করুন।`
-      );
-    }
+    // SMS to admin
+    try {
+      const settings = await prisma.systemSettings.findUnique({ where: { id: "global" } });
+      if (settings?.phone) {
+        await sendSMS(settings.phone, `নতুন সদস্য আবেদন: ${nameBn} (${phone}) — পর্যালোচনা করুন।`);
+      }
+    } catch { /* non-fatal */ }
 
     return NextResponse.json({
       message: "আবেদন সফলভাবে জমা হয়েছে। কমিটি অনুমোদন দিলে SMS পাবেন।",
@@ -236,7 +191,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   } catch (err) {
     console.error("[member-applications]", err);
-    const msg = err instanceof Error ? err.message : "সার্ভার সমস্যা।";
-    return NextResponse.json({ error: msg }, { status: 500 });
+    return NextResponse.json({ error: err instanceof Error ? err.message : "সার্ভার সমস্যা।" }, { status: 500 });
   }
 }
