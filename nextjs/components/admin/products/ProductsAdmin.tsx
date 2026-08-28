@@ -6,7 +6,7 @@ import { Spinner } from "@/components/ui/Spinner";
 
 interface Product {
   id: string; productCode: string; name: string; category: string;
-  purchaseCost: number; profitRate: number; stockQty: number;
+  purchasePrice: number; profitRate: number; stockQty: number;
   isActive: boolean; isFeatured: boolean; outOfStock: boolean;
   profitMethod: string;
 }
@@ -54,7 +54,7 @@ function ProductsAdminInner() {
     try {
       const res = await fetch("/api/products", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productCode: code, name, category: cat, description: desc, purchaseCost: parseFloat(cost), profitRate: parseFloat(rate), stockQty: parseInt(stock), profitMethod: method, isFeatured: featured }),
+        body: JSON.stringify({ productCode: code, name, category: cat, description: desc, purchasePrice: parseFloat(cost), profitRate: parseFloat(rate), stockQty: parseInt(stock), profitMethod: method, isFeatured: featured }),
       });
       const d = await res.json();
       if (!res.ok) { showToast(d.error ?? "Error", "error"); return; }
@@ -155,7 +155,7 @@ function ProductsAdminInner() {
                       <td className="px-4 py-3 font-mono text-xs text-gray-500">{p.productCode}</td>
                       <td className="px-4 py-3 font-medium text-[#0D2B1A]">{p.name}</td>
                       <td className="px-4 py-3 text-gray-500">{p.category}</td>
-                      <td className="px-4 py-3 text-right">{formatMoney(p.purchaseCost)}</td>
+                      <td className="px-4 py-3 text-right">{formatMoney(p.purchasePrice)}</td>
                       <td className="px-4 py-3 text-center text-xs">{p.profitRate}%</td>
                       <td className="px-4 py-3 text-center">
                         <span className={cn("inline-block px-2 py-0.5 rounded-full text-xs font-semibold",

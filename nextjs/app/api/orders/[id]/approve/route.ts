@@ -14,11 +14,11 @@ const Schema = z.object({
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await requireSession();
-    const isAdmin = session.user.systemRole === UserSystemRole.ADMIN || session.user.systemRole === UserSystemRole.SUPER_ADMIN;
-    if (!isAdmin) return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    if (![UserSystemRole.ADMIN, UserSystemRole.SUPER_ADMIN].includes(session.user.systemRole)) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    }
 
-    const body   = await req.json();
-    const parsed = Schema.safeParse(body);
+    const parsed = Schema.safeParse(await req.json());
     if (!parsed.success) return NextResponse.json({ error: parsed.error.errors[0]?.message }, { status: 400 });
 
     if (parsed.data.action === "approve") {

@@ -7,14 +7,14 @@ import { updateQardStatus } from "@/lib/services/QardService";
 import { z } from "zod";
 
 const Schema = z.object({
-  action:          z.enum(["review","approve","reject","disburse"]),
+  action:          z.enum(["review", "approve", "reject", "disburse"]),
   approvedAmount:  z.number().positive().optional(),
   rejectionReason: z.string().optional(),
   disbursedAmount: z.number().positive().optional(),
   disbursedAt:     z.string().optional(),
 });
 
-const ACTION_STATUS_MAP: Record<string, QardStatus> = {
+const ACTION_MAP: Record<string, QardStatus> = {
   review:   QardStatus.UNDER_REVIEW,
   approve:  QardStatus.APPROVED,
   reject:   QardStatus.REJECTED,
@@ -24,14 +24,14 @@ const ACTION_STATUS_MAP: Record<string, QardStatus> = {
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await requireSession();
-    const isAdmin = session.user.systemRole === UserSystemRole.ADMIN || session.user.systemRole === UserSystemRole.SUPER_ADMIN;
-    if (!isAdmin) return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    if (![UserSystemRole.ADMIN, UserSystemRole.SUPER_ADMIN].includes(session.user.systemRole)) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    }
 
-    const body   = await req.json();
-    const parsed = Schema.safeParse(body);
+    const parsed = Schema.safeParse(await req.json());
     if (!parsed.success) return NextResponse.json({ error: parsed.error.errors[0]?.message }, { status: 400 });
 
-    const newStatus = ACTION_STATUS_MAP[parsed.data.action];
+    const newStatus = ACTION_MAP[parsed.data.action];
     if (!newStatus) return NextResponse.json({ error: "অজানা অ্যাকশন।" }, { status: 400 });
 
     await updateQardStatus({
@@ -44,14 +44,13 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       disbursedAt:     parsed.data.disbursedAt ? new Date(parsed.data.disbursedAt) : undefined,
     });
 
-    const messages: Record<string, string> = {
-      review:   "পর্যালোচনায় স্থানান্তরিত হয়েছে।",
+    const msgs: Record<string, string> = {
+      review:   "পর্যালোচনায় স্থানান্তরিত।",
       approve:  "করজ অনুমোদিত হয়েছে।",
       reject:   "করজ প্রত্যাখ্যাত হয়েছে।",
-      disburse: "করজ বিতরণ সম্পন্ন এবং সক্রিয় হয়েছে।",
+      disburse: "করজ বিতরণ সম্পন্ন ও সক্রিয়।",
     };
-
-    return NextResponse.json({ message: messages[parsed.data.action] ?? "স্ট্যাটাস আপডেট হয়েছে।" });
+    return NextResponse.json({ message: msgs[parsed.data.action] ?? "আপডেট হয়েছে।" });
   } catch (err) {
     return NextResponse.json({ error: err instanceof Error ? err.message : "Error" }, { status: 500 });
   }

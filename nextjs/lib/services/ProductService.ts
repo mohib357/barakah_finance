@@ -7,6 +7,10 @@
 //  • Stock reservation: cart → reserved → confirmed → deducted
 //  • No hard-delete for products that have existing orders;
 //    mark isActive=false instead
+//
+//  Note: Prisma schema field is `purchasePrice` (FixedAsset uses
+//  purchaseValue). This service exposes it as `purchasePrice`
+//  in the interface to match the generated Prisma types.
 // ═══════════════════════════════════════════════════════════
 
 import prisma from "@/lib/db/prisma";
@@ -14,26 +18,26 @@ import { ProfitMethod } from "@/types/enums";
 import { writeAuditLog } from "./AuditService";
 
 // ─────────────────────────────────────────────────────────────
-// List products (public-safe: no purchase cost for non-admins)
+// List products
 // ─────────────────────────────────────────────────────────────
 
 export interface ProductListItem {
-  id:           string;
-  productCode:  string;
-  name:         string;
-  nameEn?:      string | null;
-  category:     string;
-  description?: string | null;
-  purchaseCost: number;
+  id:            string;
+  productCode:   string;
+  name:          string;
+  nameEn?:       string | null;
+  category:      string;
+  description?:  string | null;
+  purchasePrice: number;        // matches Prisma field
   sellingPrice?: number | null;
-  stockQty:     number;
-  isActive:     boolean;
-  isFeatured:   boolean;
-  outOfStock:   boolean;
-  profitMethod: ProfitMethod;
-  profitRate:   number;
-  images:       { url: string; type: string; altText?: string | null; sortOrder: number }[];
-  createdAt:    Date;
+  stockQty:      number;
+  isActive:      boolean;
+  isFeatured:    boolean;
+  outOfStock:    boolean;
+  profitMethod:  ProfitMethod;
+  profitRate:    number;
+  images:        { url: string; type: string; altText?: string | null; sortOrder: number }[];
+  createdAt:     Date;
 }
 
 export async function listProducts(filters?: {
@@ -43,15 +47,15 @@ export async function listProducts(filters?: {
   search?:     string;
 }): Promise<ProductListItem[]> {
   const where: Record<string, unknown> = {};
-  if (filters?.category)            where.category  = filters.category;
-  if (filters?.isActive !== undefined) where.isActive = filters.isActive;
+  if (filters?.category)                 where.category  = filters.category;
+  if (filters?.isActive !== undefined)   where.isActive  = filters.isActive;
   if (filters?.isFeatured !== undefined) where.isFeatured = filters.isFeatured;
   if (filters?.search) {
     where.OR = [
-      { name:       { contains: filters.search, mode: "insensitive" } },
-      { nameEn:     { contains: filters.search, mode: "insensitive" } },
-      { category:   { contains: filters.search, mode: "insensitive" } },
-      { productCode:{ contains: filters.search, mode: "insensitive" } },
+      { name:        { contains: filters.search, mode: "insensitive" } },
+      { nameEn:      { contains: filters.search, mode: "insensitive" } },
+      { category:    { contains: filters.search, mode: "insensitive" } },
+      { productCode: { contains: filters.search, mode: "insensitive" } },
     ];
   }
 
@@ -59,16 +63,19 @@ export async function listProducts(filters?: {
     where:   where as never,
     orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
     include: {
-      images: { orderBy: { sortOrder: "asc" }, select: { url: true, type: true, altText: true, sortOrder: true } },
+      images: {
+        orderBy: { sortOrder: "asc" },
+        select:  { url: true, type: true, altText: true, sortOrder: true },
+      },
     },
   });
 
   return products.map((p) => ({
     ...p,
-    purchaseCost: Number(p.purchaseCost),
-    sellingPrice: p.sellingPrice ? Number(p.sellingPrice) : null,
-    profitRate:   Number(p.profitRate),
-    profitMethod: p.profitMethod as ProfitMethod,
+    purchasePrice: Number(p.purchasePrice),
+    sellingPrice:  p.sellingPrice ? Number(p.sellingPrice) : null,
+    profitRate:    Number(p.profitRate),
+    profitMethod:  p.profitMethod as ProfitMethod,
   }));
 }
 
@@ -90,36 +97,36 @@ export async function getProductCategories(): Promise<string[]> {
 // ─────────────────────────────────────────────────────────────
 
 export interface CreateProductInput {
-  productCode:  string;
-  name:         string;
-  nameEn?:      string;
-  category:     string;
-  description?: string;
-  purchaseCost: number;
+  productCode:   string;
+  name:          string;
+  nameEn?:       string;
+  category:      string;
+  description?:  string;
+  purchasePrice: number;        // matches Prisma field
   sellingPrice?: number;
-  stockQty?:    number;
-  isFeatured?:  boolean;
+  stockQty?:     number;
+  isFeatured?:   boolean;
   profitMethod?: ProfitMethod;
-  profitRate?:  number;
-  createdBy:    string;
+  profitRate?:   number;
+  createdBy:     string;
 }
 
 export async function createProduct(input: CreateProductInput): Promise<string> {
   const product = await prisma.product.create({
     data: {
-      productCode:  input.productCode,
-      name:         input.name,
-      nameEn:       input.nameEn       ?? null,
-      category:     input.category,
-      description:  input.description  ?? null,
-      purchaseCost: input.purchaseCost,
-      sellingPrice: input.sellingPrice ?? null,
-      stockQty:     input.stockQty     ?? 0,
-      isFeatured:   input.isFeatured   ?? false,
-      profitMethod: (input.profitMethod ?? ProfitMethod.FINANCED_AMOUNT) as never,
-      profitRate:   input.profitRate   ?? 10,
-      outOfStock:   (input.stockQty ?? 0) === 0,
-      createdBy:    input.createdBy,
+      productCode:   input.productCode,
+      name:          input.name,
+      nameEn:        input.nameEn       ?? null,
+      category:      input.category,
+      description:   input.description  ?? null,
+      purchasePrice: input.purchasePrice,
+      sellingPrice:  input.sellingPrice ?? null,
+      stockQty:      input.stockQty     ?? 0,
+      isFeatured:    input.isFeatured   ?? false,
+      profitMethod:  (input.profitMethod ?? ProfitMethod.FINANCED_AMOUNT) as never,
+      profitRate:    input.profitRate   ?? 10,
+      outOfStock:    (input.stockQty ?? 0) === 0,
+      createdBy:     input.createdBy,
     },
   });
 
@@ -128,28 +135,25 @@ export async function createProduct(input: CreateProductInput): Promise<string> 
     action:   "CREATE",
     module:   "products",
     recordId: product.id,
-    newValue: { name: input.name, category: input.category, purchaseCost: input.purchaseCost },
+    newValue: { name: input.name, category: input.category, purchasePrice: input.purchasePrice },
   });
 
   return product.id;
 }
 
 // ─────────────────────────────────────────────────────────────
-// Update product
+// Update product (partial)
 // ─────────────────────────────────────────────────────────────
 
 export async function updateProduct(
   productId: string,
-  updates: Partial<Omit<CreateProductInput, "createdBy">>,
+  updates:   Partial<Omit<CreateProductInput, "createdBy">>,
   updatedBy: string
 ): Promise<void> {
   const old = await prisma.product.findUniqueOrThrow({ where: { id: productId } });
 
   const data: Record<string, unknown> = { ...updates };
-  // Sync outOfStock flag if stockQty changes
-  if (updates.stockQty !== undefined) {
-    data.outOfStock = updates.stockQty === 0;
-  }
+  if (updates.stockQty !== undefined) data.outOfStock = updates.stockQty === 0;
 
   await prisma.product.update({ where: { id: productId }, data: data as never });
 
@@ -194,18 +198,20 @@ export async function deactivateProduct(productId: string, deletedBy: string): P
 // ─────────────────────────────────────────────────────────────
 
 export async function adjustStock(
-  productId: string,
-  delta: number,   // positive = add, negative = reduce
-  reason: string,
+  productId:  string,
+  delta:      number,   // positive = add, negative = reduce
+  reason:     string,
   adjustedBy: string
 ): Promise<void> {
   const product = await prisma.product.findUniqueOrThrow({
-    where: { id: productId },
+    where:  { id: productId },
     select: { stockQty: true, name: true },
   });
 
   const newQty = product.stockQty + delta;
-  if (newQty < 0) throw new Error(`স্টক শূন্যের নিচে যেতে পারে না। বর্তমান: ${product.stockQty}`);
+  if (newQty < 0) {
+    throw new Error(`স্টক শূন্যের নিচে যেতে পারে না। বর্তমান: ${product.stockQty}`);
+  }
 
   await prisma.product.update({
     where: { id: productId },

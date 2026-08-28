@@ -32,7 +32,7 @@ const CreateSchema = z.object({
   nameEn:       z.string().optional(),
   category:     z.string().min(1),
   description:  z.string().optional(),
-  purchaseCost: z.number().positive(),
+  purchasePrice: z.number().positive(),
   sellingPrice: z.number().optional(),
   stockQty:     z.number().int().nonnegative().optional(),
   isFeatured:   z.boolean().optional(),

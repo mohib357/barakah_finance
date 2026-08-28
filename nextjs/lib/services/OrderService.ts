@@ -300,7 +300,7 @@ export async function collectInstallment(input: CollectInstallmentInput): Promis
 }> {
   const installment = await prisma.installment.findUniqueOrThrow({
     where: { id: input.installmentId },
-    include: { order: { include: { customer: { select: { phone: true, name: true } } } } },
+    include: { order: { include: { customer: { select: { phone: true, name: true, userId: true } } } } },
   });
 
   if (installment.orderId !== input.orderId) {

@@ -5,18 +5,21 @@ import Footer from "@/components/layout/Footer";
 import ShopCatalog from "@/components/shop/ShopCatalog";
 import { ToastProvider } from "@/components/ui/Toast";
 
-export const metadata: Metadata = {
-  title: "কেনাকাটা করুন | বারাকাহ ফাইন্যান্স",
-  description: "কিস্তিতে পণ্য কিনুন — মাত্র ১০% লাভে। ইসলামী শরিয়াহসম্মত পণ্য বিক্রয়।",
-};
+interface Props { params: { category: string } }
 
-export default function ShopPage() {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const decoded = decodeURIComponent(params.category);
+  return { title: `${decoded} | বারাকাহ ফাইন্যান্স শপ` };
+}
+
+export default function ShopCategoryPage({ params }: Props) {
+  const category = decodeURIComponent(params.category);
   return (
     <ToastProvider>
       <Navbar />
       <NoticeBar />
       <main className="min-h-screen bg-[#FDFAF3]">
-        <ShopCatalog />
+        <ShopCatalog initialCategory={category} />
       </main>
       <Footer />
     </ToastProvider>

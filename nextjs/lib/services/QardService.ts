@@ -27,6 +27,7 @@ import { issueReceipt } from "./ReceiptService";
 import { writeAuditLog, writeActivity } from "./AuditService";
 import { sendSMS, interpolateSMSTemplate } from "@/lib/auth/otp";
 import { addMonths } from "@/lib/utils/dateUtils";
+import { Prisma } from "@prisma/client";
 
 Decimal.set({ precision: 28, rounding: Decimal.ROUND_HALF_EVEN });
 
@@ -92,7 +93,7 @@ export async function applyQard(input: QardApplicationInput): Promise<{ qardId: 
       borrowerAddress: [borrower.profile?.village, borrower.profile?.district].filter(Boolean).join(", ") || null,
       borrowerNID:     borrower.kyc?.nidNumber ?? null,
       guarantorUserId: input.guarantorUserId ?? null,
-      witnesses:       input.witnesses ? JSON.stringify(input.witnesses) : null,
+      witnesses:       input.witnesses ? (JSON.stringify(input.witnesses) as unknown as Prisma.InputJsonValue) : Prisma.JsonNull,
       requestedAmount: input.requestedAmount,
       repaymentMonths: input.repaymentMonths,
       reason:          input.reason,
