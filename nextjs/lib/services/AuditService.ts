@@ -12,6 +12,7 @@
 
 import prisma from "@/lib/db/prisma";
 import { AuditAction } from "@/types/enums";
+import { Prisma } from "@prisma/client";
 import { headers } from "next/headers";
 
 // ─────────────────────────────────────────────────────────────
@@ -38,8 +39,8 @@ export async function writeAuditLog(params: AuditParams): Promise<void> {
         action:    params.action    as never,
         module:    params.module,
         recordId:  params.recordId  ?? null,
-        oldValue:  params.oldValue  ?? null,
-        newValue:  params.newValue  ?? null,
+        oldValue:  params.oldValue  !== undefined ? (params.oldValue as Prisma.InputJsonValue) : undefined,
+        newValue:  params.newValue  !== undefined ? (params.newValue as Prisma.InputJsonValue) : undefined,
         reason:    params.reason    ?? null,
         ipAddress: params.ipAddress ?? null,
         userAgent: params.userAgent ?? null,

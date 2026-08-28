@@ -772,7 +772,7 @@ model Order {
   installments      Installment[]
   guarantors        OrderGuarantor[]
   witnesses         OrderWitness[]
-  payments          Payment[]
+  payments          Payment[]         @relation("OrderPayments")
 
   @@index([customerId])
   @@index([status])
@@ -862,6 +862,10 @@ model Payment {
   purpose         String        // "savings" | "installment" | "form_fee" | "qard_repayment" | "charity" | "other"
   relatedEntityType String?     // "savings_record" | "installment" | "order" | "qard" | "membership_application"
   relatedEntityId   String?
+
+  // ── Direct order link (for installment order payments) ──
+  orderId         String?
+  order           Order?        @relation("OrderPayments", fields: [orderId], references: [id])
 
   amount          Decimal       @db.Decimal(18, 2)
   paymentMethod   PaymentMethod @default(CASH)

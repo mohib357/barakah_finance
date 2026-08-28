@@ -1,11 +1,17 @@
 // @ts-check
+// Barakah Finance — Next.js 14 Configuration
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Clean URL slugs — no file extensions exposed
   trailingSlash: false,
 
-  // Image optimization
+  // ── Prisma fix: externalize @prisma/client so webpack doesn't bundle it
+  //    This prevents PrismaClient from being instantiated during static analysis
+  experimental: {
+    serverComponentsExternalPackages: ["@prisma/client", "bcryptjs", "otplib"],
+  },
+
+  // ── Image optimization ──────────────────────────────────────────
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "barakahfinancebd.com" },
@@ -16,7 +22,7 @@ const nextConfig = {
     imageSizes:  [16, 32, 48, 64, 96, 128, 256, 300, 570],
   },
 
-  // Security headers on every response
+  // ── Security headers on every response ──────────────────────────
   async headers() {
     return [
       {
@@ -44,16 +50,13 @@ const nextConfig = {
     ];
   },
 
-  async rewrites() {
-    return [];
-  },
+  async rewrites() { return []; },
 
   typescript: {
     ignoreBuildErrors: false,
   },
 
   eslint: {
-    // ESLint errors still reported, but don't block the build during dev iteration
     ignoreDuringBuilds: true,
   },
 };
