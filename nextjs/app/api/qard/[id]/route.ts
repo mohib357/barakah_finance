@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+﻿export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 import { requireSession } from "@/lib/auth/session";
@@ -8,7 +8,7 @@ import prisma from "@/lib/db/prisma";
 export async function GET(_: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await requireSession();
-    const isAdmin = [UserSystemRole.ADMIN, UserSystemRole.SUPER_ADMIN].includes(session.user.systemRole);
+    const isAdmin = [UserSystemRole.ADMIN, UserSystemRole.SUPER_ADMIN].includes(session.user.systemRole as never);
 
     const qard = await prisma.qardApplication.findUnique({
       where:   { id: params.id },

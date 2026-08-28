@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+﻿export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 import { requireSession } from "@/lib/auth/session";
@@ -8,7 +8,7 @@ import prisma from "@/lib/db/prisma";
 export async function GET(_: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await requireSession();
-    const isAdmin = [UserSystemRole.ADMIN, UserSystemRole.SUPER_ADMIN].includes(session.user.systemRole);
+    const isAdmin = [UserSystemRole.ADMIN, UserSystemRole.SUPER_ADMIN].includes(session.user.systemRole as never);
 
     const order = await prisma.order.findUnique({
       where: { id: params.id },
@@ -37,7 +37,7 @@ export async function GET(_: NextRequest, { params }: { params: { id: string } }
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await requireSession();
-    const isAdmin = [UserSystemRole.ADMIN, UserSystemRole.SUPER_ADMIN].includes(session.user.systemRole);
+    const isAdmin = [UserSystemRole.ADMIN, UserSystemRole.SUPER_ADMIN].includes(session.user.systemRole as never);
     if (!isAdmin) return NextResponse.json({ error: "Access denied" }, { status: 403 });
 
     const body = await req.json();

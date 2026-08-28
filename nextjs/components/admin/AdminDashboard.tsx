@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { cn, formatMoney, toBengaliDigits } from "@/lib/utils/cn";
@@ -56,7 +56,7 @@ export default function AdminDashboard({ user }: Props) {
     </div>
   );
 
-  const isSuperAdmin = user.systemRole === UserSystemRole.SUPER_ADMIN;
+  const isSuperAdmin = (user.systemRole as string) === UserSystemRole.SUPER_ADMIN;
   const totalPending = pending ? Object.values(pending).reduce((a, b) => a + b, 0) : 0;
 
   return (

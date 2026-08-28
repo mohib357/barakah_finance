@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 // ═══════════════════════════════════════════════════════════
 //  BARAKAH FINANCE — Global Audit Log Viewer
 //
@@ -110,61 +110,6 @@ function AuditLogViewerInner() {
 
   function search() { setPage(1); load(); }
   function reset()  { setFModule(""); setFAction(""); setFUserId(""); setFRecordId(""); setFFrom(""); setFTo(""); setPage(1); }
-
-  // ── JSON diff renderer ──
-  function renderJSON(val: unknown): string {
-    if (val === null || val === undefined) return "—";
-    try { return JSON.stringify(val, null, 2); }
-    catch { return String(val); }
-  }
-
-  function DiffViewer({ entry }: { entry: AuditEntry }) {
-    const hasOld = entry.oldValue !== null && entry.oldValue !== undefined;
-    const hasNew = entry.newValue !== null && entry.newValue !== undefined;
-
-    return (
-      <div className="space-y-3">
-        <div className="grid grid-cols-2 gap-3">
-          {hasOld && (
-            <div>
-              <div className="text-xs font-bold text-red-600 mb-1.5 flex items-center gap-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-red-500" /> পূর্ববর্তী মান
-              </div>
-              <pre className="rounded-xl bg-red-50 border border-red-100 p-3 text-xs text-red-800 overflow-auto max-h-48 font-mono whitespace-pre-wrap break-all">
-                {renderJSON(entry.oldValue)}
-              </pre>
-            </div>
-          )}
-          {hasNew && (
-            <div className={cn(!hasOld && "col-span-2")}>
-              <div className="text-xs font-bold text-green-600 mb-1.5 flex items-center gap-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-green-500" /> নতুন মান
-              </div>
-              <pre className="rounded-xl bg-green-50 border border-green-100 p-3 text-xs text-green-800 overflow-auto max-h-48 font-mono whitespace-pre-wrap break-all">
-                {renderJSON(entry.newValue)}
-              </pre>
-            </div>
-          )}
-          {!hasOld && !hasNew && (
-            <div className="col-span-2 text-center py-4 text-gray-400 text-sm">কোনো ডেটা নেই।</div>
-          )}
-        </div>
-        {entry.reason && (
-          <div className="rounded-xl bg-amber-50 border border-amber-100 px-4 py-2.5 text-xs text-amber-700">
-            <strong>কারণ:</strong> {entry.reason}
-          </div>
-        )}
-        <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
-          {entry.ipAddress && (
-            <div><span className="font-medium text-gray-600">IP:</span> {entry.ipAddress}</div>
-          )}
-          {entry.recordId && (
-            <div className="truncate"><span className="font-medium text-gray-600">Record:</span> <span className="font-mono">{entry.recordId}</span></div>
-          )}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-[#FDFAF3]">

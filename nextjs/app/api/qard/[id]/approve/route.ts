@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+﻿export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 import { requireSession } from "@/lib/auth/session";
@@ -24,7 +24,7 @@ const ACTION_MAP: Record<string, QardStatus> = {
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await requireSession();
-    if (![UserSystemRole.ADMIN, UserSystemRole.SUPER_ADMIN].includes(session.user.systemRole)) {
+    if (![UserSystemRole.ADMIN, UserSystemRole.SUPER_ADMIN].includes(session.user.systemRole as never)) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 

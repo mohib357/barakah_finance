@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+﻿export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 import { requireSession } from "@/lib/auth/session";
@@ -20,7 +20,7 @@ const Schema = z.object({
 export async function POST(req: NextRequest) {
   try {
     const session = await requireSession();
-    if (![UserSystemRole.ADMIN, UserSystemRole.SUPER_ADMIN].includes(session.user.systemRole)) {
+    if (![UserSystemRole.ADMIN, UserSystemRole.SUPER_ADMIN].includes(session.user.systemRole as never)) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
             where: { status: { in: ["ACTIVE","APPLIED","UNDER_REVIEW","APPROVED"] as never[] } },
             select: { borrowerPhone: true },
           });
-          targetPhones = [...new Set(qardBorrowers.map((q) => q.borrowerPhone).filter(Boolean))];
+          targetPhones = Array.from(new Set(qardBorrowers.map((q) => q.borrowerPhone).filter(Boolean)));
           break;
         }
         case "committee": {

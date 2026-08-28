@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { getServerSession } from "@/lib/auth/session";
 import { UserSystemRole } from "@/types/enums";
 import CommitteeAdmin from "@/components/admin/committee/CommitteeAdmin";
@@ -8,7 +8,7 @@ export const metadata = { title: "কমিটি ব্যবস্থাপন
 export default async function AdminCommitteePage() {
   const session = await getServerSession();
   if (!session) redirect("/login?callbackUrl=/admin/committee");
-  if (![UserSystemRole.ADMIN, UserSystemRole.SUPER_ADMIN].includes(session.user.systemRole))
+  if (![UserSystemRole.ADMIN, UserSystemRole.SUPER_ADMIN].includes(session.user.systemRole as never))
     redirect("/unauthorized");
   return <CommitteeAdmin isSuperAdmin={session.user.systemRole === UserSystemRole.SUPER_ADMIN} />;
 }

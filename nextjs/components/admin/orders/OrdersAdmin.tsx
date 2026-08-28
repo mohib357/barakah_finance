@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useEffect, useCallback } from "react";
 import { cn, formatMoney, toBengaliDigits } from "@/lib/utils/cn";
 import { Spinner } from "@/components/ui/Spinner";
@@ -49,7 +49,7 @@ function OrdersAdminInner() {
       const dueRes = await fetch("/api/installments?overdue=true");
       const dueD   = await dueRes.json();
       // Show orders that have overdue installments
-      const orderIds = [...new Set((dueD.installments ?? []).map((i: { orderId: string }) => i.orderId))];
+      const orderIds = Array.from(new Set((dueD.installments ?? []).map((i: { orderId: string }) => i.orderId)));
       result = result.filter((o) => orderIds.includes(o.id));
     }
 

@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { getServerSession } from "@/lib/auth/session";
 import { UserSystemRole } from "@/types/enums";
 import OrdersAdmin from "@/components/admin/orders/OrdersAdmin";
@@ -8,6 +8,6 @@ export const metadata = { title: "অর্ডার ব্যবস্থাপ
 export default async function AdminOrdersPage() {
   const session = await getServerSession();
   if (!session) redirect("/login?callbackUrl=/admin/orders");
-  if (![UserSystemRole.ADMIN, UserSystemRole.SUPER_ADMIN].includes(session.user.systemRole)) redirect("/unauthorized");
+  if (![UserSystemRole.ADMIN, UserSystemRole.SUPER_ADMIN].includes(session.user.systemRole as never)) redirect("/unauthorized");
   return <OrdersAdmin />;
 }
