@@ -79,48 +79,52 @@ export default function HeroSection() {
             className="reveal rounded-2xl border border-[#C9A227]/30 bg-white/5 backdrop-blur-sm p-8 md:p-10"
             style={{ animation: "fadeIn .6s ease both" }}
           >
-            {/* Shariah badge */}
+            {/* Shariah badge — spec: "শরিয়ত সম্মত আর্থিক প্রতিষ্ঠান" */}
             <div className="inline-flex items-center gap-2 rounded-full border border-[#C9A227]/40 bg-[#C9A227]/10 px-4 py-1.5 text-xs font-semibold text-[#F0D78A] mb-6">
-              {t("hero.badge")}
+              🕌 শরিয়ত সম্মত আর্থিক প্রতিষ্ঠান
             </div>
 
             {/* Headline */}
-            <h1 className="font-serif text-3xl md:text-4xl font-bold text-white leading-tight mb-6" style={{ fontFamily: "'Noto Serif Bengali', serif" }}>
+            <h1 className="font-serif text-3xl md:text-4xl font-bold text-white leading-tight mb-4" style={{ fontFamily: "'Noto Serif Bengali', serif" }}>
               ইসলামী অর্থনীতির আলোকে
               <br />
               <em className="not-italic text-[#C9A227]">সমৃদ্ধি সবার</em>
             </h1>
 
-            {/* Quote box */}
-            <div className="relative rounded-xl border-l-4 border-[#C9A227] bg-[#C9A227]/8 px-5 py-4 mb-6">
-              <p className="text-sm text-white/80 leading-relaxed italic">
-                &ldquo;{t("hero.quote")}&rdquo;
+            {/* Quote box — highlighted border per spec */}
+            <div className="relative rounded-xl border border-[#C9A227]/50 bg-[#C9A227]/8 px-5 py-4 mb-5">
+              <p className="text-sm text-white/85 leading-relaxed">
+                &ldquo;ইসলামী অর্থনীতির আলোকে সমাজ থেকে সূদের অভিশাপ দূর করে হালাল উপায়ে আর্থিক সহায়তা ও সমৃদ্ধি নিশ্চিত করাই আমাদের অঙ্গিকার।&rdquo;
               </p>
             </div>
 
-            {/* Gold divider */}
-            <div className="h-0.5 w-24 bg-gradient-to-r from-[#C9A227] to-transparent mb-6" />
+            {/* Golden divider — spec: "গোল্ডেন কালারের মোটা হরিজন্টাল লাইন" */}
+            <div className="h-1 w-full bg-gradient-to-r from-[#C9A227] via-[#F0D78A] to-[#C9A227] rounded-full mb-6 opacity-80" />
 
-            {/* CTA buttons */}
+            {/* CTA buttons — spec: 3 buttons with distinct styles/colors */}
             <div className="flex flex-wrap gap-3">
+              {/* Button 1: সদস্য হতে আবেদন করুন */}
               <button
                 onClick={() => handleLoginGate("/apply")}
-                className="flex items-center gap-2 rounded-xl bg-[#1D9E75] px-5 py-3 text-sm font-semibold text-white hover:bg-[#0F6E56] active:scale-95 transition-all shadow-lg"
+                className="flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-white active:scale-95 transition-all shadow-lg"
+                style={{ background: "linear-gradient(135deg,#1D9E75,#0F6E56)" }}
               >
-                📝 {t("hero.btn.member")}
+                📝 সদস্য হতে আবেদন করুন
               </button>
+              {/* Button 2: কেনাকাটা করুন */}
               <button
                 onClick={() => handleLoginGate("/shop")}
-                className="flex items-center gap-2 rounded-xl bg-[#1D9E75] px-5 py-3 text-sm font-semibold text-white hover:bg-[#0F6E56] active:scale-95 transition-all shadow-lg"
-                style={{ background: "linear-gradient(135deg, #1D9E75, #0F6E56)" }}
+                className="flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-white active:scale-95 transition-all shadow-lg"
+                style={{ background: "linear-gradient(135deg,#185FA5,#0D3D6E)" }}
               >
-                🛒 {t("hero.btn.shop")}
+                🛒 কেনাকাটা করুন
               </button>
+              {/* Button 3: আরও জানুন — outline/ghost style */}
               <Link
                 href="/learn-more"
-                className="flex items-center gap-2 rounded-xl border-2 border-white/30 px-5 py-3 text-sm font-semibold text-white/80 hover:border-[#C9A227] hover:text-[#C9A227] active:scale-95 transition-all"
+                className="flex items-center gap-2 rounded-xl border-2 border-[#C9A227]/60 px-5 py-3 text-sm font-semibold text-[#F0D78A] hover:bg-[#C9A227]/15 active:scale-95 transition-all"
               >
-                📚 {t("hero.btn.learn")}
+                📚 আরও জানুন
               </Link>
             </div>
           </div>

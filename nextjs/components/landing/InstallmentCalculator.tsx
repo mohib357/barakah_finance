@@ -66,10 +66,10 @@ export default function InstallmentCalculator() {
           <p className="text-white/55 text-sm">{t("calc.subtitle")}</p>
         </div>
 
-        {/* Mode tabs */}
+        {/* Mode tabs — spec: "পদ্ধতি-১: সরাসরি মূল্য" and "পদ্ধতি-২: ডাউনপেমেন্ট ভিত্তিক" */}
         <div className="mb-6 flex gap-3 rounded-2xl bg-white/8 p-1.5">
-          <TabBtn active={mode === 1} onClick={() => setMode(1)}>{t("calc.mode1")}</TabBtn>
-          <TabBtn active={mode === 2} onClick={() => setMode(2)}>{t("calc.mode2")}</TabBtn>
+          <TabBtn active={mode === 1} onClick={() => setMode(1)}>📊 পদ্ধতি-১: সম্পূর্ণ মূল্য ভিত্তিক</TabBtn>
+          <TabBtn active={mode === 2} onClick={() => setMode(2)}>💳 পদ্ধতি-২: অর্থায়িত পরিমাণ ভিত্তিক</TabBtn>
         </div>
 
         <div className="rounded-2xl bg-white/8 backdrop-blur-sm border border-white/10 p-6 md:p-8">

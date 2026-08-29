@@ -24,10 +24,10 @@ export default function WhySection() {
             className="text-3xl md:text-4xl font-bold text-[#0D2B1A] dark:text-white mb-3"
             style={{ fontFamily: "'Noto Serif Bengali', serif" }}
           >
-            {t("about.title")}
+            কেন বারাকাহ ফাইন্যান্স?
           </h2>
           <p className="mx-auto max-w-xl text-[#4A5A4A] dark:text-white/60 leading-relaxed">
-            {t("about.subtitle")}
+            শরিয়াহ মোতাবেক পরিচালিত এই প্রতিষ্ঠান আপনার আর্থিক প্রয়োজন পূরণ করবে সম্পূর্ণ হালাল পথে।
           </p>
         </div>
 

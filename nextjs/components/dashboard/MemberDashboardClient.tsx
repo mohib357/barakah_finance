@@ -133,6 +133,9 @@ export default function MemberDashboardClient({
 
   return (
     <div className="min-h-screen bg-[#FDFAF3]">
+      {/* ── Hadith / Quran bar — 70–80px, random on reload (Website.txt spec) ── */}
+      <HadithBar />
+
       {/* ── Header ── */}
       <div className="bg-[#0D2B1A] text-white">
         <div className="max-w-4xl mx-auto px-4 py-6 flex items-center justify-between gap-4">
