@@ -27,6 +27,7 @@ declare module "next-auth" {
       twoFAVerified?:  boolean;
       profileComplete: number;
       photoUrl?:       string | null;
+      defaultRedirect: string;   // "/admin" or "/dashboard" based on role
     };
   }
   interface User {
@@ -63,6 +64,7 @@ declare module "next-auth/jwt" {
     twoFAVerified?:  boolean;
     profileComplete: number;
     photoUrl?:       string | null;
+    defaultRedirect?: string;
   }
 }
 
@@ -149,6 +151,16 @@ export const authOptions: NextAuthOptions = {
         token.twoFAVerified   = user.twoFAVerified;
         token.profileComplete = user.profileComplete;
         token.photoUrl        = user.photoUrl ?? null;
+
+        // Derive the correct post-login landing page from role
+        const adminRoles: UserSystemRole[] = [
+          UserSystemRole.SUPER_ADMIN,
+          UserSystemRole.ADMIN,
+          UserSystemRole.STAFF,
+        ];
+        token.defaultRedirect = adminRoles.includes(user.systemRole)
+          ? "/admin"
+          : "/dashboard";
       }
       if (trigger === "update" && updatedSession?.twoFAVerified !== undefined) {
         token.twoFAVerified = updatedSession.twoFAVerified as boolean;
@@ -173,6 +185,7 @@ export const authOptions: NextAuthOptions = {
         session.user.twoFAVerified   = token.twoFAVerified as boolean | undefined;
         session.user.profileComplete = token.profileComplete as number;
         session.user.photoUrl        = (token.photoUrl as string | null | undefined) ?? null;
+        session.user.defaultRedirect = (token.defaultRedirect as string | undefined) ?? "/dashboard";
       }
       return session;
     },

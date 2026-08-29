@@ -138,7 +138,6 @@ function LoginPageInner() {
     setLoading(false);
     if (!res?.ok) {
       const msg = res?.error ?? "লগইন ব্যর্থ।";
-      // Handle NextAuth error codes
       alert(
         msg === "CredentialsSignin"
           ? "ভুল আইডি বা পাসওয়ার্ড।"
@@ -146,9 +145,36 @@ function LoginPageInner() {
       );
       return;
     }
-    // Redirect
-    const cb = params.get("callbackUrl") ?? "/dashboard";
-    router.replace(cb);
+
+    // ── Role-based redirect after successful login ─────────
+    // Priority order:
+    //   1. If a callbackUrl was set (e.g. from middleware), honour it
+    //   2. Admin / Super Admin / Staff → /admin
+    //   3. 2FA required → /login/2fa
+    //   4. Everyone else → /dashboard
+    const callbackUrl = params.get("callbackUrl");
+    if (callbackUrl && callbackUrl !== "/login") {
+      router.replace(callbackUrl);
+      return;
+    }
+
+    // Fetch the fresh session to read the role
+    const { getSession } = await import("next-auth/react");
+    const session = await getSession();
+    const role = session?.user?.systemRole ?? "";
+    const needsTwoFA = session?.user?.twoFARequired === true;
+
+    if (needsTwoFA) {
+      router.replace("/login/2fa");
+      return;
+    }
+
+    const ADMIN_ROLES = ["SUPER_ADMIN", "ADMIN", "STAFF"];
+    if (ADMIN_ROLES.includes(role)) {
+      router.replace("/admin");
+    } else {
+      router.replace("/dashboard");
+    }
   }
 
   // ── SIGNUP ─────────────────────────────────────────────

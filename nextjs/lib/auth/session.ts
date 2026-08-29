@@ -26,6 +26,7 @@ export interface BFSession {
     twoFARequired?: boolean;
     profileComplete: number;
     photoUrl?:      string | null;
+    defaultRedirect: string;
   };
 }
 
